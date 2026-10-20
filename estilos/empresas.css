@@ -1,0 +1,145 @@
+/* =============================================================
+   PORTAL DE TRABAJO — módulo empresarial (empresas.html)
+   -------------------------------------------------------------
+   Reglas exclusivas de esta pantalla, todas con el prefijo .emp-
+   para no modificar las hojas de estilo existentes.
+   Se respeta el lenguaje visual: estructura cuadrada, círculos
+   solo como acento y variables de color del sistema.
+   ============================================================= */
+
+/* ---------------------------------------------------------------
+   1. Paneles del módulo
+   Solo el panel activo se muestra; el resto lleva el atributo
+   hidden que el navegador traduce en display: none.
+   --------------------------------------------------------------- */
+.panel-gestion[hidden] { display: none; }
+
+/* ---------------------------------------------------------------
+   2. Habilidades del formulario
+   Los chips comparten fila con el botón y el campo de entrada.
+   --------------------------------------------------------------- */
+.emp-chips { align-items: center; }
+
+.emp-chip-entrada {
+  flex: 1 1 13rem;
+  max-width: 20rem;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+/* Chip con su botón de retirada (×) */
+.emp-chip { gap: 0.55rem; }
+
+.emp-quitar {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.emp-quitar:hover { color: var(--bermellon); }
+
+/* ---------------------------------------------------------------
+   3. Tabla de ofertas
+   --------------------------------------------------------------- */
+.emp-tabla-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+/* Fila de una oferta cerrada: atenuada */
+.emp-oferta-cerrada td { color: var(--tinta-tenue); }
+.emp-oferta-cerrada td a { color: var(--tinta-tenue); }
+
+/* ---------------------------------------------------------------
+   4. Postulaciones
+   Selector de oferta y acciones de la ficha de candidato.
+   --------------------------------------------------------------- */
+.emp-selector { max-width: 28rem; margin-bottom: 1.35rem; }
+
+.emp-candidato-acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.55rem;
+}
+
+/* ---------------------------------------------------------------
+   5. Directorio de empresas
+   Ficha vertical: cabecera con marca cuadrada, datos en mono,
+   valoración y pie con las acciones separado por filete.
+   --------------------------------------------------------------- */
+.emp-buscador { max-width: 30rem; margin-bottom: 1.35rem; }
+
+.emp-empresa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.emp-empresa-cab {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.emp-empresa-cab h3 { font-size: 1.05rem; margin-bottom: 0.15rem; }
+
+.emp-datos {
+  display: grid;
+  gap: 0.2rem;
+  font-family: var(--fuente-mono);
+  font-size: 0.72rem;
+  color: var(--tinta-suave);
+}
+
+.emp-empresa-pie {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: auto;          /* empuja el pie al fondo de la tarjeta */
+  padding-top: 0.9rem;
+  border-top: var(--filete);
+}
+
+/* Empresa suspendida: atenuada, con acciones de reactivación */
+.emp-suspendida { opacity: 0.55; }
+
+/* ---------------------------------------------------------------
+   6. Valoraciones
+   Tarjeta con el círculo de la nota grande a un lado.
+   --------------------------------------------------------------- */
+.emp-valoracion {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.emp-valoracion-cuerpo { flex: 1; }
+.emp-valoracion-cuerpo h3 { font-size: 1.05rem; margin-bottom: 0.2rem; }
+
+/* ---------------------------------------------------------------
+   7. Ajustes por pantalla
+   --------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+  /* Las acciones del candidato pasan a una fila bajo su ficha */
+  .emp-candidato-acciones {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 575.98px) {
+  /* La tarjeta de valoración se apila y la nota queda centrada */
+  .emp-valoracion { flex-direction: column; text-align: center; }
+  .emp-valoracion .valoracion { justify-content: center; }
+  .emp-chip-entrada { max-width: none; }
+}

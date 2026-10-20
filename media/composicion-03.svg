@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 200" width="260" height="200" role="img" aria-label="Ilustración de empresa: edificio y personas">
+  <!--
+    ILUSTRACIÓN DE EMPRESA
+    Fachada cuadrada con ventanas regulares y dos círculos
+    (las personas) en la entrada.
+  -->
+  <g stroke="#d9d0bc" stroke-width="1">
+    <path d="M10 10h240v180H10z" fill="none"/>
+    <path d="M10 160h240" fill="none"/>
+  </g>
+
+  <!-- edificio -->
+  <rect x="60" y="40" width="110" height="120" fill="#fdfbf5" stroke="#191510" stroke-width="2"/>
+  <rect x="60" y="40" width="110" height="18" fill="#191510"/>
+
+  <!-- ventanas -->
+  <g fill="#d9d0bc">
+    <rect x="74" y="70" width="24" height="20"/>
+    <rect x="110" y="70" width="24" height="20"/>
+    <rect x="146" y="70" width="10" height="20"/>
+    <rect x="74" y="102" width="24" height="20"/>
+    <rect x="110" y="102" width="24" height="20"/>
+  </g>
+  <!-- una ventana encendida -->
+  <rect x="146" y="102" width="10" height="20" fill="#cf3b1a"/>
+
+  <!-- puerta -->
+  <rect x="100" y="132" width="30" height="28" fill="#191510"/>
+
+  <!-- personas -->
+  <circle cx="94" cy="152" r="7" fill="#cf3b1a"/>
+  <circle cx="140" cy="152" r="7" fill="#191510"/>
+
+  <!-- sol geométrico -->
+  <circle cx="205" cy="60" r="18" fill="none" stroke="#cf3b1a" stroke-width="2"/>
+  <g stroke="#cf3b1a" stroke-width="1.6">
+    <path d="M205 30v-8M205 98v8M175 60h-8M235 60h8" fill="none"/>
+  </g>
+</svg>

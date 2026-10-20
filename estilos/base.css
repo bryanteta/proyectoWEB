@@ -1,0 +1,356 @@
+/* =============================================================
+   PORTAL DE TRABAJO — hoja base
+   -------------------------------------------------------------
+   Sistema visual "papel y bermellón":
+   · Todo lo estructural es CUADRADO (esquinas rectas, sin radios).
+   · Los CÍRCULOS se reservan exclusivamente para resaltar:
+     avatares, contadores, pasos, estados y gráficos.
+   · Acabado tipo papel: fondo cálido, filetes finos y un grano
+     muy leve para que no se vea plano ni "de plantilla".
+   ============================================================= */
+
+/* ---------------------------------------------------------------
+   1. Variables de diseño
+   --------------------------------------------------------------- */
+:root {
+  /* Paleta — papel cálido + tinta + bermellón */
+  --papel: #f4efe3;          /* fondo general */
+  --papel-banda: #ebe4d4;    /* bandas y secciones alternas */
+  --papel-hueso: #fdfbf5;    /* tarjetas y superficies elevadas */
+  --papel-oscuro: #221d15;   /* pie de página y bloques de tinta */
+
+  --tinta: #191510;          /* texto principal */
+  --tinta-suave: #574f42;    /* texto secundario */
+  --tinta-tenue: #8d8271;    /* etiquetas,Placeholders */
+
+  --linea: #d9d0bc;          /* filetes habituales */
+  --linea-fuerte: #b8ab90;   /* filetes de controles y énfasis */
+
+  --bermellon: #cf3b1a;      /* color de acento */
+  --bermellon-hondo: #a52a0d;/* acento en estado hover/activo */
+  --bermellon-leche: #f7e3d9;/* tinte suave del acento */
+
+  --verde: #47694a;          /* estados correctos / disponibles */
+  --ambar: #a97a1f;          /* avisos y pendientes */
+  --cielo: #3f5f7d;          /* datos e información */
+
+  /* Tipografías */
+  --fuente-titulo: "Fraunces", "Georgia", "Times New Roman", serif;
+  --fuente-texto: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fuente-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  /* Medidas */
+  --medida: 1180px;          /* ancho máximo de contenido */
+  --filete: 1px solid var(--linea);
+  --cabecera-alto: 4.45rem;  /* altura de la cabecera en escritorio */
+
+  /* Sombras: duras y nítidas, nunca difusas */
+  --sombra-dura: 6px 6px 0 rgba(25, 21, 16, 0.09);
+  --sombra-dura-alta: 9px 9px 0 rgba(25, 21, 16, 0.13);
+}
+
+/* ---------------------------------------------------------------
+   2. Reset y base
+   --------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-radius: 0;          /* la regla de oro del proyecto */
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fuente-texto);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--tinta);
+  background-color: var(--papel);
+  /* Grano de papel: ruido SVG muy tenue sobre el fondo */
+  background-image:
+    radial-gradient(rgba(25, 21, 16, 0.045) 1px, transparent 1px),
+    radial-gradient(rgba(25, 21, 16, 0.03) 1px, transparent 1px);
+  background-size: 3px 3px, 7px 7px;
+  background-position: 0 0, 2px 3px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--tinta);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--bermellon);
+}
+
+/* ---------------------------------------------------------------
+   3. Tipografía
+   --------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--fuente-titulo);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--tinta);
+  margin: 0 0 0.6em;
+  font-variation-settings: "opsz" 40;
+}
+
+h1 { font-size: clamp(2.4rem, 5vw, 3.9rem); font-weight: 700; }
+h2 { font-size: clamp(1.7rem, 3vw, 2.4rem); }
+h3 { font-size: 1.32rem; }
+h4 { font-size: 1.1rem; }
+
+p { margin: 0 0 1rem; }
+
+.lead {
+  font-size: 1.12rem;
+  color: var(--tinta-suave);
+  max-width: 62ch;
+}
+
+/* Etiqueta de sección: numerada, en mono, con filete */
+.etiqueta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: var(--fuente-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tinta-tenue);
+  margin-bottom: 1.1rem;
+}
+
+.etiqueta::before {
+  content: attr(data-num);
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;                /* círculo de acento */
+  background: var(--bermellon);
+  color: #fff;
+  font-size: 0.7rem;
+  letter-spacing: 0;
+  flex: none;
+}
+
+/* Texto mono para datos, fechas, códigos */
+.datos,
+.tabla-datos {
+  font-family: var(--fuente-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+.texto-suave { color: var(--tinta-suave); }
+.texto-tenue { color: var(--tinta-tenue); }
+.texto-acento { color: var(--bermellon); }
+.fuerte { font-weight: 600; }
+
+/* ---------------------------------------------------------------
+   4. Utilidades de estructura
+   --------------------------------------------------------------- */
+.contenedor {
+  width: 100%;
+  max-width: var(--medida);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.seccion { padding: 4.25rem 0; }
+.seccion-ajustada { padding: 3rem 0; }
+.seccion-banda { background: var(--papel-banda); }
+
+/* Filete horizontal editorial */
+.filete { border: 0; border-top: var(--filete); margin: 0; }
+.filete-fuerte { border: 0; border-top: 2px solid var(--tinta); margin: 0; }
+
+/* Encabezado de sección en dos columnas (título + texto) */
+.seccion-cabecera {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2.25rem;
+  flex-wrap: wrap;
+}
+
+.seccion-cabecera h2 { margin-bottom: 0.35rem; }
+.seccion-cabecera p { margin-bottom: 0; }
+
+/* ---------------------------------------------------------------
+   5. Utilidades de círculo (el lenguaje de acento)
+   --------------------------------------------------------------- */
+/* Disco circular: usado para iconos, iniciales y pasos */
+.disco {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--bermellon-leche);
+  color: var(--bermellon);
+  font-family: var(--fuente-mono);
+  font-weight: 600;
+  flex: none;
+}
+
+.disco-tinta { background: var(--tinta); color: var(--papel); }
+.disco-linea { background: transparent; border: 1px solid var(--linea-fuerte); color: var(--tinta-suave); }
+.disco-verde { background: #e3ebe1; color: var(--verde); }
+.disco-sm { width: 2rem; height: 2rem; font-size: 0.72rem; }
+.disco-lg { width: 4.25rem; height: 4.25rem; font-size: 1.25rem; }
+
+/* Avatar: círculo con iniciales */
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: var(--tinta);
+  color: var(--papel);
+  font-family: var(--fuente-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  flex: none;
+  overflow: hidden;
+}
+
+.avatar-sm { width: 2rem; height: 2rem; font-size: 0.66rem; }
+.avatar-lg { width: 4.5rem; height: 4.5rem; font-size: 1.15rem; }
+.avatar-acento { background: var(--bermellon); }
+.avatar-suave { background: var(--linea-fuerte); color: var(--papel-hueso); }
+
+/* Punto de estado */
+.punto {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--tinta-tenue);
+  flex: none;
+}
+.punto-verde { background: var(--verde); }
+.punto-bermellon { background: var(--bermellon); }
+.punto-ambar { background: var(--ambar); }
+
+/* ---------------------------------------------------------------
+   6. Contador circular con anillo (métricas)
+   --------------------------------------------------------------- */
+.metrica {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.9rem;
+}
+
+.metrica-anillo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 9.5rem;
+  height: 9.5rem;
+}
+
+.metrica-anillo svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.metrica-anillo .pista {
+  fill: none;
+  stroke: var(--linea);
+  stroke-width: 3;
+}
+
+.metrica-anillo .progreso {
+  fill: none;
+  stroke: var(--bermellon);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.metrica-valor {
+  font-family: var(--fuente-titulo);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variation-settings: "opsz" 90;
+}
+
+.metrica-valor small {
+  display: block;
+  font-family: var(--fuente-mono);
+  font-size: 0.66rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tinta-tenue);
+  margin-top: 0.4rem;
+}
+
+.metrica p {
+  margin: 0;
+  max-width: 17ch;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+}
+
+/* ---------------------------------------------------------------
+   7. Accesibilidad
+   --------------------------------------------------------------- */
+.visually-hidden-focusable:not(:focus):not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--bermellon);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .seccion { padding: 3rem 0; }
+  .metrica-anillo { width: 7.5rem; height: 7.5rem; }
+}

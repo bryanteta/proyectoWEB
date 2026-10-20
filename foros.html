@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Foros — Portal de Trabajo</title>
+    <meta
+      name="description"
+      content="Foros de discusión del portal de empleo: consulta y comparte experiencias sobre entrevistas, primer empleo, salarios y seguridad laboral."
+    />
+    <link rel="icon" type="image/svg+xml" href="./media/favicon.svg" />
+
+    <!-- Bootstrap local (funciona sin conexión) -->
+    <link rel="stylesheet" href="./estilos/vendor/bootstrap.min.css" />
+    <!-- Tipografías descargadas al proyecto -->
+    <link rel="stylesheet" href="./estilos/tipografias.css" />
+    <!-- Sistema visual propio: variables, componentes y pantallas -->
+    <link rel="stylesheet" href="./estilos/base.css" />
+    <link rel="stylesheet" href="./estilos/componentes.css" />
+    <link rel="stylesheet" href="./estilos/pantallas.css" />
+    <!-- Estilos propios de esta pantalla -->
+    <link rel="stylesheet" href="./estilos/foros.css" />
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-tinta position-absolute" href="#contenido">
+      Saltar al contenido principal
+    </a>
+
+    <!-- ============================================================
+         CABECERA
+         Encabezado con logo, formulario de inicio de sesión y botón
+         de registro (según el requerimiento de la página de inicio).
+         ============================================================ -->
+    <header class="cabecera">
+      <div class="contenedor">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap py-2">
+          <a class="marca" href="./index.html">
+            <span class="marca-marca" aria-hidden="true"></span>
+            <span class="marca-texto">
+              Portal de Trabajo
+              <small>Bolsa de empleo</small>
+            </span>
+          </a>
+
+          <!-- Navegación principal: se marca sola según el archivo abierto -->
+          <nav class="nav-principal d-none d-lg-flex" aria-label="Secciones del portal">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+          </nav>
+
+          <!-- Acceso: maqueta, no valida credenciales -->
+          <form class="acceso d-none d-lg-flex" data-acceso novalidate>
+            <input class="acceso-campo" type="email" placeholder="Correo" aria-label="Correo electrónico" />
+            <input class="acceso-campo" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <button class="btn btn-tinta btn-sm" type="submit">Entrar</button>
+            <a class="btn btn-linea btn-sm" href="./perfil.html">Registrarse</a>
+          </form>
+
+          <button
+            class="btn btn-tinta btn-sm d-lg-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menuMovil"
+            aria-expanded="false"
+            aria-controls="menuMovil"
+          >
+            Menú
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú para pantallas pequeñas -->
+      <div class="collapse menu-desplegable" id="menuMovil">
+        <div class="contenedor py-3">
+          <nav class="nav flex-column" aria-label="Secciones del portal (móvil)">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+            <a class="nav-link" href="./admin.html">Administración</a>
+          </nav>
+          <hr class="filete my-3" />
+          <form class="gap-2 d-flex flex-column" data-acceso novalidate>
+            <input class="form-control" type="email" placeholder="Correo electrónico" aria-label="Correo electrónico" />
+            <input class="form-control" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <div class="d-flex gap-2">
+              <button class="btn btn-tinta flex-fill" type="submit">Entrar</button>
+              <a class="btn btn-linea flex-fill" href="./perfil.html">Registrarse</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <!-- ============================================================
+           CABECERA DE PÁGINA
+           Título del foro y texto explicativo. Las migas de pan
+           sitúan al usuario dentro del portal.
+           ============================================================ -->
+      <section class="pagina-cabecera">
+        <div class="contenedor">
+          <nav class="migas" aria-label="Migas de pan">
+            <a href="./index.html">Inicio</a> &raquo; Foros
+          </nav>
+          <h1>Foros de discusión</h1>
+          <p class="lead mb-0">
+            El espacio del portal para compartir experiencia con otros profesionales:
+            salarios, entrevistas, primer empleo y seguridad laboral. Plantead una
+            consulta y ayudad a quien viene detrás.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           CUERPO DEL FORO
+           Rejilla de dos columnas: categorías y cifras a la izquierda;
+           listado de temas y publicación de hilos a la derecha.
+           ============================================================ -->
+      <section class="seccion-ajustada">
+        <div class="contenedor">
+          <div class="foro-rejilla">
+
+            <!-- ---------- Columna izquierda ---------- -->
+            <aside>
+              <!-- Panel de categorías: filas pulsables que filtran la lista.
+                   Los contadores de temas los pinta js/foros.js -->
+              <div class="panel">
+                <div class="panel-cabecera">
+                  <h3>Categorías</h3>
+                </div>
+                <div id="listaCategorias">
+                  <button class="categoria-foro activo" data-cat="" type="button">
+                    <span class="disco" aria-hidden="true">T</span>
+                    Todos los temas
+                    <span class="contador" id="conteoTodos"></span>
+                  </button>
+                  <button class="categoria-foro" data-cat="Tecnología" type="button">
+                    <span class="disco" aria-hidden="true">TE</span>
+                    Tecnología
+                    <span class="contador"></span>
+                  </button>
+                  <button class="categoria-foro" data-cat="Salud" type="button">
+                    <span class="disco" aria-hidden="true">SA</span>
+                    Salud
+                    <span class="contador"></span>
+                  </button>
+                  <button class="categoria-foro" data-cat="Primer empleo" type="button">
+                    <span class="disco" aria-hidden="true">PR</span>
+                    Primer empleo
+                    <span class="contador"></span>
+                  </button>
+                  <button class="categoria-foro" data-cat="Diseño" type="button">
+                    <span class="disco" aria-hidden="true">DI</span>
+                    Diseño
+                    <span class="contador"></span>
+                  </button>
+                  <button class="categoria-foro" data-cat="Seguridad laboral" type="button">
+                    <span class="disco" aria-hidden="true">SE</span>
+                    Seguridad laboral
+                    <span class="contador"></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Cifras del foro: valores estáticos de ejemplo, solo decorativos -->
+              <div class="panel mt-3">
+                <div class="panel-cabecera">
+                  <h3>El foro en cifras</h3>
+                </div>
+                <div class="panel-cuerpo">
+                  <div class="for-cifra">
+                    <span class="disco" aria-hidden="true">1</span>
+                    <span>128 temas abiertos</span>
+                  </div>
+                  <div class="for-cifra">
+                    <span class="disco" aria-hidden="true">2</span>
+                    <span>1.940 respuestas</span>
+                  </div>
+                  <div class="for-cifra mb-0">
+                    <span class="disco" aria-hidden="true">3</span>
+                    <span>342 miembros activos</span>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <!-- ---------- Columna derecha ---------- -->
+            <div>
+              <!-- Barra de resultados: recuento de temas, buscador en vivo
+                   y botón para abrir el formulario de un tema nuevo -->
+              <div class="barra-resultados">
+                <div>
+                  <h2 class="mb-1">Temas recientes</h2>
+                  <p class="datos texto-tenue mb-0" id="contadorTemas">6 temas</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                  <input
+                    type="search"
+                    id="buscarTema"
+                    class="form-control"
+                    placeholder="Buscar en el foro"
+                    aria-label="Buscar en el foro"
+                    style="max-width: 16rem"
+                  />
+                  <button class="btn btn-bermellon" id="btnNuevoTema" type="button">
+                    <span class="punto" aria-hidden="true"></span>
+                    Nuevo tema
+                  </button>
+                </div>
+              </div>
+
+              <!-- Formulario para abrir un tema nuevo: aparece y se oculta
+                   con el botón de arriba (js/foros.js) -->
+              <div class="panel for-panel-nuevo" id="panelNuevoTema" hidden>
+                <div class="panel-cabecera">
+                  <h3>Abrir un nuevo tema</h3>
+                </div>
+                <div class="panel-cuerpo">
+                  <form id="formTema" novalidate>
+                    <div class="for-campo mb-3">
+                      <label class="form-label" for="fTitulo">Título del tema</label>
+                      <input class="form-control" id="fTitulo" type="text" placeholder="Escribe una pregunta clara y concreta" required />
+                      <span class="campo-error">El título es obligatorio.</span>
+                    </div>
+                    <div class="for-campo mb-3">
+                      <label class="form-label" for="fCategoria">Categoría</label>
+                      <select class="form-select" id="fCategoria">
+                        <option>Tecnología</option>
+                        <option>Salud</option>
+                        <option>Primer empleo</option>
+                        <option>Diseño</option>
+                        <option>Seguridad laboral</option>
+                      </select>
+                    </div>
+                    <div class="for-campo">
+                      <label class="form-label" for="fMensaje">Mensaje</label>
+                      <textarea
+                        class="form-control"
+                        id="fMensaje"
+                        placeholder="Cuenta tu consulta o experiencia"
+                        required
+                      ></textarea>
+                      <span class="campo-error">El mensaje es obligatorio.</span>
+                    </div>
+                    <div class="for-acciones">
+                      <button class="btn btn-bermellon" type="submit">Publicar tema</button>
+                      <button class="btn btn-linea" id="btnCancelarTema" type="button">Cancelar</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Listado de temas: lo repinta por completo js/foros.js -->
+              <div id="listaTemas"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================================================
+         PIE DE PÁGINA
+         ============================================================ -->
+    <footer class="pie mt-auto">
+      <div class="contenedor">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <a class="marca mb-3" href="./index.html">
+              <span class="marca-marca" aria-hidden="true"></span>
+              <span class="marca-texto">
+                Portal de Trabajo
+                <small>Bolsa de empleo</small>
+              </span>
+            </a>
+            <p style="max-width: 34ch; font-size: 0.9rem">
+              Prototipo académico de portal de búsqueda de empleo. Todas las empresas,
+              personas y cifras mostradas son ficticias.
+            </p>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Candidatos</h5>
+            <a href="./busqueda.html">Buscar empleos</a><br />
+            <a href="./perfil.html">Mi perfil</a><br />
+            <a href="./recursos.html">Recursos</a><br />
+            <a href="./foros.html">Foros</a>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Empresas</h5>
+            <a href="./empresas.html">Publicar oferta</a><br />
+            <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
+            <a href="./empresas.html#directorio">Directorio</a><br />
+            <a href="./admin.html">Administración</a>
+          </div>
+          <div class="col-lg-4">
+            <h5>Boletín de empleo</h5>
+            <p style="font-size: 0.9rem; max-width: 32ch">
+              Recibe las ofertas de la semana según tu sector.
+            </p>
+            <form class="d-flex gap-2" data-accion="suscripcion" data-mensaje="Suscripción registrada. Recibirás el próximo boletín el lunes." data-tono="exito">
+              <input class="form-control" type="email" placeholder="Tu correo" aria-label="Correo para el boletín" />
+              <button class="btn btn-bermellon" type="submit">Suscribirme</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="pie-registro">
+          <span>© <span data-anio>2026</span> Portal de Trabajo · Proyecto académico</span>
+          <span>Ing. José Emerson Aguilar · Segundo período</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
+    <script src="./js/datos.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="./js/foros.js"></script>
+  </body>
+</html>

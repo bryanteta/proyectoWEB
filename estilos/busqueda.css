@@ -1,0 +1,195 @@
+/* =============================================================
+   PORTAL DE TRABAJO — estilos específicos de búsqueda
+   -------------------------------------------------------------
+   Clases propias con prefijo .br- para no chocar con las
+   existentes. Se aprovechan las clases de pantallas.css
+   siempre que sea posible.
+   ============================================================= */
+
+/* ---------------------------------------------------------------
+   Ajustes para la rejilla de resultados en búsqueda
+   --------------------------------------------------------------- */
+.rejilla-resultados {
+  align-items: start;
+}
+
+/* Contenedor de contenido de resultados */
+.resultados-contenido {
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------
+   Panel de filtros
+   --------------------------------------------------------------- */
+.filtros .panel {
+  position: sticky;
+  top: calc(var(--cabecera-alto) + 1.25rem);
+}
+
+.filtros .panel-cabecera h3 {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+/* Grupos de filtros: ya definidos en pantallas.css, 
+   se añaden pequeños ajustes para mejor espaciado */
+.filtros-grupo .form-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.filtros-grupo .form-check-input {
+  margin-top: 0.25rem;
+  flex: none;
+}
+
+.filtros-grupo .form-check-label {
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+/* Output del range de salario */
+#salarioOutput {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-family: var(--fuente-mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--tinta);
+  padding: 0.25rem 0.5rem;
+  background: var(--papel-banda);
+  border: 1px solid var(--linea);
+}
+
+/* Select de ordenamiento en barra de resultados */
+.barra-resultados .form-select {
+  width: auto;
+  min-width: 11rem;
+  padding: 0.45rem 2rem 0.45rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+/* Label de ordenamiento */
+.barra-resultados .form-label {
+  font-family: var(--fuente-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------
+   Listado de resultados
+   --------------------------------------------------------------- */
+#listaResultados {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cada resultado usa las clases de pantallas.css:
+   .resultado, .resultado-destacado, .marca-empresa, 
+   .resultado-cuerpo, .resultado-meta, .resultado-lado,
+   .resultado-salario, .resultado-fecha */
+
+/* Asegura que los enlaces del título tengan el estilo correcto */
+.resultado-cuerpo h3 a {
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.resultado-cuerpo h3 a:hover {
+  color: var(--bermellon);
+}
+
+/* ---------------------------------------------------------------
+   Estado vacío
+   --------------------------------------------------------------- */
+.vacio {
+  background: var(--papel-hueso);
+  margin-top: 1.5rem;
+}
+
+.vacio h3 {
+  margin-bottom: 0.75rem;
+}
+
+.vacio p {
+  max-width: 40ch;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1.5rem;
+}
+
+/* ---------------------------------------------------------------
+   Paginación
+   --------------------------------------------------------------- */
+.paginacion {
+  gap: 0;
+}
+
+.paginacion .page-item .page-link {
+  cursor: pointer;
+  user-select: none;
+}
+
+.paginacion .page-item.desactivado .page-link {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------
+   Ajustes responsivos específicos para búsqueda
+   --------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+  .filtros .panel {
+    position: static;
+    margin-bottom: 2rem;
+  }
+  
+  .rejilla-resultados {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .barra-resultados {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .barra-resultados > div {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .barra-resultados .form-select {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .resultado {
+    grid-template-columns: auto 1fr;
+  }
+  
+  .resultado-lado {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .resultado-lado {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .resultado-lado .btn {
+    align-self: stretch;
+  }
+}

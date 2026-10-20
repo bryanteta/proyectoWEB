@@ -1,0 +1,113 @@
+/* =============================================================
+   PORTAL DE TRABAJO — pantalla de Recursos
+   -------------------------------------------------------------
+   Complementos visuales propios de recursos.html. Todas las
+   clases llevan el prefijo .res- para no chocar con las hojas
+   existentes; no se modifica ningún CSS compartido.
+   ============================================================= */
+
+/* ---------------------------------------------------------------
+   Filtros en forma de chips
+   Etiqueta mono a la izquierda y lista de chips a la derecha.
+   --------------------------------------------------------------- */
+.res-filtros {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.res-filtros-etiqueta {
+  font-family: var(--fuente-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tinta-tenue);
+  min-width: 10.5rem;
+}
+
+/* Los chips de filtro son botones: se adapta el cursor */
+.res-filtros .etiqueta-chip { cursor: pointer; }
+
+/* Contador de resultados: separa los filtros de la rejilla */
+.res-contador { margin: 1.5rem 0 1rem; }
+
+/* ---------------------------------------------------------------
+   Recurso destacado
+   Espaciado de los chips de la ficha del destacado.
+   --------------------------------------------------------------- */
+.res-destacado-chips { gap: 0.5rem; }
+
+/* ---------------------------------------------------------------
+   Botón "Leer →" del pie de cada tarjeta
+   Apariencia de enlace de acento, pero con comportamiento real
+   de botón (abre el modal de lectura).
+   --------------------------------------------------------------- */
+.res-leer {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: var(--fuente-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.res-leer:hover { color: var(--bermellon-hondo); text-decoration: underline; }
+
+/* ---------------------------------------------------------------
+   Modal de lectura
+   Se ajustan las variables internas de Bootstrap al sistema
+   visual: fondo papel-hueso, filetes del proyecto y esquinas
+   rectas (la regla global ya elimina los radios).
+   --------------------------------------------------------------- */
+.res-modal {
+  --bs-modal-bg: var(--papel-hueso);
+  --bs-modal-border-color: var(--linea);
+  --bs-modal-border-radius: 0;
+  --bs-modal-box-shadow: var(--sombra-dura-alta);
+  border: var(--filete);
+  box-shadow: var(--sombra-dura-alta);
+}
+
+/* Cabecera: chip de tipo encima del título, sin filete inferior fuerte */
+.res-modal-cabecera {
+  border-bottom: var(--filete);
+  padding: 1.35rem 1.5rem;
+}
+
+.res-modal .modal-body { padding: 1.5rem; }
+.res-modal .modal-footer { border-top: var(--filete); padding: 1rem 1.5rem; }
+
+/* Ficha del recurso: cuadrícula de pares autor / tipo / duración */
+.res-ficha {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--linea);
+  border: var(--filete);
+  margin-top: 1.35rem;
+}
+
+.res-ficha > div { background: var(--papel-hueso); padding: 0.85rem 1rem; }
+
+.res-ficha span {
+  display: block;
+  font-family: var(--fuente-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tinta-tenue);
+  margin-bottom: 0.2rem;
+}
+
+.res-ficha strong { font-size: 0.9rem; font-weight: 600; }
+
+/* ---------------------------------------------------------------
+   Ajustes por pantalla
+   --------------------------------------------------------------- */
+@media (max-width: 575.98px) {
+  .res-filtros-etiqueta { min-width: 0; width: 100%; }
+  .res-ficha { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Módulo empresarial — Portal de Trabajo</title>
+    <meta
+      name="description"
+      content="Módulo empresarial del portal de empleo: publica vacantes, gestiona tus ofertas, revisa postulaciones y consulta el directorio y las valoraciones de empresas."
+    />
+    <link rel="icon" type="image/svg+xml" href="./media/favicon.svg" />
+
+    <!-- Bootstrap local (funciona sin conexión) -->
+    <link rel="stylesheet" href="./estilos/vendor/bootstrap.min.css" />
+    <!-- Tipografías descargadas al proyecto -->
+    <link rel="stylesheet" href="./estilos/tipografias.css" />
+    <!-- Sistema visual propio: variables, componentes y pantallas -->
+    <link rel="stylesheet" href="./estilos/base.css" />
+    <link rel="stylesheet" href="./estilos/componentes.css" />
+    <link rel="stylesheet" href="./estilos/pantallas.css" />
+    <!-- Estilos exclusivos de esta pantalla (prefijo .emp-) -->
+    <link rel="stylesheet" href="./estilos/empresas.css" />
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-tinta position-absolute" href="#contenido">
+      Saltar al contenido principal
+    </a>
+
+    <!-- ============================================================
+         CABECERA
+         Encabezado con logo, formulario de inicio de sesión y botón
+         de registro (según el requerimiento de la página de inicio).
+         ============================================================ -->
+    <header class="cabecera">
+      <div class="contenedor">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap py-2">
+          <a class="marca" href="./index.html">
+            <span class="marca-marca" aria-hidden="true"></span>
+            <span class="marca-texto">
+              Portal de Trabajo
+              <small>Bolsa de empleo</small>
+            </span>
+          </a>
+
+          <!-- Navegación principal: se marca sola según el archivo abierto -->
+          <nav class="nav-principal d-none d-lg-flex" aria-label="Secciones del portal">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+          </nav>
+
+          <!-- Acceso: maqueta, no valida credenciales -->
+          <form class="acceso d-none d-lg-flex" data-acceso novalidate>
+            <input class="acceso-campo" type="email" placeholder="Correo" aria-label="Correo electrónico" />
+            <input class="acceso-campo" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <button class="btn btn-tinta btn-sm" type="submit">Entrar</button>
+            <a class="btn btn-linea btn-sm" href="./perfil.html">Registrarse</a>
+          </form>
+
+          <button
+            class="btn btn-tinta btn-sm d-lg-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menuMovil"
+            aria-expanded="false"
+            aria-controls="menuMovil"
+          >
+            Menú
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú para pantallas pequeñas -->
+      <div class="collapse menu-desplegable" id="menuMovil">
+        <div class="contenedor py-3">
+          <nav class="nav flex-column" aria-label="Secciones del portal (móvil)">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+            <a class="nav-link" href="./admin.html">Administración</a>
+          </nav>
+          <hr class="filete my-3" />
+          <form class="gap-2 d-flex flex-column" data-acceso novalidate>
+            <input class="form-control" type="email" placeholder="Correo electrónico" aria-label="Correo electrónico" />
+            <input class="form-control" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <div class="d-flex gap-2">
+              <button class="btn btn-tinta flex-fill" type="submit">Entrar</button>
+              <a class="btn btn-linea flex-fill" href="./perfil.html">Registrarse</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <!-- ============================================================
+           CABECERA DE PÁGINA
+           Introducción al módulo: qué pueden hacer las empresas aquí.
+           ============================================================ -->
+      <section class="pagina-cabecera">
+        <div class="contenedor">
+          <nav class="migas" aria-label="Migas de pan">
+            <a href="./index.html">Inicio</a> / Módulo empresarial
+          </nav>
+          <h1>Módulo empresarial</h1>
+          <p class="lead mb-0">
+            El espacio de las empresas del portal: publica ofertas de trabajo, controla
+            el estado de tus vacantes, revisa a las personas postuladas y mantén al día
+            la ficha y las valoraciones de tu organización.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           GESTIÓN DEL MÓDULO
+           Rejilla de dos columnas: índice lateral con las cinco
+           secciones y, a la derecha, el panel de la sección activa.
+           Solo un panel es visible a la vez (js/empresas.js alterna
+           el atributo hidden); los enlaces con ancla de index.html
+           (#postulaciones, #directorio, #valoraciones) abren su panel.
+           ============================================================ -->
+      <section class="seccion-ajustada">
+        <div class="contenedor">
+          <div class="gestion-rejilla">
+
+            <!-- Índice lateral: letras circulares + nombre de sección -->
+            <nav class="indice-lateral" aria-label="Secciones del módulo">
+              <button class="activo" type="button" data-seccion="publicar" aria-current="true">
+                <span class="disco" aria-hidden="true">A</span>
+                Publicar vacante
+              </button>
+              <button type="button" data-seccion="ofertas">
+                <span class="disco" aria-hidden="true">B</span>
+                Mis ofertas
+              </button>
+              <button type="button" data-seccion="postulaciones">
+                <span class="disco" aria-hidden="true">C</span>
+                Postulaciones
+              </button>
+              <button type="button" data-seccion="directorio">
+                <span class="disco" aria-hidden="true">D</span>
+                Directorio de empresas
+              </button>
+              <button type="button" data-seccion="valoraciones">
+                <span class="disco" aria-hidden="true">E</span>
+                Valoraciones
+              </button>
+            </nav>
+
+            <!-- ============================================================
+                 SECCIÓN A — PUBLICAR VACANTE
+                 Formulario de publicación con validación de campos
+                 obligatorios y habilidades dinámicas en chips.
+                 ============================================================ -->
+            <div id="panelPublicar" class="panel-gestion" data-panel="publicar">
+              <div class="panel">
+                <div class="panel-cabecera">
+                  <h2>Publicar una nueva oferta</h2>
+                  <span class="datos texto-tenue">Los campos con * son obligatorios</span>
+                </div>
+                <div class="panel-cuerpo">
+                  <form id="formPublicar" novalidate>
+                    <div class="row g-3">
+                      <!-- Identificación del puesto -->
+                      <div class="col-md-8">
+                        <label class="form-label" for="fTitulo">Título del puesto <span class="texto-acento">*</span></label>
+                        <input
+                          class="form-control"
+                          id="fTitulo"
+                          type="text"
+                          required
+                          placeholder="Ej. Analista de calidad"
+                        />
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label" for="fContrato">Tipo de contrato</label>
+                        <select class="form-select" id="fContrato">
+                          <option>Indefinido</option>
+                          <option>Por horas</option>
+                          <option>Por proyecto</option>
+                          <option>Prácticas</option>
+                        </select>
+                      </div>
+
+                      <!-- Lugar y forma de trabajo -->
+                      <div class="col-md-4">
+                        <label class="form-label" for="fUbicacion">Ubicación</label>
+                        <select class="form-select" id="fUbicacion">
+                          <option>Quito</option>
+                          <option>Guayaquil</option>
+                          <option>Cuenca</option>
+                          <option>Loja</option>
+                          <option>Ambato</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label" for="fModalidad">Modalidad</label>
+                        <select class="form-select" id="fModalidad">
+                          <option>Presencial</option>
+                          <option>Híbrido</option>
+                          <option>Remoto</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label" for="fNivel">Nivel</label>
+                        <select class="form-select" id="fNivel">
+                          <option>Estudiante</option>
+                          <option>Junior</option>
+                          <option>Mid level</option>
+                          <option>Semi senior</option>
+                          <option>Senior</option>
+                        </select>
+                      </div>
+
+                      <!-- Sector, salario y contacto -->
+                      <div class="col-md-4">
+                        <label class="form-label" for="fSector">Sector</label>
+                        <select class="form-select" id="fSector">
+                          <option>Tecnología</option>
+                          <option>Finanzas</option>
+                          <option>Diseño</option>
+                          <option>Agroindustria</option>
+                          <option>Salud</option>
+                          <option>Logística</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label" for="fSalario">Salario mínimo (USD)</label>
+                        <input
+                          class="form-control"
+                          id="fSalario"
+                          type="number"
+                          min="0"
+                          placeholder="700"
+                        />
+                      </div>
+                      <div class="col-md-9">
+                        <label class="form-label" for="fCorreo">Contacto <span class="texto-acento">*</span></label>
+                        <input
+                          class="form-control"
+                          id="fCorreo"
+                          type="email"
+                          required
+                          placeholder="talento@empresa.ec"
+                        />
+                      </div>
+
+                      <!-- Descripción escrita de la oferta -->
+                      <div class="col-12">
+                        <label class="form-label" for="fRequisitos">Requisitos <span class="texto-acento">*</span></label>
+                        <textarea
+                          class="form-control"
+                          id="fRequisitos"
+                          rows="4"
+                          required
+                          placeholder="Uno por línea"
+                        ></textarea>
+                      </div>
+                      <div class="col-12">
+                        <label class="form-label" for="fDescripcion">Descripción <span class="texto-acento">*</span></label>
+                        <textarea class="form-control" id="fDescripcion" rows="5" required></textarea>
+                      </div>
+
+                      <!-- Habilidades: chips predefinidos + campo para añadir más.
+                           Cada chip lleva su botón × para quitarlo (js/empresas.js). -->
+                      <div class="col-12">
+                        <label class="form-label" for="fHabilidad">Habilidades requeridas</label>
+                        <div class="chips emp-chips" id="chipsHabilidad">
+                          <button class="btn btn-linea btn-sm" id="btnAgregarHabilidad" type="button">
+                            Agregar habilidad
+                          </button>
+                          <input
+                            class="form-control emp-chip-entrada"
+                            id="fHabilidad"
+                            type="text"
+                            placeholder="Añadir habilidad"
+                          />
+                        </div>
+                        <p class="datos texto-tenue mt-2 mb-0">
+                          Pulsa × sobre un chip para quitar esa habilidad de la oferta.
+                        </p>
+                      </div>
+
+                      <!-- Acciones del formulario -->
+                      <div class="col-12 d-flex gap-2 flex-wrap">
+                        <button class="btn btn-bermellon" type="submit">
+                          <span class="punto" aria-hidden="true"></span>
+                          Publicar oferta
+                        </button>
+                        <button class="btn btn-linea" type="reset">Limpiar</button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- ============================================================
+                 SECCIÓN B — MIS OFERTAS
+                 Tabla con las ofertas propias: enlace al detalle, contador
+                 de postulantes y cierre o reapertura de la vacante.
+                 ============================================================ -->
+            <div id="panelOfertas" class="panel-gestion" data-panel="ofertas" hidden>
+              <div class="seccion-cabecera mb-3">
+                <div>
+                  <h2>Mis ofertas publicadas</h2>
+                  <p class="datos texto-tenue mb-0" id="resumenOfertas"></p>
+                </div>
+              </div>
+              <div class="tabla-envoltura">
+                <table class="tabla">
+                  <caption class="visually-hidden">Ofertas publicadas por la empresa</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Oferta</th>
+                      <th scope="col">Publicada</th>
+                      <th scope="col">Postulantes</th>
+                      <th scope="col">Estado</th>
+                      <th scope="col">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cuerpoOfertas"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- ============================================================
+                 SECCIÓN C — POSTULACIONES
+                 Fichas de las personas postuladas a la oferta elegida,
+                 con estado, descarga de currículum y preselección.
+                 ============================================================ -->
+            <div id="postulaciones" class="panel-gestion" data-panel="postulaciones" hidden>
+              <h2>Postulaciones recibidas</h2>
+              <p class="texto-suave">
+                Elige una de tus ofertas para ver quién ha postulado. Desde aquí puedes
+                descargar el currículum o mover a la persona a la lista de preseleccionados.
+              </p>
+              <div class="emp-selector">
+                <label class="form-label" for="selectOferta">Oferta</label>
+                <select class="form-select" id="selectOferta"></select>
+              </div>
+              <div id="listaCandidatos"></div>
+            </div>
+
+            <!-- ============================================================
+                 SECCIÓN D — DIRECTORIO DE EMPRESAS
+                 Fichas del directorio con búsqueda en vivo, edición
+                 simulada y baja o reactivación de empresas.
+                 ============================================================ -->
+            <div id="directorio" class="panel-gestion" data-panel="directorio" hidden>
+              <h2>Mantenimiento de empresas</h2>
+              <p class="texto-suave">
+                Consulta las fichas de las empresas registradas, edita sus datos o da de
+                baja una organización que ya no opera en el portal.
+              </p>
+              <div class="emp-buscador">
+                <label class="form-label" for="buscarEmpresa">Buscar empresa</label>
+                <input
+                  class="form-control"
+                  id="buscarEmpresa"
+                  type="search"
+                  placeholder="Nombre, rubro o ciudad"
+                />
+                <p class="datos texto-tenue mt-2 mb-0" id="cuentaEmpresas"></p>
+              </div>
+              <div class="row g-3" id="rejillaEmpresas"></div>
+            </div>
+
+            <!-- ============================================================
+                 SECCIÓN E — VALORACIONES
+                 Cuadros de nota por empresa con reseñas y acceso
+                 a las ofertas del sector correspondiente.
+                 ============================================================ -->
+            <div id="valoraciones" class="panel-gestion" data-panel="valoraciones" hidden>
+              <h2>Valoraciones de empresas</h2>
+              <p class="texto-suave">
+                Promedio de las reseñas que las personas usuarias han dejado sobre cada
+                empresa. Una buena valoración mejora la respuesta a tus ofertas.
+              </p>
+              <div class="row g-3" id="rejillaValoraciones"></div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================================================
+         PIE DE PÁGINA
+         ============================================================ -->
+    <footer class="pie mt-auto">
+      <div class="contenedor">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <a class="marca mb-3" href="./index.html">
+              <span class="marca-marca" aria-hidden="true"></span>
+              <span class="marca-texto">
+                Portal de Trabajo
+                <small>Bolsa de empleo</small>
+              </span>
+            </a>
+            <p style="max-width: 34ch; font-size: 0.9rem">
+              Prototipo académico de portal de búsqueda de empleo. Todas las empresas,
+              personas y cifras mostradas son ficticias.
+            </p>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Candidatos</h5>
+            <a href="./busqueda.html">Buscar empleos</a><br />
+            <a href="./perfil.html">Mi perfil</a><br />
+            <a href="./recursos.html">Recursos</a><br />
+            <a href="./foros.html">Foros</a>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Empresas</h5>
+            <a href="./empresas.html">Publicar oferta</a><br />
+            <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
+            <a href="./empresas.html#directorio">Directorio</a><br />
+            <a href="./admin.html">Administración</a>
+          </div>
+          <div class="col-lg-4">
+            <h5>Boletín de empleo</h5>
+            <p style="font-size: 0.9rem; max-width: 32ch">
+              Recibe las ofertas de la semana según tu sector.
+            </p>
+            <form class="d-flex gap-2" data-accion="suscripcion" data-mensaje="Suscripción registrada. Recibirás el próximo boletín el lunes." data-tono="exito">
+              <input class="form-control" type="email" placeholder="Tu correo" aria-label="Correo para el boletín" />
+              <button class="btn btn-bermellon" type="submit">Suscribirme</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="pie-registro">
+          <span>© <span data-anio>2026</span> Portal de Trabajo · Proyecto académico</span>
+          <span>Ing. José Emerson Aguilar · Segundo período</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
+    <script src="./js/datos.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="./js/empresas.js"></script>
+  </body>
+</html>

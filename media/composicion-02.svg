@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 200" width="260" height="200" role="img" aria-label="Ilustración de búsqueda: lupa sobre cuadrícula">
+  <!--
+    ILUSTRACIÓN DE BÚSQUEDA
+    Lupa dibujada con trazo geométrico: el mango es un cuadrado
+    y la lente un círculo, manteniendo el vocabulario visual.
+  -->
+  <g stroke="#d9d0bc" stroke-width="1">
+    <path d="M10 10h240v180H10z" fill="none"/>
+  </g>
+
+  <!-- cuadrícula de fondo -->
+  <g stroke="#e6dfcd" stroke-width="1">
+    <path d="M40 30h180M40 70h180M40 110h180M40 150h180" fill="none"/>
+    <path d="M40 30v140M90 30v140M140 30v140M190 30v140" fill="none"/>
+  </g>
+
+  <!-- lente -->
+  <circle cx="118" cy="92" r="46" fill="#fdfbf5" stroke="#191510" stroke-width="2.4"/>
+  <circle cx="118" cy="92" r="46" fill="none" stroke="#cf3b1a" stroke-width="2.4"
+          stroke-dasharray="46 243" stroke-linecap="round" transform="rotate(-45 118 92)"/>
+
+  <!-- mango: cuadrado girado -->
+  <rect x="146" y="120" width="46" height="16" fill="#191510" transform="rotate(45 146 120)"/>
+
+  <!-- resultado encontrado dentro de la lente -->
+  <rect x="96" y="70" width="44" height="12" fill="#191510"/>
+  <rect x="96" y="88" width="30" height="8" fill="#b8ab90"/>
+  <circle cx="128" cy="108" r="6" fill="#cf3b1a"/>
+</svg>

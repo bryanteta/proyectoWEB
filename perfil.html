@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mi perfil — Portal de Trabajo</title>
+    <meta
+      name="description"
+      content="Prototipo de portal de empleo: gestiona tus datos personales, currículum, alertas de empleo, postulaciones y valoraciones desde tu perfil."
+    />
+    <link rel="icon" type="image/svg+xml" href="./media/favicon.svg" />
+
+    <!-- Bootstrap local (funciona sin conexión) -->
+    <link rel="stylesheet" href="./estilos/vendor/bootstrap.min.css" />
+    <!-- Tipografías descargadas al proyecto -->
+    <link rel="stylesheet" href="./estilos/tipografias.css" />
+    <!-- Sistema visual propio: variables, componentes y pantallas -->
+    <link rel="stylesheet" href="./estilos/base.css" />
+    <link rel="stylesheet" href="./estilos/componentes.css" />
+    <link rel="stylesheet" href="./estilos/pantallas.css" />
+    <!-- Ajustes propios de esta pantalla (solo clases .per-) -->
+    <link rel="stylesheet" href="./estilos/perfil.css" />
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-tinta position-absolute" href="#contenido">
+      Saltar al contenido principal
+    </a>
+
+    <!-- ============================================================
+         CABECERA
+         Encabezado con logo, formulario de inicio de sesión y botón
+         de registro (según el requerimiento de la página de inicio).
+         ============================================================ -->
+    <header class="cabecera">
+      <div class="contenedor">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap py-2">
+          <a class="marca" href="./index.html">
+            <span class="marca-marca" aria-hidden="true"></span>
+            <span class="marca-texto">
+              Portal de Trabajo
+              <small>Bolsa de empleo</small>
+            </span>
+          </a>
+
+          <!-- Navegación principal: se marca sola según el archivo abierto -->
+          <nav class="nav-principal d-none d-lg-flex" aria-label="Secciones del portal">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+          </nav>
+
+          <!-- Acceso: maqueta, no valida credenciales -->
+          <form class="acceso d-none d-lg-flex" data-acceso novalidate>
+            <input class="acceso-campo" type="email" placeholder="Correo" aria-label="Correo electrónico" />
+            <input class="acceso-campo" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <button class="btn btn-tinta btn-sm" type="submit">Entrar</button>
+            <a class="btn btn-linea btn-sm" href="./perfil.html">Registrarse</a>
+          </form>
+
+          <button
+            class="btn btn-tinta btn-sm d-lg-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menuMovil"
+            aria-expanded="false"
+            aria-controls="menuMovil"
+          >
+            Menú
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú para pantallas pequeñas -->
+      <div class="collapse menu-desplegable" id="menuMovil">
+        <div class="contenedor py-3">
+          <nav class="nav flex-column" aria-label="Secciones del portal (móvil)">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+            <a class="nav-link" href="./admin.html">Administración</a>
+          </nav>
+          <hr class="filete my-3" />
+          <form class="gap-2 d-flex flex-column" data-acceso novalidate>
+            <input class="form-control" type="email" placeholder="Correo electrónico" aria-label="Correo electrónico" />
+            <input class="form-control" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <div class="d-flex gap-2">
+              <button class="btn btn-tinta flex-fill" type="submit">Entrar</button>
+              <a class="btn btn-linea flex-fill" href="./perfil.html">Registrarse</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <!-- ============================================================
+           CABECERA DEL PERFIL
+           Identidad de la persona usuaria: avatar circular con
+           iniciales, nombre, ocupación y estado de disponibilidad.
+           A la derecha, las acciones principales de la cuenta.
+           ============================================================ -->
+      <section class="perfil-cabecera">
+        <div class="contenedor">
+          <div class="d-flex align-items-center gap-3 flex-wrap">
+            <!-- Avatar circular: el círculo es el lenguaje de acento -->
+            <span class="avatar avatar-lg">AM</span>
+
+            <div class="flex-grow-1" style="min-width: 14rem">
+              <h1>Ana Belén Morales</h1>
+              <p class="texto-suave mb-2">Ingeniera en Sistemas · Quito</p>
+              <div class="chips">
+                <span class="etiqueta-chip">
+                  <span class="punto punto-verde" aria-hidden="true"></span>
+                  Disponible para trabajar
+                </span>
+                <span class="etiqueta-chip">Perfil visto 128 veces</span>
+              </div>
+            </div>
+
+            <!-- Acciones de la cuenta (responden con aviso, js/main.js) -->
+            <div class="vacante-acciones">
+              <button
+                class="btn btn-bermellon"
+                type="button"
+                data-accion="editar"
+                data-mensaje="Modo edición activado en la demostración."
+              >
+                Editar perfil
+              </button>
+              <button
+                class="btn btn-linea"
+                type="button"
+                data-accion="compartir"
+                data-mensaje="Enlace del perfil copiado (demostración)."
+              >
+                Compartir perfil
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           CUERPO DEL PERFIL
+           Dos columnas: a la izquierda las pestañas con su panel
+           activo; a la derecha un aside con progreso, consejo y
+           llamada a la acción.
+           ============================================================ -->
+      <section class="seccion-ajustada">
+        <div class="contenedor">
+          <div class="perfil-rejilla">
+            <!-- ---------- Columna izquierda ---------- -->
+            <div>
+              <!-- Navegación interna del perfil: cada botón activa su panel -->
+              <ul class="pestanas" role="tablist" aria-label="Secciones del perfil">
+                <li role="presentation">
+                  <button class="pestanas-enlace activo" type="button" role="tab" data-pestana="perfil" aria-selected="true">
+                    Perfil
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button class="pestanas-enlace" type="button" role="tab" data-pestana="curriculum" aria-selected="false">
+                    Currículum
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button class="pestanas-enlace" type="button" role="tab" data-pestana="alertas" aria-selected="false">
+                    Alertas <span class="contador">3</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button class="pestanas-enlace" type="button" role="tab" data-pestana="postulaciones" aria-selected="false">
+                    Postulaciones <span class="contador">4</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button class="pestanas-enlace" type="button" role="tab" data-pestana="estadisticas" aria-selected="false">
+                    Estadísticas
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button class="pestanas-enlace" type="button" role="tab" data-pestana="valoraciones" aria-selected="false">
+                    Mis valoraciones
+                  </button>
+                </li>
+              </ul>
+
+              <!-- ===== Pestaña: Perfil (datos personales) ===== -->
+              <div id="pestanaPerfil" role="tabpanel">
+                <div class="panel">
+                  <div class="panel-cabecera">
+                    <h2>Datos personales</h2>
+                  </div>
+                  <div class="panel-cuerpo">
+                    <form id="formPerfil" novalidate>
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <label class="form-label" for="fNombres">Nombres</label>
+                          <input class="form-control" id="fNombres" name="nombres" type="text" value="Ana Belén Morales" required />
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label" for="fCorreo">Correo electrónico</label>
+                          <input class="form-control" id="fCorreo" name="correo" type="email" value="ana.morales@correo.ec" required />
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label" for="fTelefono">Teléfono</label>
+                          <input class="form-control" id="fTelefono" name="telefono" type="tel" placeholder="+593 98 123 4567" />
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label" for="fCiudad">Ciudad</label>
+                          <select class="form-select" id="fCiudad" name="ciudad">
+                            <option selected>Quito</option>
+                            <option>Guayaquil</option>
+                            <option>Cuenca</option>
+                            <option>Loja</option>
+                            <option>Ambato</option>
+                          </select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label" for="fPerfil">Perfil profesional</label>
+                          <input class="form-control" id="fPerfil" name="perfil" type="text" value="Ingeniera en Sistemas" placeholder="Ej. Ingeniera en Sistemas" />
+                        </div>
+                        <div class="col-12">
+                          <label class="form-label" for="fAcerca">Acerca de mí</label>
+                          <textarea class="form-control" id="fAcerca" name="acerca" placeholder="Cuéntale a las empresas qué buscas..."></textarea>
+                        </div>
+                        <div class="col-12">
+                          <span class="form-label d-block">Habilidades</span>
+                          <!-- Chips existentes; el JS permite añadir y eliminar -->
+                          <div class="chips per-chips" id="listaHabilidades">
+                            <span class="etiqueta-chip" data-valor="React">
+                              React
+                              <button class="per-quitar" type="button" aria-label="Quitar habilidad React">&times;</button>
+                            </span>
+                            <span class="etiqueta-chip" data-valor="SQL">
+                              SQL
+                              <button class="per-quitar" type="button" aria-label="Quitar habilidad SQL">&times;</button>
+                            </span>
+                            <span class="etiqueta-chip" data-valor="Git">
+                              Git
+                              <button class="per-quitar" type="button" aria-label="Quitar habilidad Git">&times;</button>
+                            </span>
+                            <span class="etiqueta-chip" data-valor="Análisis de datos">
+                              Análisis de datos
+                              <button class="per-quitar" type="button" aria-label="Quitar habilidad Análisis de datos">&times;</button>
+                            </span>
+                            <input
+                              class="form-control per-chip-entrada"
+                              id="fHabilidad"
+                              type="text"
+                              placeholder="Escribe una habilidad y pulsa Enter"
+                              aria-label="Nueva habilidad"
+                            />
+                            <button class="btn btn-linea btn-sm" type="button" id="btnHabilidad">Añadir</button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Pie del formulario -->
+                      <div class="mt-4">
+                        <button class="btn btn-bermellon" type="submit">Guardar cambios</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== Pestaña: Currículum (carga simulada) ===== -->
+              <div id="pestanaCurriculum" role="tabpanel" hidden>
+                <div class="panel">
+                  <div class="panel-cabecera">
+                    <h2>Currículum</h2>
+                  </div>
+                  <div class="panel-cuerpo">
+                    <!-- Zona de carga: el disco circular lleva el texto CV -->
+                    <div class="carga-zona" id="zonaCarga">
+                      <span class="disco" aria-hidden="true">CV</span>
+                      <h4>Arrastra tu currículum aquí</h4>
+                      <p class="texto-suave mb-0">PDF o Word, máximo 5 MB</p>
+                      <input type="file" id="inputArchivo" class="visually-hidden" accept=".pdf,.doc,.docx" />
+                      <label for="inputArchivo" class="btn btn-linea mt-2">o selecciona un archivo</label>
+                    </div>
+
+                    <!-- Lista de archivos cargados (una fila de ejemplo) -->
+                    <div id="listaArchivos" class="mt-3">
+                      <div class="archivo-fila">
+                        <span class="disco" aria-hidden="true">PDF</span>
+                        <div class="flex-grow-1">
+                          <strong>curriculum-ana-morales.pdf</strong><br />
+                          <small class="datos texto-tenue">Subido el 12 oct 2026 · 240 KB</small>
+                        </div>
+                        <button class="btn btn-fantasma btn-sm" type="button" data-quitar-archivo>Eliminar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== Pestaña: Alertas de empleo ===== -->
+              <div id="pestanaAlertas" role="tabpanel" hidden>
+                <div class="panel">
+                  <div class="panel-cabecera">
+                    <h2>Alertas de empleo</h2>
+                    <button class="btn btn-linea btn-sm" type="button" id="btnNuevaAlerta">Nueva alerta</button>
+                  </div>
+                  <div class="panel-cuerpo">
+                    <!-- El JS pinta las filas con su interruptor -->
+                    <div id="listaAlertas"></div>
+
+                    <!-- Formulario oculto para crear una alerta nueva -->
+                    <div class="panel mt-3" id="formAlerta" hidden>
+                      <div class="panel-cuerpo">
+                        <div class="row g-3">
+                          <div class="col-md-4">
+                            <label class="form-label" for="fSectorAlerta">Sector</label>
+                            <select class="form-select" id="fSectorAlerta">
+                              <option>Tecnología</option>
+                              <option>Salud</option>
+                              <option>Diseño</option>
+                              <option>Finanzas</option>
+                              <option>Logística</option>
+                            </select>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label" for="fCiudadAlerta">Ciudad</label>
+                            <select class="form-select" id="fCiudadAlerta">
+                              <option selected>Quito</option>
+                              <option>Guayaquil</option>
+                              <option>Cuenca</option>
+                              <option>Loja</option>
+                              <option>Ambato</option>
+                            </select>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label" for="fSalarioAlerta">Salario mínimo</label>
+                            <select class="form-select" id="fSalarioAlerta">
+                              <option value="500">$500 o más</option>
+                              <option value="900" selected>$900 o más</option>
+                              <option value="1400">$1.400 o más</option>
+                              <option value="1800">$1.800 o más</option>
+                            </select>
+                          </div>
+                          <div class="col-12">
+                            <button class="btn btn-bermellon" type="button" id="btnCrearAlerta">Crear alerta</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== Pestaña: Postulaciones ===== -->
+              <div id="pestanaPostulaciones" role="tabpanel" hidden>
+                <div class="panel">
+                  <div class="panel-cabecera">
+                    <h2>Mis postulaciones</h2>
+                  </div>
+                  <div class="panel-cuerpo">
+                    <!-- Vacante 101 — estado: En revisión -->
+                    <article class="resultado">
+                      <span class="marca-empresa acento" aria-hidden="true">AS</span>
+                      <div class="resultado-cuerpo">
+                        <h3><a href="./vacante.html?id=101">Desarrollador Frontend Junior</a></h3>
+                        <p class="resultado-empresa">Andes Software · Tecnología</p>
+                        <div class="resultado-meta">
+                          <span><span class="punto" aria-hidden="true"></span>Quito</span>
+                          <span><span class="punto" aria-hidden="true"></span>Híbrido</span>
+                          <span><span class="punto" aria-hidden="true"></span>Indefinido</span>
+                          <span><span class="punto" aria-hidden="true"></span>Junior</span>
+                        </div>
+                      </div>
+                      <div class="resultado-lado">
+                        <span class="etiqueta-chip cielo">En revisión</span>
+                        <span class="resultado-salario">$850</span>
+                        <span class="resultado-fecha">hace 6 días</span>
+                      </div>
+                    </article>
+
+                    <!-- Vacante 102 — estado: Preseleccionada -->
+                    <article class="resultado">
+                      <span class="marca-empresa" aria-hidden="true">BV</span>
+                      <div class="resultado-cuerpo">
+                        <h3><a href="./vacante.html?id=102">Analista de Datos</a></h3>
+                        <p class="resultado-empresa">Banco del Valle · Finanzas</p>
+                        <div class="resultado-meta">
+                          <span><span class="punto" aria-hidden="true"></span>Quito</span>
+                          <span><span class="punto" aria-hidden="true"></span>Presencial</span>
+                          <span><span class="punto" aria-hidden="true"></span>Indefinido</span>
+                          <span><span class="punto" aria-hidden="true"></span>Semi senior</span>
+                        </div>
+                      </div>
+                      <div class="resultado-lado">
+                        <span class="etiqueta-chip verde">Preseleccionada</span>
+                        <span class="resultado-salario">$1.400</span>
+                        <span class="resultado-fecha">hace 4 días</span>
+                      </div>
+                    </article>
+
+                    <!-- Vacante 103 — estado: Recibida -->
+                    <article class="resultado">
+                      <span class="marca-empresa acento" aria-hidden="true">EC</span>
+                      <div class="resultado-cuerpo">
+                        <h3><a href="./vacante.html?id=103">Diseñador Gráfico</a></h3>
+                        <p class="resultado-empresa">Estudio Cardinal · Diseño</p>
+                        <div class="resultado-meta">
+                          <span><span class="punto" aria-hidden="true"></span>Guayaquil</span>
+                          <span><span class="punto" aria-hidden="true"></span>Remoto</span>
+                          <span><span class="punto" aria-hidden="true"></span>Por proyecto</span>
+                          <span><span class="punto" aria-hidden="true"></span>Mid level</span>
+                        </div>
+                      </div>
+                      <div class="resultado-lado">
+                        <span class="etiqueta-chip ambar">Recibida</span>
+                        <span class="resultado-salario">$700</span>
+                        <span class="resultado-fecha">hace 3 días</span>
+                      </div>
+                    </article>
+
+                    <!-- Vacante 107 — estado: Recibida -->
+                    <article class="resultado">
+                      <span class="marca-empresa" aria-hidden="true">BV</span>
+                      <div class="resultado-cuerpo">
+                        <h3><a href="./vacante.html?id=107">Prácticas en Recursos Humanos</a></h3>
+                        <p class="resultado-empresa">Banco del Valle · Finanzas</p>
+                        <div class="resultado-meta">
+                          <span><span class="punto" aria-hidden="true"></span>Quito</span>
+                          <span><span class="punto" aria-hidden="true"></span>Híbrido</span>
+                          <span><span class="punto" aria-hidden="true"></span>Prácticas</span>
+                          <span><span class="punto" aria-hidden="true"></span>Estudiante</span>
+                        </div>
+                      </div>
+                      <div class="resultado-lado">
+                        <span class="etiqueta-chip ambar">Recibida</span>
+                        <span class="resultado-salario">$300</span>
+                        <span class="resultado-fecha">ayer</span>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== Pestaña: Estadísticas ===== -->
+              <div id="pestanaEstadisticas" role="tabpanel" hidden>
+                <!-- Cuatro cifras clave del perfil -->
+                <div class="estadisticas-rejilla">
+                  <div class="estadistica">
+                    <strong>128</strong>
+                    <span>Visitas al perfil</span>
+                    <p class="variacion mb-0">+12% esta semana</p>
+                  </div>
+                  <div class="estadistica">
+                    <strong>4</strong>
+                    <span>Postulaciones</span>
+                  </div>
+                  <div class="estadistica">
+                    <strong>7</strong>
+                    <span>Ofertas guardadas</span>
+                  </div>
+                  <div class="estadistica">
+                    <strong>2</strong>
+                    <span>Entrevistas</span>
+                  </div>
+                </div>
+
+                <!-- Gráfico de barras: el JS dibuja las barras -->
+                <div class="panel mt-3">
+                  <div class="panel-cabecera">
+                    <h3>Visitas últimos 8 meses</h3>
+                  </div>
+                  <div class="panel-cuerpo">
+                    <div class="grafico-barras" id="graficoVisitas"></div>
+                    <div class="grafico-barras-eje">
+                      <span>Mar</span>
+                      <span>Abr</span>
+                      <span>May</span>
+                      <span>Jun</span>
+                      <span>Jul</span>
+                      <span>Ago</span>
+                      <span>Sep</span>
+                      <span>Oct</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== Pestaña: Mis valoraciones ===== -->
+              <div id="pestanaValoraciones" role="tabpanel" hidden>
+                <div class="panel">
+                  <div class="panel-cabecera">
+                    <h2>Valoraciones que dejé</h2>
+                  </div>
+                  <div class="panel-cuerpo">
+                    <!-- Formulario de nueva valoración -->
+                    <form id="formValorar">
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <label class="form-label" for="fEmpresaValorar">Empresa</label>
+                          <select class="form-select" id="fEmpresaValorar">
+                            <option value="1">Andes Software</option>
+                            <option value="2">Café Altura</option>
+                            <option value="3">Estudio Cardinal</option>
+                            <option value="4">Salud Integral</option>
+                            <option value="5">Ruta Norte</option>
+                            <option value="6">Banco del Valle</option>
+                          </select>
+                        </div>
+                        <div class="col-md-6">
+                          <span class="form-label d-block">Tu nota</span>
+                          <!-- Los cinco puntos eligen la nota (js/perfil.js) -->
+                          <div class="valoracion" id="valoracionEstrellas">
+                            <button class="punto-valoracion per-nota" type="button" data-nota="1" aria-label="Nota 1"></button>
+                            <button class="punto-valoracion per-nota" type="button" data-nota="2" aria-label="Nota 2"></button>
+                            <button class="punto-valoracion per-nota" type="button" data-nota="3" aria-label="Nota 3"></button>
+                            <button class="punto-valoracion per-nota" type="button" data-nota="4" aria-label="Nota 4"></button>
+                            <button class="punto-valoracion per-nota" type="button" data-nota="5" aria-label="Nota 5"></button>
+                            <span class="valoracion-nota" id="notaElegida">—</span>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <label class="form-label" for="fTextoValorar">Comentario</label>
+                          <textarea class="form-control" id="fTextoValorar" placeholder="¿Cómo fue tu experiencia?"></textarea>
+                        </div>
+                        <div class="col-12">
+                          <button class="btn btn-bermellon" type="submit">Publicar valoración</button>
+                        </div>
+                      </div>
+                    </form>
+
+                    <hr class="filete my-4" />
+
+                    <!-- Valoraciones ya publicadas por esta persona -->
+                    <div id="listaMisValoraciones">
+                      <article class="resena">
+                        <span class="avatar avatar-sm" aria-hidden="true">AM</span>
+                        <div>
+                          <div class="resena-cabecera">
+                            <strong>Estudio Cardinal</strong>
+                            <span class="valoracion">
+                              <span class="punto-valoracion lleno"></span>
+                              <span class="punto-valoracion lleno"></span>
+                              <span class="punto-valoracion lleno"></span>
+                              <span class="punto-valoracion lleno"></span>
+                              <span class="punto-valoracion lleno"></span>
+                              <span class="valoracion-nota">5</span>
+                            </span>
+                          </div>
+                          <p>La práctica de diseño fue muy formativa: críticas constructivas y proyectos reales desde el primer día.</p>
+                          <small class="datos texto-tenue">Publicada hace 5 días</small>
+                        </div>
+                      </article>
+
+                      <article class="resena">
+                        <span class="avatar avatar-sm" aria-hidden="true">AM</span>
+                        <div>
+                          <div class="resena-cabecera">
+                            <strong>Salud Integral</strong>
+                            <span class="valoracion">
+                              <span class="punto-valoracion lleno"></span>
+                              <span class="punto-valoracion lleno"></span>
+                              <span class="punto-valoracion lleno"></span>
+                              <span class="punto-valoracion"></span>
+                              <span class="punto-valoracion"></span>
+                              <span class="valoracion-nota">3</span>
+                            </span>
+                          </div>
+                          <p>El turno nocturno es exigente y la planificación de horarios mejora si se pide con anticipación.</p>
+                          <small class="datos texto-tenue">Publicada hace 3 semanas</small>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ---------- Columna derecha (aside) ---------- -->
+            <aside class="per-lateral">
+              <!-- Completitud del perfil -->
+              <div class="panel">
+                <div class="panel-cuerpo">
+                  <h4>Completitud del perfil</h4>
+                  <div class="progreso-lineal mt-2">
+                    <div class="barra" style="width: 72%"></div>
+                  </div>
+                  <p class="datos mt-2 mb-3">72% completado</p>
+                  <!-- Lista de pendientes: punto verde = hecho, punto tenue = pendiente -->
+                  <ul class="per-tareas">
+                    <li><span class="punto punto-verde" aria-hidden="true"></span> Datos personales completados</li>
+                    <li><span class="punto" aria-hidden="true"></span> Falta añadir referencia laboral</li>
+                    <li><span class="punto" aria-hidden="true"></span> Falta subir certificados</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Consejo del día -->
+              <div class="panel mt-3">
+                <div class="panel-cuerpo">
+                  <h4>Consejo del día</h4>
+                  <p class="texto-suave" style="font-size: 0.9rem">
+                    Un perfil con logros medibles recibe hasta tres veces más mensajes de empresas.
+                    Cifras concretas ganan a las descripciones generales.
+                  </p>
+                  <a href="./recursos.html">Ver todos los recursos</a>
+                </div>
+              </div>
+
+              <!-- Llamada a la acción: ajustar alertas -->
+              <div class="panel panel-tinta mt-3">
+                <div class="panel-cuerpo">
+                  <h4>¿Buscas algo distinto?</h4>
+                  <p style="font-size: 0.9rem; color: #cfc6b4">
+                    Actualiza tus criterios de búsqueda y recibe ofertas que sí encajan contigo.
+                  </p>
+                  <a class="btn btn-bermellon btn-block" href="./busqueda.html">Actualizar mis alertas</a>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================================================
+         PIE DE PÁGINA
+         ============================================================ -->
+    <footer class="pie mt-auto">
+      <div class="contenedor">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <a class="marca mb-3" href="./index.html">
+              <span class="marca-marca" aria-hidden="true"></span>
+              <span class="marca-texto">
+                Portal de Trabajo
+                <small>Bolsa de empleo</small>
+              </span>
+            </a>
+            <p style="max-width: 34ch; font-size: 0.9rem">
+              Prototipo académico de portal de búsqueda de empleo. Todas las empresas,
+              personas y cifras mostradas son ficticias.
+            </p>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Candidatos</h5>
+            <a href="./busqueda.html">Buscar empleos</a><br />
+            <a href="./perfil.html">Mi perfil</a><br />
+            <a href="./recursos.html">Recursos</a><br />
+            <a href="./foros.html">Foros</a>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Empresas</h5>
+            <a href="./empresas.html">Publicar oferta</a><br />
+            <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
+            <a href="./empresas.html#directorio">Directorio</a><br />
+            <a href="./admin.html">Administración</a>
+          </div>
+          <div class="col-lg-4">
+            <h5>Boletín de empleo</h5>
+            <p style="font-size: 0.9rem; max-width: 32ch">
+              Recibe las ofertas de la semana según tu sector.
+            </p>
+            <form class="d-flex gap-2" data-accion="suscripcion" data-mensaje="Suscripción registrada. Recibirás el próximo boletín el lunes." data-tono="exito">
+              <input class="form-control" type="email" placeholder="Tu correo" aria-label="Correo para el boletín" />
+              <button class="btn btn-bermellon" type="submit">Suscribirme</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="pie-registro">
+          <span>© <span data-anio>2026</span> Portal de Trabajo · Proyecto académico</span>
+          <span>Ing. José Emerson Aguilar · Segundo período</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
+    <script src="./js/datos.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="./js/perfil.js"></script>
+  </body>
+</html>

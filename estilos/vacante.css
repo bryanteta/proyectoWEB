@@ -1,0 +1,38 @@
+/* =============================================================
+   PORTAL DE TRABAJO — detalle de vacante
+   -------------------------------------------------------------
+   Estilos propios de vacante.html.
+   Se priorizan clases existentes del sistema. Solo clases nuevas
+   con prefijo .vac- si son necesarias. No se modifica CSS base.
+   ============================================================= */
+
+/* Ajuste visual para chips en cabecera */
+.vacante-cabecera .chips {
+  margin-top: 0.25rem;
+}
+
+/* Estado de botones en postulación: sin cambios de estructura */
+#btnPostularme[disabled],
+#btnPostularmeLateral[disabled] {
+  cursor: not-allowed;
+}
+
+/* Resaltado del formulario de reseña cuando hay error */
+textarea.form-control.invalido {
+  border-color: var(--bermellon);
+  background: var(--bermellon-leche);
+}
+
+/* Espaciado ligero en lista de reseñas */
+#listaResenas .resena:first-child {
+  padding-top: 1.25rem;
+}
+
+/* Responsive pequeño ajuste para acciones */
+@media (max-width: 767.98px) {
+  .vacante-acciones {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

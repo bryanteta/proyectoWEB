@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recursos — Portal de Trabajo</title>
+    <meta
+      name="description"
+      content="Artículos, tutoriales y videos para mejorar tu currículum, preparar entrevistas y gestionar tu carrera profesional."
+    />
+    <link rel="icon" type="image/svg+xml" href="./media/favicon.svg" />
+
+    <!-- Bootstrap local (funciona sin conexión) -->
+    <link rel="stylesheet" href="./estilos/vendor/bootstrap.min.css" />
+    <!-- Tipografías descargadas al proyecto -->
+    <link rel="stylesheet" href="./estilos/tipografias.css" />
+    <!-- Sistema visual propio: variables, componentes y pantallas -->
+    <link rel="stylesheet" href="./estilos/base.css" />
+    <link rel="stylesheet" href="./estilos/componentes.css" />
+    <link rel="stylesheet" href="./estilos/pantallas.css" />
+    <!-- Estilos propios de esta pantalla -->
+    <link rel="stylesheet" href="./estilos/recursos.css" />
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-tinta position-absolute" href="#contenido">
+      Saltar al contenido principal
+    </a>
+
+    <!-- ============================================================
+         CABECERA
+         Encabezado con logo, formulario de inicio de sesión y botón
+         de registro (según el requerimiento de la página de inicio).
+         ============================================================ -->
+    <header class="cabecera">
+      <div class="contenedor">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap py-2">
+          <a class="marca" href="./index.html">
+            <span class="marca-marca" aria-hidden="true"></span>
+            <span class="marca-texto">
+              Portal de Trabajo
+              <small>Bolsa de empleo</small>
+            </span>
+          </a>
+
+          <!-- Navegación principal: se marca sola según el archivo abierto -->
+          <nav class="nav-principal d-none d-lg-flex" aria-label="Secciones del portal">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+          </nav>
+
+          <!-- Acceso: maqueta, no valida credenciales -->
+          <form class="acceso d-none d-lg-flex" data-acceso novalidate>
+            <input class="acceso-campo" type="email" placeholder="Correo" aria-label="Correo electrónico" />
+            <input class="acceso-campo" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <button class="btn btn-tinta btn-sm" type="submit">Entrar</button>
+            <a class="btn btn-linea btn-sm" href="./perfil.html">Registrarse</a>
+          </form>
+
+          <button
+            class="btn btn-tinta btn-sm d-lg-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menuMovil"
+            aria-expanded="false"
+            aria-controls="menuMovil"
+          >
+            Menú
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú para pantallas pequeñas -->
+      <div class="collapse menu-desplegable" id="menuMovil">
+        <div class="contenedor py-3">
+          <nav class="nav flex-column" aria-label="Secciones del portal (móvil)">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+            <a class="nav-link" href="./admin.html">Administración</a>
+          </nav>
+          <hr class="filete my-3" />
+          <form class="gap-2 d-flex flex-column" data-acceso novalidate>
+            <input class="form-control" type="email" placeholder="Correo electrónico" aria-label="Correo electrónico" />
+            <input class="form-control" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <div class="d-flex gap-2">
+              <button class="btn btn-tinta flex-fill" type="submit">Entrar</button>
+              <a class="btn btn-linea flex-fill" href="./perfil.html">Registrarse</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <!-- ============================================================
+           CABECERA DE PÁGINA
+           Miga de pan, título de la sección y párrafo introductorio.
+           ============================================================ -->
+      <section class="pagina-cabecera">
+        <div class="contenedor">
+          <p class="migas">
+            <a href="./index.html">Inicio</a> / Recursos
+          </p>
+          <h1>Recursos para tu búsqueda</h1>
+          <p class="lead mb-0">
+            Artículos, tutoriales y videos elaborados por especialistas para que llegues
+            mejor preparado a cada etapa del proceso de selección.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           RECURSO DESTACADO
+           El primer recurso de la lista (js/datos.js) se muestra en un
+           bloque grande: texto a la izquierda e ilustración a la derecha.
+           El contenido se rellena desde js/recursos.js.
+           ============================================================ -->
+      <section class="seccion-ajustada">
+        <div class="contenedor">
+          <div class="recurso-destacado">
+            <div class="recurso-destacado-texto">
+              <p class="etiqueta" data-num="01">Recurso destacado</p>
+              <h2 id="destacadoTitulo">—</h2>
+              <p class="lead" id="destacadoResumen">—</p>
+              <div class="chips res-destacado-chips mb-4">
+                <span class="etiqueta-chip acento" id="destacadoTipo">—</span>
+                <span class="etiqueta-chip" id="destacadoDuracion">—</span>
+              </div>
+              <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-bermellon" type="button" id="btnAbrirDestacado">
+                  <span class="punto" aria-hidden="true"></span>
+                  Leer el artículo
+                </button>
+                <!-- Confirmación genérica de js/main.js (data-accion) -->
+                <button
+                  class="btn btn-linea"
+                  type="button"
+                  data-accion="guardar"
+                  data-mensaje="Recurso guardado en tu lista."
+                  data-tono="exito"
+                >
+                  Guardar
+                </button>
+              </div>
+            </div>
+            <!-- Composición decorativa del proyecto -->
+            <div class="recurso-destacado-grafico">
+              <img src="./media/composicion-01.svg" alt="" width="380" height="292" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <hr class="filete" />
+
+      <!-- ============================================================
+           BIBLIOTECA DE RECURSOS
+           Dos grupos de filtros en forma de chips (por tipo y por
+           categoría) y la rejilla de tarjetas que pinta js/recursos.js.
+           ============================================================ -->
+      <section class="seccion">
+        <div class="contenedor">
+          <div class="seccion-cabecera">
+            <div>
+              <p class="etiqueta" data-num="02">Consejos de carrera</p>
+              <h2>Biblioteca de recursos</h2>
+            </div>
+          </div>
+
+          <!-- Filtro por TIPO: el chip activo lleva la clase .rellena -->
+          <div class="res-filtros">
+            <span class="res-filtros-etiqueta">Filtrar por tipo</span>
+            <div class="chips" id="filtroTipos" role="group" aria-label="Filtrar recursos por tipo">
+              <button class="etiqueta-chip rellena" type="button" data-tipo="">Todos</button>
+              <button class="etiqueta-chip" type="button" data-tipo="Artículo">Artículo</button>
+              <button class="etiqueta-chip" type="button" data-tipo="Tutorial">Tutorial</button>
+              <button class="etiqueta-chip" type="button" data-tipo="Video">Video</button>
+            </div>
+          </div>
+
+          <!-- Filtro por CATEGORÍA: mismo mecanismo, grupo independiente -->
+          <div class="res-filtros">
+            <span class="res-filtros-etiqueta">Filtrar por categoría</span>
+            <div class="chips" id="filtroCategorias" role="group" aria-label="Filtrar recursos por categoría">
+              <button class="etiqueta-chip rellena" type="button" data-cat="">Todas</button>
+              <button class="etiqueta-chip" type="button" data-cat="Currículum">Currículum</button>
+              <button class="etiqueta-chip" type="button" data-cat="Entrevistas">Entrevistas</button>
+              <button class="etiqueta-chip" type="button" data-cat="Carrera">Carrera</button>
+              <button class="etiqueta-chip" type="button" data-cat="Marca personal">Marca personal</button>
+            </div>
+          </div>
+
+          <!-- Contador de resultados y rejilla que repinta el JS -->
+          <p class="datos texto-tenue res-contador" id="contadorRecursos">—</p>
+          <div class="row g-3" id="rejillaRecursos"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================================================
+         MODAL DE LECTURA
+         Ventana de Bootstrap (sin radios por la regla global del
+         proyecto) con el texto del recurso. El contenido se genera
+         desde js/recursos.js al pulsar "Leer" en cualquier tarjeta.
+         ============================================================ -->
+    <div class="modal fade" id="modalRecurso" tabindex="-1" aria-labelledby="modalRecursoTitulo" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content panel res-modal">
+          <div class="modal-header res-modal-cabecera">
+            <div>
+              <span class="etiqueta-chip acento" id="modalRecursoTipo">—</span>
+              <h2 class="mt-2 mb-0" id="modalRecursoTitulo">—</h2>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <!-- Cuerpo con el texto del recurso (lo escribe el JS) -->
+          <div class="modal-body" id="modalRecursoCuerpo"></div>
+          <div class="modal-footer">
+            <button class="btn btn-bermellon" type="button" id="btnGuardarModal">
+              <span class="punto" aria-hidden="true"></span>
+              Guardar en mi lista
+            </button>
+            <button class="btn btn-linea" type="button" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         PIE DE PÁGINA
+         ============================================================ -->
+    <footer class="pie mt-auto">
+      <div class="contenedor">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <a class="marca mb-3" href="./index.html">
+              <span class="marca-marca" aria-hidden="true"></span>
+              <span class="marca-texto">
+                Portal de Trabajo
+                <small>Bolsa de empleo</small>
+              </span>
+            </a>
+            <p style="max-width: 34ch; font-size: 0.9rem">
+              Prototipo académico de portal de búsqueda de empleo. Todas las empresas,
+              personas y cifras mostradas son ficticias.
+            </p>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Candidatos</h5>
+            <a href="./busqueda.html">Buscar empleos</a><br />
+            <a href="./perfil.html">Mi perfil</a><br />
+            <a href="./recursos.html">Recursos</a><br />
+            <a href="./foros.html">Foros</a>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Empresas</h5>
+            <a href="./empresas.html">Publicar oferta</a><br />
+            <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
+            <a href="./empresas.html#directorio">Directorio</a><br />
+            <a href="./admin.html">Administración</a>
+          </div>
+          <div class="col-lg-4">
+            <h5>Boletín de empleo</h5>
+            <p style="font-size: 0.9rem; max-width: 32ch">
+              Recibe las ofertas de la semana según tu sector.
+            </p>
+            <form class="d-flex gap-2" data-accion="suscripcion" data-mensaje="Suscripción registrada. Recibirás el próximo boletín el lunes." data-tono="exito">
+              <input class="form-control" type="email" placeholder="Tu correo" aria-label="Correo para el boletín" />
+              <button class="btn btn-bermellon" type="submit">Suscribirme</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="pie-registro">
+          <span>© <span data-anio>2026</span> Portal de Trabajo · Proyecto académico</span>
+          <span>Ing. José Emerson Aguilar · Segundo período</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
+    <script src="./js/datos.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="./js/recursos.js"></script>
+  </body>
+</html>

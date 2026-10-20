@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Marca de agua decorativa">
+  <!-- Textura de fondo reutilizable: puntos sobre cuadrícula -->
+  <g fill="#d9d0bc">
+    <circle cx="10" cy="10" r="1.6"/><circle cx="40" cy="10" r="1.6"/><circle cx="70" cy="10" r="1.6"/><circle cx="100" cy="10" r="1.6"/>
+    <circle cx="10" cy="40" r="1.6"/><circle cx="40" cy="40" r="1.6"/><circle cx="70" cy="40" r="1.6"/><circle cx="100" cy="40" r="1.6"/>
+    <circle cx="10" cy="70" r="1.6"/><circle cx="40" cy="70" r="1.6"/><circle cx="70" cy="70" r="1.6"/><circle cx="100" cy="70" r="1.6"/>
+    <circle cx="10" cy="100" r="1.6"/><circle cx="40" cy="100" r="1.6"/><circle cx="70" cy="100" r="1.6"/><circle cx="100" cy="100" r="1.6"/>
+  </g>
+</svg>

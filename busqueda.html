@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Resultados de búsqueda — Portal de Trabajo</title>
+    <meta
+      name="description"
+      content="Resultados de búsqueda de ofertas de empleo en el Portal de Trabajo. Filtra por sector, nivel, salario, modalidad y contrato para encontrar tu vacante ideal."
+    />
+    <link rel="icon" type="image/svg+xml" href="./media/favicon.svg" />
+
+    <!-- Bootstrap local (funciona sin conexión) -->
+    <link rel="stylesheet" href="./estilos/vendor/bootstrap.min.css" />
+    <!-- Tipografías descargadas al proyecto -->
+    <link rel="stylesheet" href="./estilos/tipografias.css" />
+    <!-- Sistema visual propio: variables, componentes y pantallas -->
+    <link rel="stylesheet" href="./estilos/base.css" />
+    <link rel="stylesheet" href="./estilos/componentes.css" />
+    <link rel="stylesheet" href="./estilos/pantallas.css" />
+    <link rel="stylesheet" href="./estilos/busqueda.css" />
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-tinta position-absolute" href="#contenido">
+      Saltar al contenido principal
+    </a>
+
+    <!-- ============================================================
+         CABECERA
+         Encabezado con logo, formulario de inicio de sesión y botón
+         de registro (según el requerimiento de la página de inicio).
+         ============================================================ -->
+    <header class="cabecera">
+      <div class="contenedor">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap py-2">
+          <a class="marca" href="./index.html">
+            <span class="marca-marca" aria-hidden="true"></span>
+            <span class="marca-texto">
+              Portal de Trabajo
+              <small>Bolsa de empleo</small>
+            </span>
+          </a>
+
+          <!-- Navegación principal: se marca sola según el archivo abierto -->
+          <nav class="nav-principal d-none d-lg-flex" aria-label="Secciones del portal">
+            <a class="nav-link activo" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+          </nav>
+
+          <!-- Acceso: maqueta, no valida credenciales -->
+          <form class="acceso d-none d-lg-flex" data-acceso novalidate>
+            <input class="acceso-campo" type="email" placeholder="Correo" aria-label="Correo electrónico" />
+            <input class="acceso-campo" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <button class="btn btn-tinta btn-sm" type="submit">Entrar</button>
+            <a class="btn btn-linea btn-sm" href="./perfil.html">Registrarse</a>
+          </form>
+
+          <button
+            class="btn btn-tinta btn-sm d-lg-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menuMovil"
+            aria-expanded="false"
+            aria-controls="menuMovil"
+          >
+            Menú
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú para pantallas pequeñas -->
+      <div class="collapse menu-desplegable" id="menuMovil">
+        <div class="contenedor py-3">
+          <nav class="nav flex-column" aria-label="Secciones del portal (móvil)">
+            <a class="nav-link activo" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+            <a class="nav-link" href="./admin.html">Administración</a>
+          </nav>
+          <hr class="filete my-3" />
+          <form class="gap-2 d-flex flex-column" data-acceso novalidate>
+            <input class="form-control" type="email" placeholder="Correo electrónico" aria-label="Correo electrónico" />
+            <input class="form-control" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <div class="d-flex gap-2">
+              <button class="btn btn-tinta flex-fill" type="submit">Entrar</button>
+              <a class="btn btn-linea flex-fill" href="./perfil.html">Registrarse</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <!-- ============================================================
+           CABECERA DE PÁGINA
+           Información general sobre los resultados de búsqueda.
+           ============================================================ -->
+      <section class="pagina-cabecera">
+        <div class="contenedor">
+          <!-- Migas de pan para orientación del usuario -->
+          <nav aria-label="Migas de pan">
+            <p class="migas">
+              <a href="./index.html">Inicio</a> / 
+              <span aria-current="page">Buscar empleos</span>
+            </p>
+          </nav>
+          <h1>Resultados de búsqueda</h1>
+          <p id="contadorResultados" class="lead">0 ofertas encontradas</p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECCIÓN PRINCIPAL DE RESULTADOS
+           Contiene filtros laterales y listado de ofertas con
+           ordenamiento y paginación visual.
+           ============================================================ -->
+      <section class="seccion-ajustada">
+        <div class="contenedor">
+          <div class="rejilla-resultados">
+            <!-- Columna izquierda: panel de filtros avanzados -->
+            <aside class="filtros">
+              <div class="panel">
+                <div class="panel-cabecera">
+                  <h3>Filtros de búsqueda</h3>
+                </div>
+                <div class="panel-cuerpo">
+                  <!-- Grupo: búsqueda por texto -->
+                  <div class="filtros-grupo">
+                    <h4>Buscar por texto</h4>
+                    <input 
+                      type="search" 
+                      id="filtroTexto" 
+                      class="form-control" 
+                      placeholder="Ej. desarrollador, diseño, prácticas"
+                      aria-label="Buscar por texto"
+                    />
+                  </div>
+
+                  <!-- Grupo: nivel de experiencia -->
+                  <div class="filtros-grupo">
+                    <h4>Nivel de experiencia</h4>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="nivelEstudiante" data-filtro="nivel" value="Estudiante">
+                      <label class="form-check-label" for="nivelEstudiante">Estudiante</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="nivelJunior" data-filtro="nivel" value="Junior">
+                      <label class="form-check-label" for="nivelJunior">Junior</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="nivelMid" data-filtro="nivel" value="Mid level">
+                      <label class="form-check-label" for="nivelMid">Mid level</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="nivelSemi" data-filtro="nivel" value="Semi senior">
+                      <label class="form-check-label" for="nivelSemi">Semi senior</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="nivelSenior" data-filtro="nivel" value="Senior">
+                      <label class="form-check-label" for="nivelSenior">Senior</label>
+                    </div>
+                  </div>
+
+                  <!-- Grupo: sector laboral -->
+                  <div class="filtros-grupo">
+                    <h4>Sector laboral</h4>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="sectorTecnologia" data-filtro="sector" value="Tecnología">
+                      <label class="form-check-label" for="sectorTecnologia">Tecnología</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="sectorFinanzas" data-filtro="sector" value="Finanzas">
+                      <label class="form-check-label" for="sectorFinanzas">Finanzas</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="sectorDiseno" data-filtro="sector" value="Diseño">
+                      <label class="form-check-label" for="sectorDiseno">Diseño</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="sectorAgro" data-filtro="sector" value="Agroindustria">
+                      <label class="form-check-label" for="sectorAgro">Agroindustria</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="sectorSalud" data-filtro="sector" value="Salud">
+                      <label class="form-check-label" for="sectorSalud">Salud</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="sectorLogistica" data-filtro="sector" value="Logística">
+                      <label class="form-check-label" for="sectorLogistica">Logística</label>
+                    </div>
+                  </div>
+
+                  <!-- Grupo: tipo de contrato -->
+                  <div class="filtros-grupo">
+                    <h4>Tipo de contrato</h4>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="contratoIndefinido" data-filtro="contrato" value="Indefinido">
+                      <label class="form-check-label" for="contratoIndefinido">Indefinido</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="contratoHoras" data-filtro="contrato" value="Por horas">
+                      <label class="form-check-label" for="contratoHoras">Por horas</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="contratoProyecto" data-filtro="contrato" value="Por proyecto">
+                      <label class="form-check-label" for="contratoProyecto">Por proyecto</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="contratoPracticas" data-filtro="contrato" value="Prácticas">
+                      <label class="form-check-label" for="contratoPracticas">Prácticas</label>
+                    </div>
+                  </div>
+
+                  <!-- Grupo: modalidad de trabajo -->
+                  <div class="filtros-grupo">
+                    <h4>Modalidad</h4>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="modPresencial" data-filtro="modalidad" value="Presencial">
+                      <label class="form-check-label" for="modPresencial">Presencial</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="modHibrido" data-filtro="modalidad" value="Híbrido">
+                      <label class="form-check-label" for="modHibrido">Híbrido</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="modRemoto" data-filtro="modalidad" value="Remoto">
+                      <label class="form-check-label" for="modRemoto">Remoto</label>
+                    </div>
+                  </div>
+
+                  <!-- Grupo: salario y ofertas destacadas -->
+                  <div class="filtros-grupo">
+                    <h4>Salario mínimo</h4>
+                    <input 
+                      type="range" 
+                      id="filtroSalario" 
+                      class="form-range" 
+                      min="0" 
+                      max="2500" 
+                      step="50" 
+                      value="0"
+                      aria-label="Salario mínimo en dólares"
+                    />
+                    <output id="salarioOutput" for="filtroSalario">$0</output>
+                    <div class="form-check mt-3">
+                      <input class="form-check-input" type="checkbox" id="filtroDestacada">
+                      <label class="form-check-label" for="filtroDestacada">Solo ofertas destacadas</label>
+                    </div>
+                  </div>
+
+                  <!-- Grupo: ubicación -->
+                  <div class="filtros-grupo">
+                    <h4>Ubicación</h4>
+                    <select id="filtroCiudad" class="form-select" aria-label="Filtrar por ciudad">
+                      <option value="">Todo el país</option>
+                      <option value="Quito">Quito</option>
+                      <option value="Guayaquil">Guayaquil</option>
+                      <option value="Cuenca">Cuenca</option>
+                      <option value="Loja">Loja</option>
+                      <option value="Ambato">Ambato</option>
+                    </select>
+                  </div>
+
+                  <!-- Botón para limpiar filtros -->
+                  <button class="btn btn-linea btn-block mt-3" id="limpiarFiltros">
+                    Limpiar filtros
+                  </button>
+                </div>
+              </div>
+            </aside>
+
+            <!-- Columna derecha: listado de resultados -->
+            <div class="resultados-contenido">
+              <!-- Barra de resultados: contador y ordenamiento -->
+              <div class="barra-resultados">
+                <p id="contadorBarra">0 ofertas encontradas</p>
+                <div class="d-flex align-items-center gap-2">
+                  <label for="ordenarPor" class="form-label mb-0">Ordenar por:</label>
+                  <select id="ordenarPor" class="form-select">
+                    <option value="recientes">Más recientes</option>
+                    <option value="salario_alto">Salario más alto</option>
+                    <option value="salario_bajo">Salario más bajo</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Contenedor donde se pintan los resultados -->
+              <div id="listaResultados"></div>
+
+              <!-- Estado vacío: se muestra cuando no hay coincidencias -->
+              <div id="estadoVacio" class="vacio d-none">
+                <span class="disco" aria-hidden="true">∅</span>
+                <h3>Sin resultados</h3>
+                <p class="texto-suave">
+                  No encontramos ofertas que coincidan con tus filtros. 
+                  Prueba a ajustar tus criterios o limpiar los filtros para ver todas las ofertas.
+                </p>
+                <button class="btn btn-tinta" id="limpiarFiltrosVacio">
+                  Limpiar filtros
+                </button>
+              </div>
+
+              <!-- Paginación visual (solo navegación, no paginado real) -->
+              <nav aria-label="Paginación de resultados" class="mt-4">
+                <ul class="paginacion justify-content-center">
+                  <li class="page-item desactivado">
+                    <a class="page-link" href="#" aria-label="Anterior">‹</a>
+                  </li>
+                  <li class="page-item activo">
+                    <a class="page-link" href="#">1</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="#">2</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="#">3</a>
+                  </li>
+                  <li class="page-item desactivado">
+                    <a class="page-link" href="#" aria-label="Siguiente">›</a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================================================
+         PIE DE PÁGINA
+         ============================================================ -->
+    <footer class="pie mt-auto">
+      <div class="contenedor">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <a class="marca mb-3" href="./index.html">
+              <span class="marca-marca" aria-hidden="true"></span>
+              <span class="marca-texto">
+                Portal de Trabajo
+                <small>Bolsa de empleo</small>
+              </span>
+            </a>
+            <p style="max-width: 34ch; font-size: 0.9rem">
+              Prototipo académico de portal de búsqueda de empleo. Todas las empresas,
+              personas y cifras mostradas son ficticias.
+            </p>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Candidatos</h5>
+            <a href="./busqueda.html">Buscar empleos</a><br />
+            <a href="./perfil.html">Mi perfil</a><br />
+            <a href="./recursos.html">Recursos</a><br />
+            <a href="./foros.html">Foros</a>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Empresas</h5>
+            <a href="./empresas.html">Publicar oferta</a><br />
+            <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
+            <a href="./empresas.html#directorio">Directorio</a><br />
+            <a href="./admin.html">Administración</a>
+          </div>
+          <div class="col-lg-4">
+            <h5>Boletín de empleo</h5>
+            <p style="font-size: 0.9rem; max-width: 32ch">
+              Recibe las ofertas de la semana según tu sector.
+            </p>
+            <form class="d-flex gap-2" data-accion="suscripcion" data-mensaje="Suscripción registrada. Recibirás el próximo boletín el lunes." data-tono="exito">
+              <input class="form-control" type="email" placeholder="Tu correo" aria-label="Correo para el boletín" />
+              <button class="btn btn-bermellon" type="submit">Suscribirme</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="pie-registro">
+          <span>© <span data-anio>2026</span> Portal de Trabajo · Proyecto académico</span>
+          <span>Ing. José Emerson Aguilar · Segundo período</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
+    <script src="./js/datos.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="./js/busqueda.js"></script>
+  </body>
+</html>

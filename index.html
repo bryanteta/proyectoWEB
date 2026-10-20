@@ -1,28 +1,463 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Documento</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-B/GM4XqrwHnWXNOWMbloTmrYXZg10cakYGmpfsR/bbzQ6JAJI4ihuyADKLnBgrCe" crossorigin="anonymous">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portal de Trabajo — Bolsa de empleo</title>
+    <meta
+      name="description"
+      content="Prototipo de portal de búsqueda de empleo: busca ofertas, publica vacantes, consulta recursos y foros."
+    />
+    <link rel="icon" type="image/svg+xml" href="./media/favicon.svg" />
 
-</head>
-<body>
-	<header>
-		<h1>Título de la página</h1>
-	</header>
+    <!-- Bootstrap local (funciona sin conexión) -->
+    <link rel="stylesheet" href="./estilos/vendor/bootstrap.min.css" />
+    <!-- Tipografías descargadas al proyecto -->
+    <link rel="stylesheet" href="./estilos/tipografias.css" />
+    <!-- Sistema visual propio: variables, componentes y pantallas -->
+    <link rel="stylesheet" href="./estilos/base.css" />
+    <link rel="stylesheet" href="./estilos/componentes.css" />
+    <link rel="stylesheet" href="./estilos/pantallas.css" />
+  </head>
 
-	<main>
-		<section>
-			<h2>Sección principal</h2>
-			<p>Contenido de la página.</p>
-		</section>
-	</main>
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-tinta position-absolute" href="#contenido">
+      Saltar al contenido principal
+    </a>
 
-	<footer>
-		<p>&copy; 2025</p>
-	</footer>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-1a/pXj49ZQ1aHEmrJ+gMw1otqoVsYwlEnlD8mIfY2TV03r20Y0CN7uqx1tQogjPL" crossorigin="anonymous"></script>
+    <!-- ============================================================
+         CABECERA
+         Encabezado con logo, formulario de inicio de sesión y botón
+         de registro (según el requerimiento de la página de inicio).
+         ============================================================ -->
+    <header class="cabecera">
+      <div class="contenedor">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap py-2">
+          <a class="marca" href="./index.html">
+            <span class="marca-marca" aria-hidden="true"></span>
+            <span class="marca-texto">
+              Portal de Trabajo
+              <small>Bolsa de empleo</small>
+            </span>
+          </a>
 
-</body>
+          <!-- Navegación principal: se marca sola según el archivo abierto -->
+          <nav class="nav-principal d-none d-lg-flex" aria-label="Secciones del portal">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+          </nav>
+
+          <!-- Acceso: maqueta, no valida credenciales -->
+          <form class="acceso d-none d-lg-flex" data-acceso novalidate>
+            <input class="acceso-campo" type="email" placeholder="Correo" aria-label="Correo electrónico" />
+            <input class="acceso-campo" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <button class="btn btn-tinta btn-sm" type="submit">Entrar</button>
+            <a class="btn btn-linea btn-sm" href="./perfil.html">Registrarse</a>
+          </form>
+
+          <button
+            class="btn btn-tinta btn-sm d-lg-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menuMovil"
+            aria-expanded="false"
+            aria-controls="menuMovil"
+          >
+            Menú
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú para pantallas pequeñas -->
+      <div class="collapse menu-desplegable" id="menuMovil">
+        <div class="contenedor py-3">
+          <nav class="nav flex-column" aria-label="Secciones del portal (móvil)">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+            <a class="nav-link" href="./admin.html">Administración</a>
+          </nav>
+          <hr class="filete my-3" />
+          <form class="gap-2 d-flex flex-column" data-acceso novalidate>
+            <input class="form-control" type="email" placeholder="Correo electrónico" aria-label="Correo electrónico" />
+            <input class="form-control" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <div class="d-flex gap-2">
+              <button class="btn btn-tinta flex-fill" type="submit">Entrar</button>
+              <a class="btn btn-linea flex-fill" href="./perfil.html">Registrarse</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <!-- ============================================================
+           PORTADA + BUSCADOR DESTACADO
+           El requerimiento pide un motor de búsqueda con filtros
+           avanzados (ubicación, tipo de trabajo, salario y nivel de
+           experiencia) arriba de todo. El formulario envía los valores
+           por parámetro a la pantalla de resultados.
+           ============================================================ -->
+      <section class="portada">
+        <div class="contenedor">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+              <p class="etiqueta" data-num="EC">Bolsa de empleo nacional</p>
+              <h1 class="portada-titulo">
+                El trabajo que buscas, <em>sin vueltas</em>.
+              </h1>
+              <p class="lead">
+                Ofertas verificadas de empresas del país. Filtra por sector, salario y
+                modalidad, guarda las que te interesen y sigue tu postulación desde un
+                solo lugar.
+              </p>
+              <div class="frecuentes mt-4">
+                <span>Buscado hoy</span>
+                <a href="./busqueda.html?sector=Tecnología">Desarrollador</a>
+                <a href="./busqueda.html?sector=Salud">Enfermería</a>
+                <a href="./busqueda.html?sector=Diseño">Diseño</a>
+                <a href="./busqueda.html?nivel=Estudiante">Prácticas</a>
+              </div>
+            </div>
+
+            <!-- Composición decorativa del proyecto -->
+            <div class="col-lg-5 d-none d-lg-block text-end">
+              <img
+                src="./media/composicion-02.svg"
+                alt=""
+                width="420"
+                height="323"
+                class="ms-auto"
+              />
+            </div>
+          </div>
+
+          <!-- Panel de búsqueda: rejilla de filetes con la última
+               celda ocupada por el botón principal -->
+          <form class="buscador" action="./busqueda.html" method="get" id="buscadorPrincipal">
+            <div class="buscador-cabecera">
+              <h2>Buscar ofertas</h2>
+              <span class="datos texto-tenue">1.284 ofertas activas · actualizado hoy</span>
+            </div>
+
+            <div class="buscador-campos">
+              <div class="buscador-campo">
+                <label for="campoTexto">Palabra clave</label>
+                <input
+                  class="form-control"
+                  id="campoTexto"
+                  name="q"
+                  type="search"
+                  placeholder="Ej. desarrollador, contadora, prácticas"
+                />
+              </div>
+              <div class="buscador-campo">
+                <label for="campoCiudad">Ubicación</label>
+                <select class="form-select" id="campoCiudad" name="ciudad">
+                  <option value="">Todo el país</option>
+                  <option>Quito</option>
+                  <option>Guayaquil</option>
+                  <option>Cuenca</option>
+                  <option>Loja</option>
+                  <option>Ambato</option>
+                </select>
+              </div>
+              <div class="buscador-campo">
+                <label for="campoTipo">Tipo de trabajo</label>
+                <select class="form-select" id="campoTipo" name="contrato">
+                  <option value="">Cualquier tipo</option>
+                  <option>Indefinido</option>
+                  <option>Por horas</option>
+                  <option>Por proyecto</option>
+                  <option>Prácticas</option>
+                </select>
+              </div>
+              <div class="buscador-campo">
+                <label for="campoNivel">Nivel de experiencia</label>
+                <select class="form-select" id="campoNivel" name="nivel">
+                  <option value="">Cualquier nivel</option>
+                  <option>Estudiante</option>
+                  <option>Junior</option>
+                  <option>Mid level</option>
+                  <option>Semi senior</option>
+                  <option>Senior</option>
+                </select>
+              </div>
+              <div class="buscador-campo">
+                <label for="campoSalario">Salario mínimo mensual</label>
+                <select class="form-select" id="campoSalario" name="salario">
+                  <option value="">Sin mínimo</option>
+                  <option value="500">$500 o más</option>
+                  <option value="900">$900 o más</option>
+                  <option value="1400">$1.400 o más</option>
+                  <option value="1800">$1.800 o más</option>
+                </select>
+              </div>
+              <!-- La última celda es la acción principal -->
+              <div class="buscador-campo-boton">
+                <button class="btn" type="submit">
+                  <span class="punto" aria-hidden="true"></span>
+                  Buscar ofertas
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           MÉTRICAS DEL PORTAL
+           Cuatro contadores circulares con anillo de progreso.
+           Los valores se animan al entrar en pantalla (js/main.js).
+           ============================================================ -->
+      <section class="seccion-ajustada seccion-banda">
+        <div class="contenedor">
+          <p class="etiqueta" data-num="01">El portal en cifras</p>
+          <div class="metricas-rejilla">
+            <div class="metrica">
+              <div class="metrica-anillo" data-anillo="78">
+                <svg viewBox="0 0 100 100" aria-hidden="true">
+                  <circle class="pista" cx="50" cy="50" r="46"></circle>
+                  <circle class="progreso" cx="50" cy="50" r="46"></circle>
+                </svg>
+                <span class="metrica-valor">
+                  <span data-contador="480">0</span>
+                  <small>empresas</small>
+                </span>
+              </div>
+              <p>Empresas verificadas con ficha pública en el portal.</p>
+            </div>
+
+            <div class="metrica">
+              <div class="metrica-anillo" data-anillo="64">
+                <svg viewBox="0 0 100 100" aria-hidden="true">
+                  <circle class="pista" cx="50" cy="50" r="46"></circle>
+                  <circle class="progreso" cx="50" cy="50" r="46"></circle>
+                </svg>
+                <span class="metrica-valor">
+                  <span data-contador="36500">0</span>
+                  <small>personas</small>
+                </span>
+              </div>
+              <p>Personas registradas con perfil y currículum cargado.</p>
+            </div>
+
+            <div class="metrica">
+              <div class="metrica-anillo" data-anillo="86">
+                <svg viewBox="0 0 100 100" aria-hidden="true">
+                  <circle class="pista" cx="50" cy="50" r="46"></circle>
+                  <circle class="progreso" cx="50" cy="50" r="46"></circle>
+                </svg>
+                <span class="metrica-valor">
+                  <span data-contador="1284">0</span>
+                  <small>ofertas</small>
+                </span>
+              </div>
+              <p>Vacantes publicadas y abiertas a postulaciones hoy.</p>
+            </div>
+
+            <div class="metrica">
+              <div class="metrica-anillo" data-anillo="52">
+                <svg viewBox="0 0 100 100" aria-hidden="true">
+                  <circle class="pista" cx="50" cy="50" r="46"></circle>
+                  <circle class="progreso" cx="50" cy="50" r="46"></circle>
+                </svg>
+                <span class="metrica-valor">
+                  <span data-contador="12930">0</span>
+                  <small>postulaciones</small>
+                </span>
+              </div>
+              <p>Solicitudes recibidas por las empresas este mes.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           CATEGORÍAS POPULARES
+           Cuadrícula de accesos directos por sector. El recuento de
+           ofertas se calcula con los datos de js/datos.js.
+           ============================================================ -->
+      <section class="seccion">
+        <div class="contenedor">
+          <div class="seccion-cabecera">
+            <div>
+              <p class="etiqueta" data-num="02">Explorar por sector</p>
+              <h2>Categorías con más movimiento</h2>
+            </div>
+            <a class="btn btn-linea" href="./busqueda.html">Ver todas las ofertas</a>
+          </div>
+          <div class="categorias" id="rejillaCategorias"></div>
+        </div>
+      </section>
+
+      <hr class="filete" />
+
+      <!-- ============================================================
+           OFERTAS RECIENTES
+           Listado generado desde el mismo conjunto de datos que usa
+           la pantalla de resultados, ordenado por fecha de publicación.
+           ============================================================ -->
+      <section class="seccion">
+        <div class="contenedor">
+          <div class="seccion-cabecera">
+            <div>
+              <p class="etiqueta" data-num="03">Recién publicadas</p>
+              <h2>Ofertas de esta semana</h2>
+            </div>
+            <a class="btn btn-linea" href="./busqueda.html">Ver el listado completo</a>
+          </div>
+          <div id="listaRecientes"></div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           CÓMO FUNCIONA
+           Cuatro pasos numerados que explican el recorrido de una
+           persona buscadora de empleo dentro del portal.
+           ============================================================ -->
+      <section class="seccion seccion-banda">
+        <div class="contenedor">
+          <p class="etiqueta" data-num="04">Cómo funciona</p>
+          <h2 class="mb-4">De registrado a contratado, en cuatro pasos</h2>
+          <div class="pasos">
+            <div class="paso">
+              <span class="disco">1</span>
+              <h3>Crea tu perfil</h3>
+              <p>Registra tus datos, formación y experiencia. El perfil público es lo que ve la empresa al recibir tu postulación.</p>
+            </div>
+            <div class="paso">
+              <span class="disco">2</span>
+              <h3>Sube tu currículum</h3>
+              <p>Carga el documento en PDF oWord y asígnale un nombre según el área a la que postulas.</p>
+            </div>
+            <div class="paso">
+              <span class="disco">3</span>
+              <h3>Configura alertas</h3>
+              <p>Define sector, ciudad y salario mínimo. Te avisamos por correo cuando aparece una oferta que encaja.</p>
+            </div>
+            <div class="paso">
+              <span class="disco">4</span>
+              <h3>Postula y da seguimiento</h3>
+              <p>Envía tu solicitud con un clic y sigue el estado desde tu perfil: recibida, en revisión o preseleccionada.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           PARA EMPRESAS
+           Bloque dirigido al segundo tipo de usuario del prototipo.
+           ============================================================ -->
+      <section class="seccion">
+        <div class="contenedor">
+          <div class="cta-empresas">
+            <div class="cta-empresas-texto">
+              <p class="etiqueta" data-num="05">Módulo empresarial</p>
+              <h2>Publica tu vacante y recibe postulaciones el mismo día</h2>
+              <p class="lead">
+                Crea la ficha de tu empresa, publica el puesto con sus requisitos y
+                revisa los perfiles de los candidatos desde un panel propio.
+              </p>
+              <div class="d-flex gap-2 flex-wrap mt-4">
+                <a class="btn btn-bermellon" href="./empresas.html">
+                  <span class="punto" aria-hidden="true"></span>
+                  Publicar una oferta
+                </a>
+                <a class="btn btn-linea" href="./empresas.html#valoraciones">Ver valoraciones</a>
+              </div>
+            </div>
+            <div class="cta-empresas-lista">
+              <h3 class="mb-3" style="font-size: 1.05rem">Qué incluye el módulo</h3>
+              <ul>
+                <li><span class="disco" aria-hidden="true">A</span> Ficha de empresa con rubro, tamaño y valoraciones.</li>
+                <li><span class="disco" aria-hidden="true">B</span> Formulario de publicación con validación de campos.</li>
+                <li><span class="disco" aria-hidden="true">C</span> Consulta de postulantes por cada oferta abierta.</li>
+                <li><span class="disco" aria-hidden="true">D</span> Estado de cada candidatura y descarga de currículum.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           RECURSOS
+           Avance de la sección de consejos de carrera.
+           ============================================================ -->
+      <section class="seccion seccion-banda">
+        <div class="contenedor">
+          <div class="seccion-cabecera">
+            <div>
+              <p class="etiqueta" data-num="06">Consejos de carrera</p>
+              <h2>Prepárate antes de la entrevista</h2>
+            </div>
+            <a class="btn btn-linea" href="./recursos.html">Ir a recursos</a>
+          </div>
+          <div class="row g-3" id="listaRecursosInicio"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================================================
+         PIE DE PÁGINA
+         ============================================================ -->
+    <footer class="pie mt-auto">
+      <div class="contenedor">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <a class="marca mb-3" href="./index.html">
+              <span class="marca-marca" aria-hidden="true"></span>
+              <span class="marca-texto">
+                Portal de Trabajo
+                <small>Bolsa de empleo</small>
+              </span>
+            </a>
+            <p style="max-width: 34ch; font-size: 0.9rem">
+              Prototipo académico de portal de búsqueda de empleo. Todas las empresas,
+              personas y cifras mostradas son ficticias.
+            </p>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Candidatos</h5>
+            <a href="./busqueda.html">Buscar empleos</a><br />
+            <a href="./perfil.html">Mi perfil</a><br />
+            <a href="./recursos.html">Recursos</a><br />
+            <a href="./foros.html">Foros</a>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Empresas</h5>
+            <a href="./empresas.html">Publicar oferta</a><br />
+            <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
+            <a href="./empresas.html#directorio">Directorio</a><br />
+            <a href="./admin.html">Administración</a>
+          </div>
+          <div class="col-lg-4">
+            <h5>Boletín de empleo</h5>
+            <p style="font-size: 0.9rem; max-width: 32ch">
+              Recibe las ofertas de la semana según tu sector.
+            </p>
+            <form class="d-flex gap-2" data-accion="suscripcion" data-mensaje="Suscripción registrada. Recibirás el próximo boletín el lunes." data-tono="exito">
+              <input class="form-control" type="email" placeholder="Tu correo" aria-label="Correo para el boletín" />
+              <button class="btn btn-bermellon" type="submit">Suscribirme</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="pie-registro">
+          <span>© <span data-anio>2026</span> Portal de Trabajo · Proyecto académico</span>
+          <span>Ing. José Emerson Aguilar · Segundo período</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
+    <script src="./js/datos.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="./js/inicio.js"></script>
+  </body>
 </html>

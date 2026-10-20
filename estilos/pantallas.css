@@ -1,0 +1,594 @@
+/* =============================================================
+   PORTAL DE TRABAJO — pantallas
+   -------------------------------------------------------------
+   Estilos propios de cada página del prototipo.
+   ============================================================= */
+
+/* ---------------------------------------------------------------
+   1. Inicio — bloque de búsqueda destacado
+   --------------------------------------------------------------- */
+.portada {
+  position: relative;
+  padding: 4.5rem 0 4rem;
+  border-bottom: var(--filete);
+  overflow: hidden;
+}
+
+/* Traza editorial de fondo: cuadrícula tenue + disco de acento */
+.portada::before {
+  content: "";
+  position: absolute;
+  top: -8rem;
+  right: -6rem;
+  width: 26rem;
+  height: 26rem;
+  border-radius: 50%;                /* gran círculo decorativo */
+  border: 1px solid var(--linea-fuerte);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.portada::after {
+  content: "";
+  position: absolute;
+  bottom: -11rem;
+  left: -7rem;
+  width: 20rem;
+  height: 20rem;
+  border-radius: 50%;
+  background: var(--bermellon-leche);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.portada .contenedor { position: relative; z-index: 1; }
+
+.portada-titulo { max-width: 20ch; }
+.portada-titulo em {
+  font-style: italic;
+  color: var(--bermellon);
+  font-variation-settings: "opsz" 144;
+}
+
+/* Panel de búsqueda: caja cuadrada con sombra dura */
+.buscador {
+  background: var(--papel-hueso);
+  border: 1px solid var(--linea-fuerte);
+  box-shadow: var(--sombra-dura-alta);
+  padding: 1.6rem;
+  margin-top: 2.5rem;
+}
+
+.buscador-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 1.1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: var(--filete);
+}
+
+.buscador-cabecera h2 { margin: 0; font-size: 1.15rem; }
+
+.buscador-campos {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 1px;                          /* los filetes hacen de separación */
+  background: var(--linea);
+  border: var(--filete);
+}
+
+.buscador-campo {
+  background: var(--papel-hueso);
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.buscador-campo label {
+  font-family: var(--fuente-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tinta-tenue);
+}
+
+.buscador-campo .form-control,
+.buscador-campo .form-select {
+  border: 0;
+  padding: 0.15rem 0;
+  background-color: transparent;
+  font-size: 0.95rem;
+}
+
+.buscador-campo .form-control:focus,
+.buscador-campo .form-select:focus { background-color: transparent; }
+
+/* Última celda de la rejilla: la acción principal */
+.buscador-campo-boton {
+  background: var(--bermellon);
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.buscador-campo-boton .btn {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.buscador-campo-boton .btn:hover { background: var(--bermellon-hondo); }
+
+.buscador-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.15rem;
+}
+
+/* Búsquedas frecuentes */
+.frecuentes { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.frecuentes span {
+  font-family: var(--fuente-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--tinta-tenue);
+}
+.frecuentes a {
+  font-size: 0.82rem;
+  color: var(--tinta-suave);
+  text-decoration: none;
+  border-bottom: 1px solid var(--linea-fuerte);
+}
+.frecuentes a:hover { color: var(--bermellon); border-color: var(--bermellon); }
+
+/* ---------------------------------------------------------------
+   2. Inicio — métricas, pasos y categorías
+   --------------------------------------------------------------- */
+.metricas-rejilla {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem 1.5rem;
+}
+
+/* Pasos: numeración circular */
+.pasos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.paso { padding: 1.6rem 1.5rem 1.6rem 0; border-right: var(--filete); }
+.paso:last-child { border-right: 0; }
+.paso:not(:first-child) { padding-left: 1.5rem; }
+.paso .disco { margin-bottom: 1rem; }
+.paso h3 { font-size: 1.05rem; margin-bottom: 0.4rem; }
+.paso p { font-size: 0.9rem; color: var(--tinta-suave); margin: 0; }
+
+/* Categorías: rejilla de cuadrados */
+.categorias { display: grid; grid-template-columns: repeat(4, 1fr); gap: -1px; }
+.categoria {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.15rem;
+  background: var(--papel-hueso);
+  border: var(--filete);
+  margin: 0 -1px -1px 0;            /* filetes compartidos */
+  text-decoration: none;
+  transition: background 0.18s ease;
+}
+.categoria:hover { background: var(--bermellon-leche); color: var(--tinta); }
+.categoria:hover .disco { background: var(--bermellon); color: #fff; }
+.categoria .disco { width: 2.35rem; height: 2.35rem; font-size: 0.8rem; transition: background 0.18s ease; }
+.categoria strong { font-size: 0.92rem; font-weight: 600; display: block; }
+.categoria small { color: var(--tinta-tenue); font-family: var(--fuente-mono); font-size: 0.68rem; }
+
+/* Bloque de empresas / CTA */
+.cta-empresas {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 0;
+  border: var(--filete);
+}
+.cta-empresas-texto { padding: 2.5rem; }
+.cta-empresas-lista {
+  background: var(--papel-oscuro);
+  color: var(--papel);
+  padding: 2.5rem;
+}
+.cta-empresas-lista ul { list-style: none; padding: 0; margin: 0; }
+.cta-empresas-lista li {
+  display: flex;
+  gap: 0.85rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.92rem;
+}
+.cta-empresas-lista li:last-child { border-bottom: 0; }
+.cta-empresas-lista .disco { width: 1.8rem; height: 1.8rem; font-size: 0.7rem; background: rgba(255,255,255,0.1); color: var(--papel); }
+
+/* ---------------------------------------------------------------
+   3. Resultados de búsqueda
+   --------------------------------------------------------------- */
+.pagina-cabecera {
+  background: var(--papel-banda);
+  border-bottom: var(--filete);
+  padding: 2.25rem 0;
+}
+.pagina-cabecera h1 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); margin-bottom: 0.3rem; }
+
+.migas { font-family: var(--fuente-mono); font-size: 0.72rem; color: var(--tinta-tenue); margin-bottom: 0.75rem; }
+.migas a { color: var(--tinta-tenue); text-decoration: none; }
+.migas a:hover { color: var(--bermellon); }
+
+/* Rejilla de resultados: filtros a la izquierda */
+.rejilla-resultados { display: grid; grid-template-columns: 17rem 1fr; gap: 2.5rem; align-items: start; }
+
+/* Panel de filtros */
+.filtros { position: sticky; top: calc(var(--cabecera-alto) + 1.25rem); }
+.filtros-grupo { border-bottom: var(--filete); padding: 1.15rem 0; }
+.filtros-grupo:first-of-type { padding-top: 0; }
+.filtros-grupo h4 {
+  font-family: var(--fuente-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tinta);
+  margin-bottom: 0.85rem;
+}
+.filtros-grupo .form-check { margin-bottom: 0.5rem; }
+.filtros-cuenta { font-family: var(--fuente-mono); font-size: 0.68rem; color: var(--tinta-tenue); margin-left: auto; }
+
+/* Resultado de vacante */
+.resultado {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.35rem;
+  padding: 1.4rem;
+  background: var(--papel-hueso);
+  border: var(--filete);
+  margin-bottom: -1px;              /* filetes encadenados */
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+.resultado:hover { border-color: var(--linea-fuerte); background: #fff; position: relative; z-index: 1; }
+.resultado-destacado { border-left: 3px solid var(--bermellon); }
+
+.resultado-cuerpo h3 { font-size: 1.12rem; margin-bottom: 0.25rem; }
+.resultado-cuerpo h3 a { text-decoration: none; }
+.resultado-cuerpo h3 a:hover { color: var(--bermellon); }
+.resultado-empresa { font-size: 0.9rem; color: var(--tinta-suave); margin-bottom: 0.7rem; }
+.resultado-meta { display: flex; flex-wrap: wrap; gap: 0.45rem 1.1rem; font-size: 0.82rem; color: var(--tinta-suave); }
+.resultado-meta span { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+.resultado-lado { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 1rem; text-align: right; }
+.resultado-salario { font-family: var(--fuente-mono); font-size: 0.9rem; font-weight: 600; color: var(--tinta); white-space: nowrap; }
+.resultado-fecha { font-family: var(--fuente-mono); font-size: 0.68rem; color: var(--tinta-tenue); white-space: nowrap; }
+
+/* Sin resultados */
+.vacio { text-align: center; padding: 4rem 1.5rem; border: 1px dashed var(--linea-fuerte); }
+.vacio .disco { margin: 0 auto 1.25rem; width: 4.5rem; height: 4.5rem; }
+
+/* ---------------------------------------------------------------
+   4. Detalle de vacante
+   --------------------------------------------------------------- */
+.vacante-cabecera { padding: 2.25rem 0; border-bottom: 2px solid var(--tinta); background: var(--papel-banda); }
+.vacante-titulo { display: flex; gap: 1.35rem; align-items: flex-start; flex-wrap: wrap; }
+.vacante-titulo h1 { font-size: clamp(1.7rem, 3.2vw, 2.5rem); margin-bottom: 0.4rem; }
+.vacante-acciones { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-left: auto; }
+
+.vacante-rejilla { display: grid; grid-template-columns: 1fr 21rem; gap: 2.5rem; align-items: start; }
+
+/* Sumario de datos clave (cuadrícula de pares) */
+.ficha-datos { display: grid; grid-template-columns: repeat(2, 1fr); }
+.ficha-datos > div { padding: 1rem 1.35rem; border-bottom: var(--filete); border-right: var(--filete); }
+.ficha-datos > div:nth-child(2n) { border-right: 0; }
+.ficha-datos dt {
+  font-family: var(--fuente-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tinta-tenue);
+  margin-bottom: 0.25rem;
+}
+.ficha-datos dd { margin: 0; font-size: 0.95rem; font-weight: 500; }
+
+/* Cuerpo del detalle */
+.detalle-seccion { padding-bottom: 2rem; margin-bottom: 2rem; border-bottom: var(--filete); }
+.detalle-seccion:last-child { border-bottom: 0; }
+.detalle-seccion h2 { font-size: 1.35rem; margin-bottom: 1rem; }
+.detalle-lista { list-style: none; padding: 0; margin: 0; }
+.detalle-lista li { display: flex; gap: 0.85rem; padding: 0.5rem 0; font-size: 0.95rem; color: var(--tinta-suave); }
+.detalle-lista .punto { margin-top: 0.6rem; background: var(--bermellon); }
+
+/* Panel lateral pegajoso */
+.lateral { position: sticky; top: calc(var(--cabecera-alto) + 1.25rem); display: grid; gap: 1.25rem; }
+
+/* Reseña de empresa */
+.resena { display: grid; grid-template-columns: auto 1fr; gap: 1rem; padding: 1.25rem 0; border-bottom: var(--filete); }
+.resena:last-child { border-bottom: 0; }
+.resena-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.35rem; }
+.resena p { font-size: 0.9rem; color: var(--tinta-suave); margin: 0.5rem 0 0; }
+
+/* ---------------------------------------------------------------
+   5. Módulo empresarial
+   --------------------------------------------------------------- */
+.gestion-rejilla { display: grid; grid-template-columns: 15rem 1fr; gap: 2.5rem; align-items: start; }
+
+/* Índice lateral del módulo */
+.indice-lateral { position: sticky; top: calc(var(--cabecera-alto) + 1.25rem); border: var(--filete); background: var(--papel-hueso); }
+.indice-lateral button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.85rem 1.1rem;
+  background: transparent;
+  border: 0;
+  border-bottom: var(--filete);
+  font-size: 0.88rem;
+  color: var(--tinta-suave);
+}
+.indice-lateral button:last-child { border-bottom: 0; }
+.indice-lateral button:hover { background: var(--papel-banda); color: var(--tinta); }
+.indice-lateral button.activo { background: var(--tinta); color: var(--papel); font-weight: 600; }
+.indice-lateral button.activo .disco { background: var(--bermellon); color: #fff; }
+.indice-lateral .disco { width: 1.65rem; height: 1.65rem; font-size: 0.66rem; background: var(--papel-banda); color: var(--tinta-suave); order: -1; }
+
+/* Ficha de candidato */
+.candidato { display: grid; grid-template-columns: auto 1fr auto; gap: 1.15rem; align-items: center; padding: 1.15rem; border: var(--filete); margin-bottom: -1px; }
+.candidato:hover { background: #fff; position: relative; z-index: 1; }
+.candidato h4 { margin-bottom: 0.2rem; }
+.candidato .habilidades { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.55rem; }
+
+/* ---------------------------------------------------------------
+   6. Recursos
+   --------------------------------------------------------------- */
+.recurso-destacado { display: grid; grid-template-columns: 1fr 1fr; border: var(--filete); background: var(--papel-hueso); }
+.recurso-destacado-texto { padding: 2.5rem; }
+.recurso-destacado-grafico { background: var(--papel-banda); border-left: var(--filete); display: grid; place-items: center; padding: 2rem; }
+
+.recurso-tarjeta { display: flex; flex-direction: column; height: 100%; }
+.recurso-tarjeta .tarjeta-cuerpo { display: flex; flex-direction: column; flex: 1; padding: 1.35rem; }
+.recurso-tarjeta h3 { font-size: 1.05rem; }
+.recurso-tarjeta p { font-size: 0.88rem; color: var(--tinta-suave); flex: 1; }
+.recurso-pie { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 0.9rem; border-top: var(--filete); }
+
+/* Miniatura gráfica del recurso */
+.recurso-miniatura { position: relative; aspect-ratio: 16 / 9; background: var(--papel-banda); border-bottom: var(--filete); display: grid; place-items: center; overflow: hidden; }
+.recurso-miniatura .disco { width: 3.25rem; height: 3.25rem; }
+.recurso-miniatura .duracion { position: absolute; right: 0.6rem; bottom: 0.6rem; background: var(--tinta); color: var(--papel); font-family: var(--fuente-mono); font-size: 0.66rem; padding: 0.15rem 0.45rem; }
+
+/* ---------------------------------------------------------------
+   7. Foros
+   --------------------------------------------------------------- */
+.foro-rejilla { display: grid; grid-template-columns: 16rem 1fr; gap: 2.5rem; align-items: start; }
+
+.categoria-foro {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  background: transparent;
+  border: 0;
+  border-bottom: var(--filete);
+  font-size: 0.86rem;
+  color: var(--tinta-suave);
+  text-align: left;
+}
+.categoria-foro:hover { background: var(--papel-banda); color: var(--tinta); }
+.categoria-foro.activo { background: var(--tinta); color: var(--papel); font-weight: 600; }
+.categoria-foro.activo .disco { background: var(--bermellon); color: #fff; }
+.categoria-foro .disco { width: 1.7rem; height: 1.7rem; font-size: 0.62rem; background: var(--papel-banda); color: var(--tinta-suave); }
+.categoria-foro .contador { margin-left: auto; font-family: var(--fuente-mono); font-size: 0.7rem; }
+
+/* Tema del foro */
+.tema {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.15rem;
+  align-items: center;
+  padding: 1.1rem 1.25rem;
+  background: var(--papel-hueso);
+  border: var(--filete);
+  margin-bottom: -1px;
+}
+.tema:hover { background: #fff; position: relative; z-index: 1; }
+.tema h3 { font-size: 1rem; margin-bottom: 0.2rem; }
+.tema h3 a { text-decoration: none; }
+.tema h3 a:hover { color: var(--bermellon); }
+.tema-meta { font-size: 0.8rem; color: var(--tinta-tenue); display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; }
+.tema-cifras { display: flex; gap: 1.75rem; text-align: center; }
+.tema-cifras strong { display: block; font-family: var(--fuente-mono); font-size: 1.02rem; color: var(--tinta); }
+.tema-cifras span { font-family: var(--fuente-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--tinta-tenue); }
+
+/* ---------------------------------------------------------------
+   8. Perfil de usuario
+   --------------------------------------------------------------- */
+.perfil-cabecera { background: var(--papel-oscuro); color: var(--papel); padding: 2.5rem 0; }
+.perfil-cabecera h1 { color: var(--papel); font-size: 1.9rem; margin-bottom: 0.2rem; }
+.perfil-cabecera .avatar { width: 5.5rem; height: 5.5rem; font-size: 1.5rem; background: var(--bermellon); }
+.perfil-cabecera .texto-suave { color: #a89e8c; }
+.perfil-cabecera .etiqueta-chip { border-color: rgba(255,255,255,0.3); color: #cfc6b4; }
+
+.perfil-rejilla { display: grid; grid-template-columns: 1fr 19rem; gap: 2.5rem; align-items: start; }
+
+/* Estadísticas del perfil */
+.estadisticas-rejilla { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--linea); border: var(--filete); }
+.estadistica { background: var(--papel-hueso); padding: 1.35rem; }
+.estadistica strong { display: block; font-family: var(--fuente-titulo); font-size: 1.9rem; line-height: 1; font-variation-settings: "opsz" 90; }
+.estadistica span { font-family: var(--fuente-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--tinta-tenue); }
+.estadistica .variacion { font-family: var(--fuente-mono); font-size: 0.7rem; color: var(--verde); }
+
+/* Gráfico de visitas (barras cuadradas) */
+.grafico-barras { display: flex; align-items: flex-end; gap: 0.5rem; height: 10rem; padding-top: 1rem; }
+.grafico-barras .barra { flex: 1; background: var(--linea-fuerte); position: relative; min-height: 3px; transition: height 1s cubic-bezier(0.22,1,0.36,1); }
+.grafico-barras .barra.resalte { background: var(--bermellon); }
+.grafico-barras-eje { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.grafico-barras-eje span { flex: 1; text-align: center; font-family: var(--fuente-mono); font-size: 0.6rem; color: var(--tinta-tenue); }
+
+/* Alertas de empleo */
+.alerta-fila { display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: var(--filete); }
+.alerta-fila:last-child { border-bottom: 0; }
+.alerta-fila strong { display: block; font-size: 0.95rem; }
+.alerta-fila small { color: var(--tinta-tenue); font-family: var(--fuente-mono); font-size: 0.7rem; }
+
+/* Interruptor cuadrado */
+.interruptor { position: relative; width: 2.9rem; height: 1.5rem; flex: none; }
+.interruptor input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 2; }
+.interruptor .pista-i { position: absolute; inset: 0; background: var(--papel-banda); border: 1px solid var(--linea-fuerte); transition: background 0.18s ease; }
+.interruptor .pista-i::after {
+  content: ""; position: absolute; top: 0.2rem; left: 0.22rem;
+  width: 1rem; height: 1rem; border-radius: 50%;    /* el cursor es un círculo */
+  background: var(--tinta-tenue); transition: transform 0.18s ease, background 0.18s ease;
+}
+.interruptor input:checked + .pista-i { background: var(--bermellon-leche); border-color: var(--bermellon); }
+.interruptor input:checked + .pista-i::after { transform: translateX(1.3rem); background: var(--bermellon); }
+.interruptor input:focus-visible + .pista-i { outline: 2px solid var(--bermellon); outline-offset: 2px; }
+
+/* Zona de carga de currículum */
+.carga-zona {
+  border: 1px dashed var(--linea-fuerte);
+  background: var(--papel-hueso);
+  padding: 2.25rem 1.5rem;
+  text-align: center;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.carga-zona:hover { background: var(--bermellon-leche); border-color: var(--bermellon); }
+.carga-zona .disco { margin: 0 auto 1rem; width: 3.5rem; height: 3.5rem; }
+
+.archivo-fila { display: flex; align-items: center; gap: 1rem; padding: 0.9rem 0; border-bottom: var(--filete); }
+.archivo-fila:last-child { border-bottom: 0; }
+
+/* ---------------------------------------------------------------
+   9. Panel de administración
+   --------------------------------------------------------------- */
+.admin-cuerpo { display: grid; grid-template-columns: 16rem 1fr; min-height: calc(100vh - 60px); }
+
+.admin-lateral {
+  background: var(--papel-oscuro);
+  color: #cfc6b4;
+  padding: 1.5rem 0;
+  position: sticky;
+  top: var(--cabecera-alto);
+  height: calc(100vh - var(--cabecera-alto));
+  overflow-y: auto;
+}
+
+.admin-lateral-titulo {
+  font-family: var(--fuente-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8d8271;
+  padding: 0 1.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-lateral button {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0.75rem 1.35rem;
+  background: transparent;
+  border: 0;
+  border-left: 3px solid transparent;
+  color: #cfc6b4;
+  font-size: 0.88rem;
+  text-align: left;
+}
+.admin-lateral button:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
+.admin-lateral button.activo { background: rgba(255, 255, 255, 0.1); border-left-color: var(--bermellon); color: #fff; font-weight: 600; }
+.admin-lateral .disco { width: 1.7rem; height: 1.7rem; font-size: 0.62rem; background: rgba(255, 255, 255, 0.12); color: #cfc6b4; }
+.admin-lateral button.activo .disco { background: var(--bermellon); color: #fff; }
+
+.admin-principal { padding: 2rem 2.25rem; background: var(--papel); }
+
+.admin-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+.admin-cabecera h1 { font-size: 1.75rem; margin-bottom: 0.15rem; }
+
+/* Tarjetas de resumen */
+.resumen-rejilla { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--linea); border: var(--filete); margin-bottom: 2rem; }
+.resumen-tarjeta { background: var(--papel-hueso); padding: 1.35rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.resumen-tarjeta strong { display: block; font-family: var(--fuente-titulo); font-size: 1.85rem; line-height: 1; font-variation-settings: "opsz" 90; }
+.resumen-tarjeta span { font-family: var(--fuente-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--tinta-tenue); }
+.resumen-tarjeta .disco { width: 2.3rem; height: 2.3rem; font-size: 0.75rem; }
+
+/* Gráfico de sectores (anillo) */
+.anillo-datos { display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
+.anillo-datos svg { width: 11rem; height: 11rem; flex: none; }
+.anillo-datos .leyenda { list-style: none; padding: 0; margin: 0; flex: 1; min-width: 12rem; }
+.anillo-datos .leyenda li { display: flex; align-items: center; gap: 0.7rem; padding: 0.45rem 0; border-bottom: var(--filete); font-size: 0.88rem; }
+.anillo-datos .leyenda li:last-child { border-bottom: 0; }
+.anillo-datos .leyenda .valor { margin-left: auto; font-family: var(--fuente-mono); font-size: 0.82rem; }
+
+/* Actividad reciente */
+.actividad { list-style: none; padding: 0; margin: 0; }
+.actividad li { display: grid; grid-template-columns: auto 1fr auto; gap: 0.9rem; align-items: center; padding: 0.85rem 0; border-bottom: var(--filete); }
+.actividad li:last-child { border-bottom: 0; }
+.actividad p { margin: 0; font-size: 0.9rem; }
+.actividad time { font-family: var(--fuente-mono); font-size: 0.68rem; color: var(--tinta-tenue); white-space: nowrap; }
+
+/* ---------------------------------------------------------------
+   10. Ajustes por pantalla
+   --------------------------------------------------------------- */
+@media (max-width: 1199.98px) {
+  .metricas-rejilla,
+  .resumen-rejilla,
+  .estadisticas-rejilla { grid-template-columns: repeat(2, 1fr); }
+  .categorias { grid-template-columns: repeat(2, 1fr); }
+  .pasos { grid-template-columns: repeat(2, 1fr); }
+  .paso { border-right: 0; border-bottom: var(--filete); padding-left: 0 !important; }
+  .paso:nth-child(odd) { border-right: var(--filete); padding-right: 1.5rem; }
+  .paso:nth-child(even) { padding-left: 1.5rem !important; }
+}
+
+@media (max-width: 991.98px) {
+  .rejilla-resultados,
+  .vacante-rejilla,
+  .gestion-rejilla,
+  .foro-rejilla,
+  .perfil-rejilla,
+  .admin-cuerpo { grid-template-columns: 1fr; }
+  .filtros, .lateral, .indice-lateral, .filtros { position: static; }
+  .admin-lateral { position: static; height: auto; display: flex; overflow-x: auto; padding: 0; }
+  .admin-lateral-titulo { display: none; }
+  .admin-lateral button { border-left: 0; border-bottom: 3px solid transparent; white-space: nowrap; }
+  .admin-lateral button.activo { border-left: 0; border-bottom-color: var(--bermellon); }
+  .cta-empresas, .recurso-destacado { grid-template-columns: 1fr; }
+  .recurso-destacado-grafico { border-left: 0; border-top: var(--filete); }
+  .admin-principal { padding: 1.5rem 1.25rem; }
+}
+
+@media (max-width: 767.98px) {
+  .buscador-campos { grid-template-columns: 1fr; }
+  .portada { padding: 3rem 0; }
+  .ficha-datos { grid-template-columns: 1fr; }
+  .ficha-datos > div { border-right: 0; }
+  .tema-cifras { gap: 1rem; }
+  .resultado { grid-template-columns: auto 1fr; }
+  .resultado-lado { grid-column: 1 / -1; align-items: flex-start; text-align: left; flex-direction: row; align-items: center; }
+}
+
+@media (max-width: 575.98px) {
+  .metricas-rejilla,
+  .resumen-rejilla,
+  .estadisticas-rejilla,
+  .categorias,
+  .pasos { grid-template-columns: 1fr; }
+  .paso:nth-child(odd) { border-right: 0; }
+  .paso:nth-child(even) { padding-left: 0 !important; }
+  .tema { grid-template-columns: auto 1fr; }
+  .tema-cifras { grid-column: 1 / -1; }
+}

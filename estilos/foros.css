@@ -1,0 +1,57 @@
+/* =============================================================
+   PORTAL DE TRABAJO — foros (estilos propios de la pantalla)
+   -------------------------------------------------------------
+   Solo clases nuevas con prefijo .for-. Reutiliza sin modificar
+   las clases ya definidas en pantallas.css (.foro-rejilla,
+   .categoria-foro, .tema, .vacio) y en componentes.css (.panel).
+   Respeta la identidad visual: todo estructural es cuadrado y
+   los círculos quedan reservados para .disco y .avatar.
+   ============================================================= */
+
+/* ---------------------------------------------------------------
+   1. Cifras del panel lateral
+   Fila con disco circular + texto: igual que la lista de pasos
+   del inicio, pero en vertical dentro del panel.
+   --------------------------------------------------------------- */
+.for-cifra {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-bottom: var(--filete);
+  font-size: 0.88rem;
+  color: var(--tinta-suave);
+}
+
+/* La última fila cierra sin filete para no duplicar el del panel */
+.for-cifra:last-child { border-bottom: 0; }
+
+.for-cifra .disco {
+  width: 1.7rem;
+  height: 1.7rem;
+  font-size: 0.62rem;
+}
+
+/* ---------------------------------------------------------------
+   2. Panel de publicación de un tema nuevo
+   --------------------------------------------------------------- */
+.for-panel-nuevo { margin-bottom: 1.5rem; }
+
+/* Campos del formulario apilados en columna */
+.for-campo { display: flex; flex-direction: column; }
+
+/* Acciones del formulario: publicar y cancelar, en fila */
+.for-acciones {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+
+/* ---------------------------------------------------------------
+   3. Ajustes por pantalla
+   --------------------------------------------------------------- */
+@media (max-width: 575.98px) {
+  /* En móvil el buscador ocupa todo el ancho disponible */
+  #buscarTema { max-width: none !important; width: 100%; }
+}

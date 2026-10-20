@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 200" width="260" height="200" role="img" aria-label="Composición decorativa de cuadrados y círculos">
+  <!--
+    COMPOSICIÓN EDITORIAL "TRABAJO EN CURSO"
+    Cuadrícula dibujada a mano alzada (filetes finos) con tres
+    elementos: un cuadrado en tinta, un círculo bermellón y un
+    cuadrado vacío que espera ser ocupado.
+  -->
+  <g stroke="#d9d0bc" stroke-width="1">
+    <path d="M10 10h240v180H10z" fill="none"/>
+    <path d="M10 55h240M10 100h240M10 145h240" fill="none"/>
+    <path d="M70 10v180M130 10v180M190 10v180" fill="none"/>
+  </g>
+
+  <!-- cuadrado ocupado -->
+  <rect x="70" y="55" width="60" height="45" fill="#191510"/>
+
+  <!-- círculo de acento, descentrado a propósito -->
+  <circle cx="190" cy="145" r="30" fill="#cf3b1a"/>
+
+  <!-- anillo vacío -->
+  <rect x="10" y="145" width="60" height="45" fill="none" stroke="#191510" stroke-width="1.6"/>
+
+  <!-- trazos de medición -->
+  <g stroke="#8d8271" stroke-width="1">
+    <path d="M70 45h60M70 41v8M130 41v8" fill="none"/>
+    <path d="M200 100l20-20M216 80h4v4" fill="none"/>
+  </g>
+
+  <!-- puntos de registro -->
+  <circle cx="40" cy="32" r="4" fill="#191510"/>
+  <circle cx="228" cy="176" r="4" fill="none" stroke="#191510" stroke-width="1.4"/>
+</svg>

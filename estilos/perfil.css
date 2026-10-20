@@ -1,0 +1,90 @@
+/* =============================================================
+   PORTAL DE TRABAJO — perfil de usuario (ajustes propios)
+   -------------------------------------------------------------
+   Complementa base.css, componentes.css y pantallas.css con
+   clases nuevas del prefijo .per- únicamente. No redefine
+   estilos existentes.
+   ============================================================= */
+
+/* ---------------------------------------------------------------
+   1. Columna lateral del perfil
+   Se ancla al hacer scroll en escritorio, igual que .lateral
+   de la pantalla de detalle de vacante.
+   --------------------------------------------------------------- */
+.per-lateral {
+  position: sticky;
+  top: calc(var(--cabecera-alto) + 1.25rem);
+  display: grid;
+  gap: 0;
+}
+
+@media (max-width: 991.98px) {
+  .per-lateral { position: static; }
+}
+
+/* ---------------------------------------------------------------
+   2. Lista de pendientes de completitud
+   Fila con punto de estado a la izquierda y texto a la derecha.
+   --------------------------------------------------------------- */
+.per-tareas {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.per-tareas li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  font-size: 0.88rem;
+  color: var(--tinta-suave);
+  border-bottom: var(--filete);
+}
+
+.per-tareas li:last-child { border-bottom: 0; }
+
+/* ---------------------------------------------------------------
+   3. Habilidades (chips eliminables)
+   El botón × vive dentro de la etiqueta y hereda su color.
+   El campo de entrada ocupa el espacio sobrante de la fila.
+   --------------------------------------------------------------- */
+.per-chips { align-items: center; }
+
+.per-quitar {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin-left: 0.15rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+}
+
+.per-quitar:hover { color: var(--bermellon); }
+
+.per-chip-entrada {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* ---------------------------------------------------------------
+   4. Puntos de valoración interactivos
+   En el formulario son botones: se elimina el relleno propio
+   del elemento y se conserva el estilo circular del componente.
+   --------------------------------------------------------------- */
+.per-nota {
+  cursor: pointer;
+  padding: 0;
+}
+
+.per-nota:hover { background: var(--bermellon-leche); }
+
+/* ---------------------------------------------------------------
+   5. Cuerpo del panel oscuro de la columna lateral
+   El párrafo hereda el color claro sobre tinta oscura.
+   --------------------------------------------------------------- */
+.panel-tinta .panel-cuerpo p { color: #cfc6b4; }

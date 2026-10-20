@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Detalle de la oferta — Portal de Trabajo</title>
+    <meta
+      name="description"
+      content="Detalle de una vacante: descripción, responsabilidades, requisitos, beneficios, empresa y reseñas."
+    />
+    <link rel="icon" type="image/svg+xml" href="./media/favicon.svg" />
+
+    <!-- Bootstrap local (funciona sin conexión) -->
+    <link rel="stylesheet" href="./estilos/vendor/bootstrap.min.css" />
+    <!-- Tipografías descargadas al proyecto -->
+    <link rel="stylesheet" href="./estilos/tipografias.css" />
+    <!-- Sistema visual propio: variables, componentes y pantallas -->
+    <link rel="stylesheet" href="./estilos/base.css" />
+    <link rel="stylesheet" href="./estilos/componentes.css" />
+    <link rel="stylesheet" href="./estilos/pantallas.css" />
+    <!-- Estilos propios de detalle de vacante -->
+    <link rel="stylesheet" href="./estilos/vacante.css" />
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-tinta position-absolute" href="#contenido">
+      Saltar al contenido principal
+    </a>
+
+    <!-- ============================================================
+         CABECERA
+         Copiada textualmente desde index.html
+         ============================================================ -->
+    <header class="cabecera">
+      <div class="contenedor">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap py-2">
+          <a class="marca" href="./index.html">
+            <span class="marca-marca" aria-hidden="true"></span>
+            <span class="marca-texto">
+              Portal de Trabajo
+              <small>Bolsa de empleo</small>
+            </span>
+          </a>
+
+          <!-- Navegación principal: se marca sola según el archivo abierto -->
+          <nav class="nav-principal d-none d-lg-flex" aria-label="Secciones del portal">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+          </nav>
+
+          <!-- Acceso: maqueta, no valida credenciales -->
+          <form class="acceso d-none d-lg-flex" data-acceso novalidate>
+            <input class="acceso-campo" type="email" placeholder="Correo" aria-label="Correo electrónico" />
+            <input class="acceso-campo" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <button class="btn btn-tinta btn-sm" type="submit">Entrar</button>
+            <a class="btn btn-linea btn-sm" href="./perfil.html">Registrarse</a>
+          </form>
+
+          <button
+            class="btn btn-tinta btn-sm d-lg-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menuMovil"
+            aria-expanded="false"
+            aria-controls="menuMovil"
+          >
+            Menú
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú para pantallas pequeñas -->
+      <div class="collapse menu-desplegable" id="menuMovil">
+        <div class="contenedor py-3">
+          <nav class="nav flex-column" aria-label="Secciones del portal (móvil)">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+            <a class="nav-link" href="./admin.html">Administración</a>
+          </nav>
+          <hr class="filete my-3" />
+          <form class="gap-2 d-flex flex-column" data-acceso novalidate>
+            <input class="form-control" type="email" placeholder="Correo electrónico" aria-label="Correo electrónico" />
+            <input class="form-control" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <div class="d-flex gap-2">
+              <button class="btn btn-tinta flex-fill" type="submit">Entrar</button>
+              <a class="btn btn-linea flex-fill" href="./perfil.html">Registrarse</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <!-- ============================================================
+           CABECERA DE VACANTE
+           Migas, título, empresa, chips y acciones de postulación/guardar
+           ============================================================ -->
+      <section class="vacante-cabecera">
+        <div class="contenedor">
+          <!-- Migas -->
+          <nav class="migas" aria-label="Ruta de navegación">
+            <a href="./index.html">Inicio</a> / <a href="./busqueda.html">Buscar empleos</a> / <span>Detalle</span>
+          </nav>
+
+          <!-- Título y acciones -->
+          <div class="vacante-titulo">
+            <!-- Marca de empresa (iniciales, pintadas por JS) -->
+            <span class="marca-empresa" id="empresaMarca" aria-label="Iniciales de la empresa"></span>
+            <div>
+              <h1 id="vacanteTitulo">Vacante</h1>
+              <p class="resultado-empresa" id="vacanteEmpresa">Empresa</p>
+              <!-- Chips: ubicación, modalidad, contrato, nivel -->
+              <div class="chips">
+                <span class="etiqueta-chip" id="chipUbicacion">Ubicación</span>
+                <span class="etiqueta-chip" id="chipModalidad">Modalidad</span>
+                <span class="etiqueta-chip" id="chipContrato">Contrato</span>
+                <span class="etiqueta-chip" id="chipNivel">Nivel</span>
+              </div>
+            </div>
+            <!-- Acciones -->
+            <div class="vacante-acciones">
+              <button class="btn btn-bermellon" id="btnPostularme">
+                <span class="punto" aria-hidden="true"></span>
+                Postularme
+              </button>
+              <button class="btn btn-linea" id="btnGuardar">Guardar oferta</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           CONTENIDO DETALLE
+           Rejilla con columna principal y lateral
+           ============================================================ -->
+      <section class="seccion-ajustada">
+        <div class="contenedor">
+          <div class="vacante-rejilla">
+            <!-- Columna izquierda (principal) -->
+            <div>
+              <!-- Ficha de datos clave -->
+              <dl class="panel ficha-datos" aria-label="Datos clave de la vacante">
+                <div>
+                  <dt>Ubicación</dt>
+                  <dd id="datoUbicacion">-</dd>
+                </div>
+                <div>
+                  <dt>Salario mensual</dt>
+                  <dd id="datoSalario">-</dd>
+                </div>
+                <div>
+                  <dt>Tipo de contrato</dt>
+                  <dd id="datoContrato">-</dd>
+                </div>
+                <div>
+                  <dt>Modalidad</dt>
+                  <dd id="datoModalidad">-</dd>
+                </div>
+                <div>
+                  <dt>Nivel de experiencia</dt>
+                  <dd id="datoNivel">-</dd>
+                </div>
+                <div>
+                  <dt>Publicada</dt>
+                  <dd id="datoPublicada">-</dd>
+                </div>
+              </dl>
+
+              <!-- Descripción del puesto -->
+              <section class="detalle-seccion">
+                <h2>Descripción del puesto</h2>
+                <p id="descResumen">-</p>
+                <p id="descContexto">-</p>
+              </section>
+
+              <!-- Responsabilidades -->
+              <section class="detalle-seccion">
+                <h2>Responsabilidades</h2>
+                <ul class="detalle-lista" id="listaResponsabilidades">
+                </ul>
+              </section>
+
+              <!-- Requisitos -->
+              <section class="detalle-seccion">
+                <h2>Requisitos</h2>
+                <ul class="detalle-lista" id="listaRequisitos">
+                </ul>
+              </section>
+
+              <!-- Beneficios -->
+              <section class="detalle-seccion">
+                <h2>Beneficios</h2>
+                <ul class="detalle-lista" id="listaBeneficios">
+                </ul>
+              </section>
+
+              <!-- Valoraciones de la empresa -->
+              <section class="detalle-seccion" id="valoraciones">
+                <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-3">
+                  <h2 class="mb-0">Valoraciones de la empresa</h2>
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="nota-grande" aria-label="Nota media de la empresa">
+                      <strong id="notaMedia">0.0</strong>
+                      <span>sobre 5</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Formulario para dejar reseña -->
+                <div class="panel">
+                  <div class="panel-cuerpo">
+                    <div class="mb-2">
+                      <label class="form-label">Tu nota</label>
+                      <div class="valoracion" id="valoracionFormulario" aria-label="Selecciona una nota de 1 a 5">
+                        <button type="button" class="punto-valoracion" data-nota="1" aria-label="1"></button>
+                        <button type="button" class="punto-valoracion" data-nota="2" aria-label="2"></button>
+                        <button type="button" class="punto-valoracion" data-nota="3" aria-label="3"></button>
+                        <button type="button" class="punto-valoracion" data-nota="4" aria-label="4"></button>
+                        <button type="button" class="punto-valoracion" data-nota="5" aria-label="5"></button>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label" for="resenaTexto">Tu comentario</label>
+                      <textarea class="form-control" id="resenaTexto" placeholder="Cuenta tu experiencia..."></textarea>
+                    </div>
+                    <button class="btn btn-bermellon" id="btnPublicarResena">
+                      <span class="punto" aria-hidden="true"></span>
+                      Publicar reseña
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Lista de reseñas -->
+                <div class="mt-3" id="listaResenas">
+                </div>
+              </section>
+            </div>
+
+            <!-- Columna derecha: lateral -->
+            <aside class="lateral">
+              <!-- Panel oscuro para postular -->
+              <div class="panel panel-tinta">
+                <div class="panel-cuerpo">
+                  <h3 class="mb-2">¿Te interesa esta oferta?</h3>
+                  <p class="mb-2">Salario: <span id="salarioLateral">-</span></p>
+                  <button class="btn btn-bermellon btn-block mb-2" id="btnPostularmeLateral">
+                    <span class="punto" aria-hidden="true"></span>
+                    Postularme ahora
+                  </button>
+                  <p class="datos">Postulaciones recibidas: <span id="contadorPostulaciones">27</span></p>
+                </div>
+              </div>
+
+              <!-- Sobre la empresa -->
+              <div class="panel">
+                <div class="panel-cuerpo">
+                  <h4>Sobre la empresa</h4>
+                  <p class="mb-1" id="empresaNombre">-</p>
+                  <p class="mb-1">Rubro: <span id="empresaRubro">-</span></p>
+                  <p class="mb-1">Tamaño: <span id="empresaTamano">-</span></p>
+                  <p class="mb-2">Ciudad: <span id="empresaCiudad">-</span></p>
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="valoracion" id="valoracionEmpresa">
+                    </div>
+                    <span class="datos" id="empresaResenas">0 reseñas</span>
+                  </div>
+                  <a href="./busqueda.html" id="linkOfertasEmpresa">Ver todas las ofertas de la empresa</a>
+                </div>
+              </div>
+
+              <!-- Contacto -->
+              <div class="panel">
+                <div class="panel-cuerpo">
+                  <h4>Contacto</h4>
+                  <div class="d-flex flex-column gap-2">
+                    <div>
+                      <div class="datos texto-tenue">Correo</div>
+                      <div id="contactoCorreo">-</div>
+                    </div>
+                    <div>
+                      <div class="datos texto-tenue">Teléfono</div>
+                      <div id="contactoTelefono">-</div>
+                    </div>
+                    <div>
+                      <div class="datos texto-tenue">Dirección</div>
+                      <div id="contactoDireccion">-</div>
+                    </div>
+                    <div>
+                      <div class="datos texto-tenue">Persona de contacto</div>
+                      <div id="contactoResponsable">-</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           OTRAS OFERTAS DE LA MISMA EMPRESA
+           ============================================================ -->
+      <section class="seccion-banda seccion-ajustada">
+        <div class="contenedor">
+          <div class="seccion-cabecera">
+            <div>
+              <p class="etiqueta" data-num="OT">Otras ofertas</p>
+              <h2>Otras ofertas de esta empresa</h2>
+            </div>
+          </div>
+          <div class="row g-3" id="otrasOfertas">
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================================================
+         PIE DE PÁGINA
+         Copiado textualmente desde index.html
+         ============================================================ -->
+    <footer class="pie mt-auto">
+      <div class="contenedor">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <a class="marca mb-3" href="./index.html">
+              <span class="marca-marca" aria-hidden="true"></span>
+              <span class="marca-texto">
+                Portal de Trabajo
+                <small>Bolsa de empleo</small>
+              </span>
+            </a>
+            <p style="max-width: 34ch; font-size: 0.9rem">
+              Prototipo académico de portal de búsqueda de empleo. Todas las empresas,
+              personas y cifras mostradas son ficticias.
+            </p>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Candidatos</h5>
+            <a href="./busqueda.html">Buscar empleos</a><br />
+            <a href="./perfil.html">Mi perfil</a><br />
+            <a href="./recursos.html">Recursos</a><br />
+            <a href="./foros.html">Foros</a>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Empresas</h5>
+            <a href="./empresas.html">Publicar oferta</a><br />
+            <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
+            <a href="./empresas.html#directorio">Directorio</a><br />
+            <a href="./admin.html">Administración</a>
+          </div>
+          <div class="col-lg-4">
+            <h5>Boletín de empleo</h5>
+            <p style="font-size: 0.9rem; max-width: 32ch">
+              Recibe las ofertas de la semana según tu sector.
+            </p>
+            <form class="d-flex gap-2" data-accion="suscripcion" data-mensaje="Suscripción registrada. Recibirás el próximo boletín el lunes." data-tono="exito">
+              <input class="form-control" type="email" placeholder="Tu correo" aria-label="Correo para el boletín" />
+              <button class="btn btn-bermellon" type="submit">Suscribirme</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="pie-registro">
+          <span>© <span data-anio>2026</span> Portal de Trabajo · Proyecto académico</span>
+          <span>Ing. José Emerson Aguilar · Segundo período</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
+    <script src="./js/datos.js"></script>
+    <script src="./js/main.js"></script>
+    <!-- Lógica específica de detalle de vacante -->
+    <script src="./js/vacante.js"></script>
+  </body>
+</html>

@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel de administración — Portal de Trabajo</title>
+    <meta
+      name="description"
+      content="Panel de administración del prototipo: gestión de usuarios, empresas y vacantes, moderación de contenidos y estadísticas del portal."
+    />
+    <link rel="icon" type="image/svg+xml" href="./media/favicon.svg" />
+
+    <!-- Bootstrap local (funciona sin conexión) -->
+    <link rel="stylesheet" href="./estilos/vendor/bootstrap.min.css" />
+    <!-- Tipografías descargadas al proyecto -->
+    <link rel="stylesheet" href="./estilos/tipografias.css" />
+    <!-- Sistema visual propio: variables, componentes y pantallas -->
+    <link rel="stylesheet" href="./estilos/base.css" />
+    <link rel="stylesheet" href="./estilos/componentes.css" />
+    <link rel="stylesheet" href="./estilos/pantallas.css" />
+    <!-- Reglas exclusivas de esta pantalla (clases .adm-) -->
+    <link rel="stylesheet" href="./estilos/admin.css" />
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-tinta position-absolute" href="#contenido">
+      Saltar al contenido principal
+    </a>
+
+    <!-- ============================================================
+         CABECERA
+         Encabezado con logo, formulario de inicio de sesión y botón
+         de registro (según el requerimiento de la página de inicio).
+         ============================================================ -->
+    <header class="cabecera">
+      <div class="contenedor">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap py-2">
+          <a class="marca" href="./index.html">
+            <span class="marca-marca" aria-hidden="true"></span>
+            <span class="marca-texto">
+              Portal de Trabajo
+              <small>Bolsa de empleo</small>
+            </span>
+          </a>
+
+          <!-- Navegación principal: se marca sola según el archivo abierto -->
+          <nav class="nav-principal d-none d-lg-flex" aria-label="Secciones del portal">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+          </nav>
+
+          <!-- Acceso: maqueta, no valida credenciales -->
+          <form class="acceso d-none d-lg-flex" data-acceso novalidate>
+            <input class="acceso-campo" type="email" placeholder="Correo" aria-label="Correo electrónico" />
+            <input class="acceso-campo" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <button class="btn btn-tinta btn-sm" type="submit">Entrar</button>
+            <a class="btn btn-linea btn-sm" href="./perfil.html">Registrarse</a>
+          </form>
+
+          <button
+            class="btn btn-tinta btn-sm d-lg-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menuMovil"
+            aria-expanded="false"
+            aria-controls="menuMovil"
+          >
+            Menú
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú para pantallas pequeñas -->
+      <div class="collapse menu-desplegable" id="menuMovil">
+        <div class="contenedor py-3">
+          <nav class="nav flex-column" aria-label="Secciones del portal (móvil)">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+            <a class="nav-link" href="./admin.html">Administración</a>
+          </nav>
+          <hr class="filete my-3" />
+          <form class="gap-2 d-flex flex-column" data-acceso novalidate>
+            <input class="form-control" type="email" placeholder="Correo electrónico" aria-label="Correo electrónico" />
+            <input class="form-control" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <div class="d-flex gap-2">
+              <button class="btn btn-tinta flex-fill" type="submit">Entrar</button>
+              <a class="btn btn-linea flex-fill" href="./perfil.html">Registrarse</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         CUERPO DEL PANEL
+         Rejilla de dos columnas: índice lateral oscuro con las siete
+         secciones de administración y, a la derecha, el panel activo.
+         Solo se ve uno a la vez (js/admin.js alterna el atributo
+         hidden de .adm-panel y la marca .activo del índice).
+         ============================================================ -->
+    <main id="contenido" class="admin-cuerpo">
+      <!-- ------------------------------------------------------------
+           ÍNDICE LATERAL
+           Siete botones con disco circular de acento. El primero viene
+           marcado como activo y el resto se resaltan al pulsarlos.
+           ------------------------------------------------------------ -->
+      <aside class="admin-lateral" aria-label="Secciones de administración">
+        <p class="admin-lateral-titulo">Administración</p>
+
+        <button class="activo" type="button" data-seccion="principal" aria-current="true">
+          <span class="disco" aria-hidden="true">A</span>
+          Panel principal
+        </button>
+        <button type="button" data-seccion="usuarios">
+          <span class="disco" aria-hidden="true">B</span>
+          Gestión de usuarios
+        </button>
+        <button type="button" data-seccion="empresas">
+          <span class="disco" aria-hidden="true">C</span>
+          Gestión de empresas
+        </button>
+        <button type="button" data-seccion="vacantes">
+          <span class="disco" aria-hidden="true">D</span>
+          Gestión de vacantes
+        </button>
+        <button type="button" data-seccion="moderacion">
+          <span class="disco" aria-hidden="true">E</span>
+          Moderación de contenido
+        </button>
+        <button type="button" data-seccion="estadisticas">
+          <span class="disco" aria-hidden="true">F</span>
+          Estadísticas del sistema
+        </button>
+        <button type="button" data-seccion="otros">
+          <span class="disco" aria-hidden="true">G</span>
+          Otros
+        </button>
+      </aside>
+
+      <div class="admin-principal">
+
+        <!-- ============================================================
+             SECCIÓN A — PANEL PRINCIPAL
+             Resumen de la actividad del portal: cuatro cifras clave,
+             bitácora de movimiento y anillo con las vacantes por sector.
+             ============================================================ -->
+        <div class="adm-panel" data-panel="principal" id="panelPrincipal">
+
+          <!-- Cabecera: título a la izquierda; buscador del panel y
+               acceso al módulo de publicación a la derecha -->
+          <div class="admin-cabecera">
+            <div>
+              <h1>Panel principal</h1>
+              <p class="texto-suave mb-0">Resumen de la actividad del portal</p>
+            </div>
+            <div class="adm-controles">
+              <input
+                type="search"
+                class="form-control"
+                id="buscarPanel"
+                placeholder="Buscar en el panel"
+                aria-label="Buscar en el panel"
+                style="max-width: 16rem"
+              />
+              <a class="btn btn-bermellon" href="./empresas.html">Publicar oferta</a>
+            </div>
+          </div>
+
+          <!-- Cuatro tarjetas de resumen con disco de acento -->
+          <div class="resumen-rejilla">
+            <div class="resumen-tarjeta">
+              <div>
+                <strong>36.500</strong>
+                <span>Usuarios registrados</span>
+              </div>
+              <span class="disco" aria-hidden="true">U</span>
+            </div>
+            <div class="resumen-tarjeta">
+              <div>
+                <strong>480</strong>
+                <span>Empresas activas</span>
+              </div>
+              <span class="disco" aria-hidden="true">E</span>
+            </div>
+            <div class="resumen-tarjeta">
+              <div>
+                <strong>1.284</strong>
+                <span>Ofertas publicadas</span>
+              </div>
+              <span class="disco" aria-hidden="true">O</span>
+            </div>
+            <div class="resumen-tarjeta">
+              <div>
+                <strong>12.930</strong>
+                <span>Postulaciones del mes</span>
+              </div>
+              <span class="disco" aria-hidden="true">P</span>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <!-- Actividad reciente: la pinta js/admin.js con ACTIVIDAD_ADMIN -->
+            <div class="col-lg-7">
+              <div class="panel h-100">
+                <div class="panel-cabecera">
+                  <h3>Actividad reciente</h3>
+                  <span class="datos texto-tenue">Bitácora del día</span>
+                </div>
+                <div class="panel-cuerpo">
+                  <ul class="actividad" id="listaActividad"></ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vacantes por sector: anillo SVG + leyenda calculados
+                 desde VACANTES por js/admin.js -->
+            <div class="col-lg-5">
+              <div class="panel h-100">
+                <div class="panel-cabecera">
+                  <h3>Vacantes por sector</h3>
+                  <span class="datos texto-tenue" id="totalSectores"></span>
+                </div>
+                <div class="panel-cuerpo">
+                  <div class="anillo-datos">
+                    <svg
+                      id="anilloSectores"
+                      viewBox="0 0 42 42"
+                      role="img"
+                      aria-label="Distribución de las vacantes publicadas por sector"
+                    >
+                      <!-- Pista de fondo del anillo; los tramos de color
+                           los añade el script con stroke-dasharray -->
+                      <circle class="fondo" cx="21" cy="21" r="15.9155"></circle>
+                    </svg>
+                    <ul class="leyenda" id="leyendaSectores"></ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             SECCIÓN B — GESTIÓN DE USUARIOS
+             Tabla de cuentas con filtro de rol en vivo, suspensión o
+             reactivación de la cuenta y eliminación con confirmación.
+             ============================================================ -->
+        <div class="adm-panel" data-panel="usuarios" id="panelUsuarios" hidden>
+          <div class="admin-cabecera">
+            <div>
+              <h1>Gestión de usuarios</h1>
+              <p class="texto-suave mb-0">Cuentas registradas en el portal y su estado actual</p>
+            </div>
+            <div class="adm-controles">
+              <!-- Filtro de rol: repinta la tabla en cada cambio -->
+              <div class="adm-control">
+                <label class="form-label" for="filtroRol">Rol</label>
+                <select class="form-select" id="filtroRol">
+                  <option value="">Todos los roles</option>
+                  <option value="Candidato">Candidato</option>
+                  <option value="Empresa">Empresa</option>
+                  <option value="Administrador">Administrador</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="tabla-envoltura">
+            <table class="tabla">
+              <caption class="visually-hidden">Usuarios registrados en el portal</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Usuario</th>
+                  <th scope="col">Correo</th>
+                  <th scope="col">Rol</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Registro</th>
+                  <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <!-- Filas generadas por js/admin.js -->
+              <tbody id="cuerpoUsuarios"></tbody>
+            </table>
+          </div>
+          <p class="datos texto-tenue mt-2 mb-0" id="cuentaUsuarios"></p>
+        </div>
+
+        <!-- ============================================================
+             SECCIÓN C — GESTIÓN DE EMPRESAS
+             Directorio con buscador en vivo (nombre, rubro o ciudad),
+             edición simulada de la ficha y baja o reactivación.
+             ============================================================ -->
+        <div class="adm-panel" data-panel="empresas" id="panelEmpresas" hidden>
+          <div class="admin-cabecera">
+            <div>
+              <h1>Gestión de empresas</h1>
+              <p class="texto-suave mb-0">Directorio de organizaciones y oferta asociada</p>
+            </div>
+            <div class="adm-controles">
+              <!-- Buscador en vivo sobre las filas de la tabla -->
+              <div class="adm-control">
+                <label class="form-label" for="buscarEmpresaAdmin">Buscar empresa</label>
+                <input
+                  class="form-control"
+                  id="buscarEmpresaAdmin"
+                  type="search"
+                  placeholder="Nombre, rubro o ciudad"
+                  style="max-width: 16rem"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="tabla-envoltura">
+            <table class="tabla">
+              <caption class="visually-hidden">Empresas registradas en el portal</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Empresa</th>
+                  <th scope="col">Rubro</th>
+                  <th scope="col">Ciudad</th>
+                  <th scope="col">Valoración</th>
+                  <th scope="col">Ofertas</th>
+                  <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <!-- Filas generadas por js/admin.js -->
+              <tbody id="cuerpoEmpresas"></tbody>
+            </table>
+          </div>
+          <p class="datos texto-tenue mt-2 mb-0" id="cuentaEmpresasAdmin"></p>
+        </div>
+
+        <!-- ============================================================
+             SECCIÓN D — GESTIÓN DE VACANTES
+             Las diez ofertas de prueba con su estado de publicación,
+             el recuento de postulantes y las acciones de aprobación,
+             retirada y consulta del detalle.
+             ============================================================ -->
+        <div class="adm-panel" data-panel="vacantes" id="panelVacantes" hidden>
+          <div class="admin-cabecera">
+            <div>
+              <h1>Gestión de vacantes</h1>
+              <p class="texto-suave mb-0">Ofertas publicadas, su estado y sus postulantes</p>
+            </div>
+            <div class="adm-controles">
+              <!-- Filtro de estado en vivo -->
+              <div class="adm-control">
+                <label class="form-label" for="filtroEstadoVacante">Estado</label>
+                <select class="form-select" id="filtroEstadoVacante">
+                  <option value="">Todas</option>
+                  <option value="Publicada">Publicadas</option>
+                  <option value="Retirada">Retiradas</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="tabla-envoltura">
+            <table class="tabla">
+              <caption class="visually-hidden">Ofertas de empleo publicadas en el portal</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Oferta</th>
+                  <th scope="col">Empresa</th>
+                  <th scope="col">Publicada</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Postulantes</th>
+                  <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <!-- Filas generadas por js/admin.js -->
+              <tbody id="cuerpoVacantes"></tbody>
+            </table>
+          </div>
+          <p class="datos texto-tenue mt-2 mb-0" id="cuentaVacantes"></p>
+        </div>
+
+        <!-- ============================================================
+             SECCIÓN E — MODERACIÓN DE CONTENIDO
+             Denuncias recibidas sobre reseñas, temas de foro y
+             comentarios. Cada tarjeta se retira del listado al
+             aprobar u ocultar el contenido (js/admin.js).
+             ============================================================ -->
+        <div class="adm-panel" data-panel="moderacion" id="panelModeracion" hidden>
+          <div class="admin-cabecera">
+            <div>
+              <h1>Moderación de contenido</h1>
+              <p class="texto-suave mb-0">
+                Aquí se revisan las denuncias que envía la comunidad sobre reseñas, temas
+                de foro y comentarios. Aprueba el contenido si cumple las reglas del portal
+                u ocúltalo para que deje de mostrarse públicamente.
+              </p>
+            </div>
+            <!-- Contador de denuncias pendientes (lo actualiza el script) -->
+            <span class="etiqueta-chip ambar" id="contadorModeracion">3 pendientes</span>
+          </div>
+
+          <!-- Tarjetas de denuncia generadas por js/admin.js -->
+          <div id="listaModeracion" class="d-grid gap-3"></div>
+        </div>
+
+        <!-- ============================================================
+             SECCIÓN F — ESTADÍSTICAS DEL SISTEMA
+             Indicadores del mes, gráfico de barras de postulaciones y
+             ranking de empresas según el número de ofertas publicadas.
+             ============================================================ -->
+        <div class="adm-panel" data-panel="estadisticas" id="panelEstadisticas" hidden>
+          <div class="admin-cabecera">
+            <div>
+              <h1>Estadísticas del sistema</h1>
+              <p class="texto-suave mb-0">Indicadores de uso y crecimiento del portal</p>
+            </div>
+            <span class="datos texto-tenue">Actualizado hoy</span>
+          </div>
+
+          <!-- Cuatro cifras del período -->
+          <div class="resumen-rejilla">
+            <div class="resumen-tarjeta">
+              <div>
+                <strong>1.240</strong>
+                <span>Nuevos usuarios este mes</span>
+              </div>
+              <span class="disco" aria-hidden="true">N</span>
+            </div>
+            <div class="resumen-tarjeta">
+              <div>
+                <strong>312</strong>
+                <span>Ofertas publicadas</span>
+              </div>
+              <span class="disco" aria-hidden="true">O</span>
+            </div>
+            <div class="resumen-tarjeta">
+              <div>
+                <strong>68%</strong>
+                <span>Tasa de respuesta</span>
+              </div>
+              <span class="disco" aria-hidden="true">T</span>
+            </div>
+            <div class="resumen-tarjeta">
+              <div>
+                <strong>91%</strong>
+                <span>Empresas que renuevan</span>
+              </div>
+              <span class="disco" aria-hidden="true">E</span>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <!-- Gráfico de barras: las barras las pinta js/admin.js -->
+            <div class="col-lg-7">
+              <div class="panel h-100">
+                <div class="panel-cabecera">
+                  <h3>Postulaciones por mes</h3>
+                  <span class="datos texto-tenue">Mar — Oct</span>
+                </div>
+                <div class="panel-cuerpo">
+                  <div
+                    class="grafico-barras"
+                    id="graficoPostulaciones"
+                    role="img"
+                    aria-label="Postulaciones recibidas por mes"
+                  ></div>
+                  <!-- Eje de meses fijo en el marcado -->
+                  <div class="grafico-barras-eje">
+                    <span>Mar</span>
+                    <span>Abr</span>
+                    <span>May</span>
+                    <span>Jun</span>
+                    <span>Jul</span>
+                    <span>Ago</span>
+                    <span>Sep</span>
+                    <span>Oct</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ranking de empresas calculado con VACANTES -->
+            <div class="col-lg-5">
+              <div class="panel h-100">
+                <div class="panel-cabecera">
+                  <h3>Top empresas por ofertas</h3>
+                </div>
+                <div class="panel-cuerpo">
+                  <table class="tabla tabla-ajustada">
+                    <caption class="visually-hidden">
+                      Cinco empresas con más ofertas publicadas
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Empresa</th>
+                        <th scope="col">Ofertas</th>
+                      </tr>
+                    </thead>
+                    <!-- Filas generadas por js/admin.js -->
+                    <tbody id="cuerpoTopEmpresas"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             SECCIÓN G — OTROS
+             Configuración general con interruptores y bloque de
+             mantenimiento de los datos de prueba.
+             ============================================================ -->
+        <div class="adm-panel" data-panel="otros" id="panelOtros" hidden>
+          <div class="admin-cabecera">
+            <div>
+              <h1>Otros</h1>
+              <p class="texto-suave mb-0">Ajustes complementarios y mantenimiento del prototipo</p>
+            </div>
+          </div>
+
+          <div class="d-grid gap-3">
+            <!-- Interruptores de configuración: cada cambio avisa -->
+            <div class="panel">
+              <div class="panel-cabecera">
+                <h3>Configuración del portal</h3>
+                <span class="datos texto-tenue">El cambio se aplica de inmediato</span>
+              </div>
+              <div class="panel-cuerpo">
+                <div class="alerta-fila">
+                  <div>
+                    <strong>Moderación previa de reseñas</strong>
+                    <small>Las reseñas se publican después de la revisión de un administrador</small>
+                  </div>
+                  <label class="interruptor ms-auto">
+                    <input type="checkbox" data-config="moderacion-resenas" checked aria-label="Moderación previa de reseñas" />
+                    <span class="pista-i" aria-hidden="true"></span>
+                  </label>
+                </div>
+
+                <div class="alerta-fila">
+                  <div>
+                    <strong>Notificaciones por correo a candidatos</strong>
+                    <small>Aviso diario con las ofertas que encajan con su perfil</small>
+                  </div>
+                  <label class="interruptor ms-auto">
+                    <input type="checkbox" data-config="notificaciones" checked aria-label="Notificaciones por correo a candidatos" />
+                    <span class="pista-i" aria-hidden="true"></span>
+                  </label>
+                </div>
+
+                <div class="alerta-fila">
+                  <div>
+                    <strong>Publicación automática de ofertas verificadas</strong>
+                    <small>Las empresas verificadas publican sin pasar por revisión</small>
+                  </div>
+                  <label class="interruptor ms-auto">
+                    <input type="checkbox" data-config="auto-publicacion" checked aria-label="Publicación automática de ofertas verificadas" />
+                    <span class="pista-i" aria-hidden="true"></span>
+                  </label>
+                </div>
+
+                <div class="alerta-fila">
+                  <div>
+                    <strong>Modo mantenimiento del portal</strong>
+                    <small>Suspende temporalmente el acceso público al sitio</small>
+                  </div>
+                  <label class="interruptor ms-auto">
+                    <input type="checkbox" data-config="mantenimiento" aria-label="Modo mantenimiento del portal" />
+                    <span class="pista-i" aria-hidden="true"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Restablecimiento de los datos de prueba -->
+            <div class="panel">
+              <div class="panel-cabecera">
+                <h3>Datos de prueba</h3>
+                <span class="datos texto-tenue">Solo demostración</span>
+              </div>
+              <div class="panel-cuerpo">
+                <p class="texto-suave">
+                  Devuelve usuarios, empresas, vacantes y denuncias a sus valores iniciales
+                  y limpia los filtros aplicados en este panel.
+                </p>
+                <button class="btn btn-bermellon" type="button" id="btnRestablecer">
+                  Restablecer datos
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ============================================================
+         PIE DE PÁGINA
+         ============================================================ -->
+    <footer class="pie mt-auto">
+      <div class="contenedor">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <a class="marca mb-3" href="./index.html">
+              <span class="marca-marca" aria-hidden="true"></span>
+              <span class="marca-texto">
+                Portal de Trabajo
+                <small>Bolsa de empleo</small>
+              </span>
+            </a>
+            <p style="max-width: 34ch; font-size: 0.9rem">
+              Prototipo académico de portal de búsqueda de empleo. Todas las empresas,
+              personas y cifras mostradas son ficticias.
+            </p>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Candidatos</h5>
+            <a href="./busqueda.html">Buscar empleos</a><br />
+            <a href="./perfil.html">Mi perfil</a><br />
+            <a href="./recursos.html">Recursos</a><br />
+            <a href="./foros.html">Foros</a>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Empresas</h5>
+            <a href="./empresas.html">Publicar oferta</a><br />
+            <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
+            <a href="./empresas.html#directorio">Directorio</a><br />
+            <a href="./admin.html">Administración</a>
+          </div>
+          <div class="col-lg-4">
+            <h5>Boletín de empleo</h5>
+            <p style="font-size: 0.9rem; max-width: 32ch">
+              Recibe las ofertas de la semana según tu sector.
+            </p>
+            <form class="d-flex gap-2" data-accion="suscripcion" data-mensaje="Suscripción registrada. Recibirás el próximo boletín el lunes." data-tono="exito">
+              <input class="form-control" type="email" placeholder="Tu correo" aria-label="Correo para el boletín" />
+              <button class="btn btn-bermellon" type="submit">Suscribirme</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="pie-registro">
+          <span>© <span data-anio>2026</span> Portal de Trabajo · Proyecto académico</span>
+          <span>Ing. José Emerson Aguilar · Segundo período</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
+    <script src="./js/datos.js"></script>
+    <script src="./js/main.js"></script>
+    <script src="./js/admin.js"></script>
+  </body>
+</html>
