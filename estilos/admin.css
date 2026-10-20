@@ -1,0 +1,138 @@
+/* =============================================================
+   PORTAL DE TRABAJO — panel de administración (admin.html)
+   -------------------------------------------------------------
+   Reglas exclusivas de esta pantalla, con el prefijo .adm- (salvo
+   el anillo de sectores, que usa las clases .fondo y .tramo del
+   SVG declaradas en el propio marcado). No se modifica ninguna
+   hoja de estilo existente.
+
+   Se respeta el lenguaje visual del proyecto: estructura cuadrada,
+   círculos solo como acento y siempre las variables del sistema
+   (nunca colores sueltos ni sombras difusas).
+   ============================================================= */
+
+/* ---------------------------------------------------------------
+   1. Paneles de la sección
+   Solo el panel activo se muestra; el resto lleva el atributo
+   hidden, que el navegador traduce en display: none.
+   --------------------------------------------------------------- */
+.adm-panel[hidden] { display: none; }
+
+/* ---------------------------------------------------------------
+   2. Cabeceras: controles al lado del título
+   Los selectores y buscadores comparten fila con el encabezado
+   y se alinean por la base.
+   --------------------------------------------------------------- */
+.adm-controles {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.adm-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.adm-control .form-label { margin-bottom: 0; }
+
+/* ---------------------------------------------------------------
+   3. Tablas del panel
+   --------------------------------------------------------------- */
+/* Fila de botones de la columna Acciones */
+.adm-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+/* Usuario o empresa junto a su marca circular o cuadrada */
+.adm-usuario {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+/* Empresa del ranking con su disco de iniciales */
+.adm-top-empresa {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+/* Fila inactiva: empresas suspendidas y vacantes retiradas */
+.adm-fila-inactiva td { color: var(--tinta-tenue); }
+
+/* Bloques ocultos por el buscador de la cabecera */
+.adm-oculto { display: none !important; }
+
+/* ---------------------------------------------------------------
+   4. Moderación de contenidos
+   Cita del contenido denunciado: filete de tinta a la izquierda
+   sobre banda de papel, sin esquinas redondeadas.
+   --------------------------------------------------------------- */
+.adm-cita {
+  margin: 0 0 1rem;
+  padding: 0.9rem 1.1rem;
+  border-left: 3px solid var(--linea-fuerte);
+  background: var(--papel-banda);
+  color: var(--tinta-suave);
+  font-size: 0.95rem;
+}
+
+/* Estado vacío de la sección: respira más que un panel normal */
+#listaModeracion .vacio { background: var(--papel-hueso); }
+
+/* ---------------------------------------------------------------
+   5. Anillo de sectores (SVG)
+   La pista de fondo y los tramos no llevan relleno; el grosor es
+   el mismo que el de las métricas del portal.
+   --------------------------------------------------------------- */
+.anillo-datos .fondo {
+  fill: none;
+  stroke: var(--linea);
+  stroke-width: 4;
+}
+
+.anillo-datos .tramo {
+  fill: none;
+  stroke-width: 4;
+}
+
+/* ---------------------------------------------------------------
+   6. Gráfico de barras
+   Cifra de la barra resaltada, escrita en papel sobre bermellón
+   dentro de la propia barra.
+   --------------------------------------------------------------- */
+.adm-barra-valor {
+  position: absolute;
+  bottom: 0.45rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--fuente-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+  color: var(--papel);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------
+   7. Ajustes por pantalla
+   --------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+  /* Los controles de la cabecera ocupan todo el ancho disponible */
+  .adm-controles { width: 100%; }
+  .adm-control { flex: 1 1 12rem; }
+}
+
+@media (max-width: 575.98px) {
+  /* Las acciones de cada fila se apilan en columnas */
+  .adm-acciones {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .adm-acciones .btn { width: 100%; }
+}

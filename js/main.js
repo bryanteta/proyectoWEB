@@ -119,16 +119,58 @@ function pintarAnillos() {
    Marcado de la sección activa del menú principal
    Compara el archivo actual con el enlace del menú y le aplica
    la clase .activo (subrayado + punto bermellón).
+   Algunas pantallas son detalle de otra sección (una vacante se
+   consulta desde los resultados de búsqueda), así que se puede
+   indicar a qué sección pertenecen.
    --------------------------------------------------------------- */
+const SECCION_POR_PAGINA = {
+  "vacante.html": "busqueda.html",
+};
+
 function marcarSeccionActiva() {
-  const actual = location.pathname.split("/").pop() || "index.html";
+  /* Se normalizan los caminos para que "./busqueda.html" y
+     "busqueda.html" se consideren el mismo destino. */
+  const limpiar = (ruta) => (ruta || "").split("/").pop().split("?")[0];
+  const archivo = limpiar(location.pathname) || "index.html";
+  const seccion = SECCION_POR_PAGINA[archivo] || archivo;
+
   document.querySelectorAll(".nav-principal .nav-link").forEach((enlace) => {
-    const destino = enlace.getAttribute("href");
-    if (destino === actual) {
+    if (limpiar(enlace.getAttribute("href")) === seccion) {
       enlace.classList.add("activo");
       enlace.setAttribute("aria-current", "page");
     }
   });
+}
+
+/* ---------------------------------------------------------------
+   Altura real de la cabecera
+   La cabecera es sticky y varios paneles laterales se desplazan
+   por debajo usando la variable --cabecera-alto. En pantallas
+   estrechas el formulario de acceso salta a una segunda fila y la
+   cabecera crece; aquí se mide su altura real y se actualiza la
+   variable para que ningún panel quede oculto detrás.
+   --------------------------------------------------------------- */
+function fijarAlturaCabecera() {
+  const cabecera = document.querySelector(".cabecera");
+  if (!cabecera) return;
+
+  let pendiente = null;
+  const medir = () => {
+    if (pendiente) return;
+    /* Se mide en el siguiente cuadro para no forzar reflujo
+       dentro del propio evento de redimensionado */
+    pendiente = requestAnimationFrame(() => {
+      pendiente = null;
+      document.documentElement.style.setProperty("--cabecera-alto", `${cabecera.offsetHeight}px`);
+    });
+  };
+
+  medir();
+  window.addEventListener("resize", medir);
+  window.addEventListener("load", medir);
+  /* Las tipografías locales cambian el tamaño del texto al cargarse,
+     así que se vuelve a medir cuando ya están disponibles */
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(medir);
 }
 
 /* ---------------------------------------------------------------
@@ -170,6 +212,7 @@ function prepararAccionesGenericas() {
    Arranque
    --------------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
+  fijarAlturaCabecera();
   marcarSeccionActiva();
   animarContadores();
   pintarAnillos();

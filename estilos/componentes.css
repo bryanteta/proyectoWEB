@@ -726,6 +726,27 @@ textarea.form-control { resize: vertical; min-height: 7rem; }
 /* ---------------------------------------------------------------
    13. Ajustes por pantalla
    --------------------------------------------------------------- */
+
+/* En portátiles estrechos (992px a 1200px) la cabecera de una sola
+   fila no alcanza para la marca + los cinco enlaces + el formulario
+   de acceso. En vez de dejar que el formulario salte a una segunda
+   fila, se estrechan los enlaces y los campos para que todo quepa
+   en una fila; por debajo de 992px aparece el menú desplegable. */
+@media (max-width: 1199.98px) and (min-width: 992px) {
+  .nav-principal .nav-link { padding-inline: 0.42rem; font-size: 0.84rem; }
+  .nav-principal .nav-link.activo::after { left: 0.55rem; right: 0.55rem; }
+  .acceso { gap: 0.3rem; }
+  .acceso-campo { min-width: 5.2rem; max-width: 6.4rem; }
+  .acceso .btn { padding-inline: 0.7rem; }
+}
+
+/* En el tramo más estrecho (992px a 1024px) se retira del encabezado
+   el botón "Registrarse": la creación de cuenta también está en el
+   pie de página y así la cabecera sigue en una sola fila. */
+@media (max-width: 1023.98px) and (min-width: 992px) {
+  .acceso .btn-linea { display: none; }
+}
+
 @media (max-width: 991.98px) {
   .nav-principal .nav-link.activo::after,
   .nav-principal .nav-link.activo::before { display: none; }

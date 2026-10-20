@@ -20,6 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
   /* Categoría seleccionada en el panel izquierdo ("" = todas) */
   let categoriaActiva = "";
 
+  /* Identificador del tema publicado en esta sesión: se marca con la
+     etiqueta "Nuevo" para que la persona que lo creó lo localice
+     aunque un tema fijado quede por encima */
+  let ultimoPublicado = null;
+
   /* Referencias a los elementos de la página */
   const listaTemas = document.getElementById("listaTemas");
   const contadorTemas = document.getElementById("contadorTemas");
@@ -118,6 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <h3>
             <a href="#" data-titulo-tema>${escapar(tema.titulo)}</a>
             ${tema.fijado ? '<span class="etiqueta-chip acento">Fijado</span>' : ""}
+            ${tema.id === ultimoPublicado ? '<span class="etiqueta-chip rellena">Nuevo</span>' : ""}
           </h3>
           <p class="tema-meta mb-0">
             <span>${escapar(tema.autor)}</span>
@@ -200,8 +206,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* El mensaje no se almacena en la demo; el tema nace con cero
        respuestas, una vista y sin fijar */
+    const idNuevo = Date.now();
+    ultimoPublicado = idNuevo;
     temas.unshift({
-      id: Date.now(),
+      id: idNuevo,
       titulo: fTitulo.value.trim(),
       categoria: fCategoria.value,
       autor: "Tú",
@@ -212,8 +220,10 @@ document.addEventListener("DOMContentLoaded", () => {
       fijado: false,
     });
 
-    /* Se muestra el tema publicado: se limpia el buscador y se
-       salta a la categoría elegida para que aparezca arriba */
+    /* Se muestra el tema publicado: se limpia el buscador y se salta
+       a la categoría elegida. Los temas fijados siguen encima (son
+       anuncios del foro), así que el nuevo se marca con "Nuevo" y se
+       desplaza la vista hasta él para que quede a la vista */
     buscarTema.value = "";
     categoriaActiva = fCategoria.value;
     listaCategorias.querySelectorAll(".categoria-foro").forEach((b) => {
@@ -222,6 +232,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     pintarCategorias();
     pintarTemas();
+
+    /* La vista salta al tema recién publicado para verlo confirmado */
+    const filaNueva = listaTemas.querySelector(".etiqueta-chip.rellena");
+    if (filaNueva) filaNueva.closest(".tema").scrollIntoView({ block: "center" });
 
     /* Cierra el formulario y lo deja limpio para otra publicación */
     panelNuevoTema.hidden = true;
