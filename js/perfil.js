@@ -448,6 +448,88 @@ function inicializarValoraciones() {
 }
 
 /* ---------------------------------------------------------------
+   Mis postulaciones
+   Une cuatro postulaciones de ejemplo con las que se envían desde
+   vacante.html (guardadas en localStorage por datos.js). Así el
+   trabajo hecho en otra pantalla se ve aquí al cambiar de página.
+   --------------------------------------------------------------- */
+function inicializarPostulaciones() {
+  const contenedor = document.getElementById("listaMisPostulaciones");
+  if (!contenedor) return;
+
+  /* Postulaciones de ejemplo del prototipo */
+  const ejemplos = [
+    { vacanteId: 101, estado: "En revisión", tono: "cielo" },
+    { vacanteId: 102, estado: "Preseleccionada", tono: "verde" },
+    { vacanteId: 103, estado: "Recibida", tono: "ambar" },
+    { vacanteId: 107, estado: "Recibida", tono: "ambar" },
+  ];
+
+  /* Las enviadas desde el detalle de la vacante tienen prioridad */
+  const enviadas = (typeof leerPostulaciones === "function" ? leerPostulaciones() : []).map(
+    (registro) => ({
+      vacanteId: registro.vacanteId,
+      estado: registro.estado || "Enviada",
+      tono: "ambar",
+      fecha: registro.fecha,
+    })
+  );
+
+  /* Se evita duplicar una vacante que ya está en los ejemplos y se
+     descartan postulaciones cuya vacante ya no exista (por ejemplo,
+     si se borraron los datos guardados del navegador). */
+  const idsEjemplo = new Set(ejemplos.map((item) => item.vacanteId));
+  const lista = [
+    ...enviadas.filter(
+      (item) => !idsEjemplo.has(item.vacanteId) && VACANTES.some((v) => v.id === item.vacanteId)
+    ),
+    ...ejemplos.filter((item) => VACANTES.some((v) => v.id === item.vacanteId)),
+  ];
+
+  contenedor.innerHTML = lista
+    .map((item) => {
+      const vacante = VACANTES.find((v) => v.id === item.vacanteId);
+      if (!vacante) return "";
+      const empresa = empresaPorId(vacante.empresaId);
+      const fecha = item.fecha ? fechaCercana(item.fecha) : "hace unos días";
+
+      return `
+      <article class="resultado">
+        <span class="marca-empresa" aria-hidden="true">${empresa.iniciales}</span>
+        <div class="resultado-cuerpo">
+          <h3><a href="./vacante.html?id=${vacante.id}">${vacante.titulo}</a></h3>
+          <p class="resultado-empresa">${empresa.nombre} · ${empresa.rubro}</p>
+          <div class="resultado-meta">
+            <span><span class="punto" aria-hidden="true"></span>${vacante.ciudad}</span>
+            <span><span class="punto" aria-hidden="true"></span>${vacante.modalidad}</span>
+            <span><span class="punto" aria-hidden="true"></span>${vacante.contrato}</span>
+            <span><span class="punto" aria-hidden="true"></span>${vacante.nivel}</span>
+          </div>
+        </div>
+        <div class="resultado-lado">
+          <span class="etiqueta-chip ${item.tono}">${item.estado}</span>
+          <span class="resultado-salario">${salarioFormateado(vacante.salario)}</span>
+          <span class="resultado-fecha">${fecha}</span>
+        </div>
+      </article>`;
+    })
+    .join("");
+
+  /* Contadores de la pestaña y del panel */
+  const total = lista.length;
+  const contadorPestana = document.querySelector(
+    '.pestanas-enlace[data-pestana="postulaciones"] .contador'
+  );
+  if (contadorPestana) contadorPestana.textContent = total;
+
+  const contadorPanel = document.getElementById("contadorMisPostulaciones");
+  if (contadorPanel) {
+    contadorPanel.textContent =
+      total === 1 ? "1 postulación registrada" : `${total} postulaciones registradas`;
+  }
+}
+
+/* ---------------------------------------------------------------
    Arranque
    --------------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
@@ -458,4 +540,5 @@ document.addEventListener("DOMContentLoaded", () => {
   inicializarAlertas();
   inicializarGraficoVisitas();
   inicializarValoraciones();
+  inicializarPostulaciones();
 });

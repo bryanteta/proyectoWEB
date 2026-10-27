@@ -106,38 +106,60 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ------------------------------------------------------------
      3. Detalle largo: responsabilidades/requisitos/beneficios/contacto
      ------------------------------------------------------------ */
-  // Funcionalidad: obtener detalle desde DETALLE_VACANTE (solo existe para 101)
-  // Lógica: si no existe para la vacante actual, se genera texto genérico coherente con el resumen
-  let detalle = null;
-  if (DETALLE_VACANTE && DETALLE_VACANTE.id === vacante.id) {
-    detalle = DETALLE_VACANTE;
-  } else {
-    // Respaldo genérico para otras vacantes (coherente con el resumen)
-    detalle = {
-      id: vacante.id,
-      responsabilidades: [
-        "Desarrollar las tareas asignadas de acuerdo con el perfil de la oferta.",
-        "Colaborar con el equipo para alcanzar los objetivos del puesto.",
-        "Mantener la calidad y los plazos establecidos.",
-      ],
-      requisitos: [
-        "Formación o experiencia acorde al nivel solicitado.",
-        "Capacidad para trabajar en equipo y buena comunicación.",
-        "Orientación a resultados y cumplimiento de plazos.",
-      ],
-      beneficios: [
-        "Ambiente de trabajo colaborativo y profesional.",
-        "Oportunidades de desarrollo y aprendizaje continuo.",
-        "Condiciones contractuales según lo establecido en la oferta.",
-      ],
-      contacto: {
-        correo: "talento@empresa.ec",
-        telefono: "+593 2 000 0000",
-        direccion: "Dirección de la empresa",
-        responsable: "Equipo de Talento Humano",
-      },
-    };
-  }
+  // Funcionalidad: obtener la ficha larga de la vacante.
+  // Lógica: DETALLES_VACANTE reúne la ficha de ejemplo (101) y las de
+  // las vacantes publicadas desde el módulo empresarial. Si una oferta
+  // no tiene ficha propia, se usa un texto genérico coherente con el
+  // resumen; en ambos casos se completan los campos que falten para
+  // que el pintado no falle.
+  const detalleGenerico = {
+    id: vacante.id,
+    responsabilidades: [
+      "Desarrollar las tareas asignadas de acuerdo con el perfil de la oferta.",
+      "Colaborar con el equipo para alcanzar los objetivos del puesto.",
+      "Mantener la calidad y los plazos establecidos.",
+    ],
+    requisitos: [
+      "Formación o experiencia acorde al nivel solicitado.",
+      "Capacidad para trabajar en equipo y buena comunicación.",
+      "Orientación a resultados y cumplimiento de plazos.",
+    ],
+    beneficios: [
+      "Ambiente de trabajo colaborativo y profesional.",
+      "Oportunidades de desarrollo y aprendizaje continuo.",
+      "Condiciones contractuales según lo establecido en la oferta.",
+    ],
+    contacto: {
+      correo: "talento@empresa.ec",
+      telefono: "+593 2 000 0000",
+      direccion: "Dirección de la empresa",
+      responsable: "Equipo de Talento Humano",
+    },
+  };
+
+  const fichaGuardada =
+    (typeof DETALLES_VACANTE !== "undefined" && DETALLES_VACANTE[vacante.id]) || null;
+
+  const detalle = fichaGuardada
+    ? {
+        ...detalleGenerico,
+        ...fichaGuardada,
+        responsabilidades:
+          Array.isArray(fichaGuardada.responsabilidades) &&
+          fichaGuardada.responsabilidades.length
+            ? fichaGuardada.responsabilidades
+            : detalleGenerico.responsabilidades,
+        requisitos:
+          Array.isArray(fichaGuardada.requisitos) && fichaGuardada.requisitos.length
+            ? fichaGuardada.requisitos
+            : detalleGenerico.requisitos,
+        beneficios:
+          Array.isArray(fichaGuardada.beneficios) && fichaGuardada.beneficios.length
+            ? fichaGuardada.beneficios
+            : detalleGenerico.beneficios,
+        contacto: { ...detalleGenerico.contacto, ...(fichaGuardada.contacto || {}) },
+      }
+    : detalleGenerico;
 
   // Pintar listas
   function pintarLista(id, items) {
@@ -171,9 +193,9 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ------------------------------------------------------------
      4. Botones Postularme (principal y lateral) sincronizados
      ------------------------------------------------------------ */
-  // Estados
-  let postulada = false;
-  let contadorPost = 27; // valor inicial mostrado en lateral
+  // Estados: se recupera del navegador si esta vacante ya se postuló
+  let postulada = typeof yaPostulado === "function" && yaPostulado(vacante.id);
+  let contadorPost = postulada ? 28 : 27; // valor inicial mostrado en lateral
   const btnPostularme = document.getElementById("btnPostularme");
   const btnPostularmeLateral = document.getElementById("btnPostularmeLateral");
   const contadorPostulacionesEl = document.getElementById("contadorPostulaciones");
@@ -214,14 +236,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Lógica de postulación: cambia estado, muestra aviso, incrementa contador y sincroniza
+  // Lógica de postulación: cambia estado, muestra aviso, incrementa el
+  // contador y guarda la postulación para que aparezca en el perfil.
   function postular() {
     if (postulada) return;
     postulada = true;
     contadorPost += 1;
+
+    if (typeof guardarPostulacion === "function") {
+      guardarPostulacion({
+        vacanteId: vacante.id,
+        titulo: vacante.titulo,
+        empresaId: vacante.empresaId,
+        fecha: new Date().toISOString().slice(0, 10),
+        estado: "Enviada",
+      });
+    }
+
     // Mostrar aviso de éxito
     if (typeof avisar === "function") {
-      avisar("Postulación enviada. Recibirás novedades en tu perfil.", "exito");
+      avisar("Postulación enviada. Ya aparece en «Mis postulaciones» de tu perfil.", "exito");
     }
     actualizarBotonesPostulacion();
   }

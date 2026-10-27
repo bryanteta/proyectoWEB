@@ -360,87 +360,11 @@
                 <div class="panel">
                   <div class="panel-cabecera">
                     <h2>Mis postulaciones</h2>
+                    <span class="datos texto-tenue" id="contadorMisPostulaciones"></span>
                   </div>
-                  <div class="panel-cuerpo">
-                    <!-- Vacante 101 — estado: En revisión -->
-                    <article class="resultado">
-                      <span class="marca-empresa acento" aria-hidden="true">AS</span>
-                      <div class="resultado-cuerpo">
-                        <h3><a href="./vacante.html?id=101">Desarrollador Frontend Junior</a></h3>
-                        <p class="resultado-empresa">Andes Software · Tecnología</p>
-                        <div class="resultado-meta">
-                          <span><span class="punto" aria-hidden="true"></span>Quito</span>
-                          <span><span class="punto" aria-hidden="true"></span>Híbrido</span>
-                          <span><span class="punto" aria-hidden="true"></span>Indefinido</span>
-                          <span><span class="punto" aria-hidden="true"></span>Junior</span>
-                        </div>
-                      </div>
-                      <div class="resultado-lado">
-                        <span class="etiqueta-chip cielo">En revisión</span>
-                        <span class="resultado-salario">$850</span>
-                        <span class="resultado-fecha">hace 6 días</span>
-                      </div>
-                    </article>
-
-                    <!-- Vacante 102 — estado: Preseleccionada -->
-                    <article class="resultado">
-                      <span class="marca-empresa" aria-hidden="true">BV</span>
-                      <div class="resultado-cuerpo">
-                        <h3><a href="./vacante.html?id=102">Analista de Datos</a></h3>
-                        <p class="resultado-empresa">Banco del Valle · Finanzas</p>
-                        <div class="resultado-meta">
-                          <span><span class="punto" aria-hidden="true"></span>Quito</span>
-                          <span><span class="punto" aria-hidden="true"></span>Presencial</span>
-                          <span><span class="punto" aria-hidden="true"></span>Indefinido</span>
-                          <span><span class="punto" aria-hidden="true"></span>Semi senior</span>
-                        </div>
-                      </div>
-                      <div class="resultado-lado">
-                        <span class="etiqueta-chip verde">Preseleccionada</span>
-                        <span class="resultado-salario">$1.400</span>
-                        <span class="resultado-fecha">hace 4 días</span>
-                      </div>
-                    </article>
-
-                    <!-- Vacante 103 — estado: Recibida -->
-                    <article class="resultado">
-                      <span class="marca-empresa acento" aria-hidden="true">EC</span>
-                      <div class="resultado-cuerpo">
-                        <h3><a href="./vacante.html?id=103">Diseñador Gráfico</a></h3>
-                        <p class="resultado-empresa">Estudio Cardinal · Diseño</p>
-                        <div class="resultado-meta">
-                          <span><span class="punto" aria-hidden="true"></span>Guayaquil</span>
-                          <span><span class="punto" aria-hidden="true"></span>Remoto</span>
-                          <span><span class="punto" aria-hidden="true"></span>Por proyecto</span>
-                          <span><span class="punto" aria-hidden="true"></span>Mid level</span>
-                        </div>
-                      </div>
-                      <div class="resultado-lado">
-                        <span class="etiqueta-chip ambar">Recibida</span>
-                        <span class="resultado-salario">$700</span>
-                        <span class="resultado-fecha">hace 3 días</span>
-                      </div>
-                    </article>
-
-                    <!-- Vacante 107 — estado: Recibida -->
-                    <article class="resultado">
-                      <span class="marca-empresa" aria-hidden="true">BV</span>
-                      <div class="resultado-cuerpo">
-                        <h3><a href="./vacante.html?id=107">Prácticas en Recursos Humanos</a></h3>
-                        <p class="resultado-empresa">Banco del Valle · Finanzas</p>
-                        <div class="resultado-meta">
-                          <span><span class="punto" aria-hidden="true"></span>Quito</span>
-                          <span><span class="punto" aria-hidden="true"></span>Híbrido</span>
-                          <span><span class="punto" aria-hidden="true"></span>Prácticas</span>
-                          <span><span class="punto" aria-hidden="true"></span>Estudiante</span>
-                        </div>
-                      </div>
-                      <div class="resultado-lado">
-                        <span class="etiqueta-chip ambar">Recibida</span>
-                        <span class="resultado-salario">$300</span>
-                        <span class="resultado-fecha">ayer</span>
-                      </div>
-                    </article>
+                  <div class="panel-cuerpo" id="listaMisPostulaciones">
+                    <!-- js/perfil.js pinta aquí las postulaciones de
+                         ejemplo y las enviadas desde vacante.html -->
                   </div>
                 </div>
               </div>
@@ -680,6 +604,7 @@
 
     <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
     <script src="./js/datos.js"></script>
+    <script src="./js/auth.js"></script>
     <script src="./js/main.js"></script>
     <script src="./js/perfil.js"></script>
   </body>

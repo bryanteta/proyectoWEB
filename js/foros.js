@@ -14,8 +14,14 @@ document.addEventListener("DOMContentLoaded", () => {
      --------------------------------------------------------------- */
 
   /* Copia local de los temas: los nuevos se agregan aquí arriba sin
-     modificar el TEMAS_FORO original de datos.js */
-  const temas = TEMAS_FORO.map((tema) => ({ ...tema }));
+     modificar el TEMAS_FORO original de datos.js. Los publicados en
+     visitas anteriores se recuperan de localStorage y van primero. */
+  const temasPublicados =
+    typeof leerTemasForo === "function" ? leerTemasForo() : [];
+  const temas = [
+    ...temasPublicados,
+    ...TEMAS_FORO.map((tema) => ({ ...tema })),
+  ];
 
   /* Categoría seleccionada en el panel izquierdo ("" = todas) */
   let categoriaActiva = "";
@@ -237,10 +243,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const filaNueva = listaTemas.querySelector(".etiqueta-chip.rellena");
     if (filaNueva) filaNueva.closest(".tema").scrollIntoView({ block: "center" });
 
+    /* Persistencia: solo se guardan los temas creados por la persona
+       usuaria; los de ejemplo ya vienen de datos.js y no se duplican */
+    if (typeof guardarTemasForo === "function") {
+      guardarTemasForo(temas.filter((tema) => tema.autor === "Tú"));
+    }
+
     /* Cierra el formulario y lo deja limpio para otra publicación */
     panelNuevoTema.hidden = true;
     formTema.reset();
-    avisar("Tema publicado correctamente.", "exito");
+    avisar("Tema publicado correctamente. Se conserva al recargar.", "exito");
   });
 
   /* ---------------------------------------------------------------

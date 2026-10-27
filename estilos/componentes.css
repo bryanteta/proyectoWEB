@@ -223,6 +223,20 @@
 .acceso-campo::placeholder { color: var(--tinta-tenue); }
 .acceso-campo:focus { border-color: var(--tinta); outline: none; }
 
+/* Zona de usuario: sustituye al formulario de acceso cuando hay
+   sesión iniciada (la inserta js/auth.js) */
+.zona-usuario-datos {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  color: var(--tinta);
+  font-size: 0.85rem;
+}
+
+.zona-usuario-datos:hover { color: var(--bermellon-hondo); }
+.zona-usuario-nombre { font-weight: 600; }
+
 /* ---------------------------------------------------------------
    3. Paneles y tarjetas (cuadrados, con filete)
    --------------------------------------------------------------- */

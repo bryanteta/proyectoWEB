@@ -526,7 +526,109 @@ function empresaPorId(id) {
   return EMPRESAS.find((e) => e.id === id) || EMPRESAS[0];
 }
 
-/* Formatea el salario en dólares */
+/* Formatea el salario en dólares. Las ofertas publicadas sin salario
+   (el campo es opcional) se muestran como "A convenir". */
 function salarioFormateado(valor) {
-  return `$${valor.toLocaleString("es-EC")}`;
+  if (!valor) return "A convenir";
+  return `$${Number(valor).toLocaleString("es-EC")}`;
+}
+
+/* =============================================================
+   PERSISTENCIA DEL PROTOTIPO (sin servidor)
+   -------------------------------------------------------------
+   El portal son páginas HTML independientes: al navegar se recarga
+   todo y los cambios en memoria se perderían. Para que las acciones
+   de un módulo se vean en otro (publicar una vacante y encontrarla
+   en el buscador, postularse y verlo en el perfil, publicar un tema
+   y conservarlo en el foro) se guardan en localStorage.
+   ============================================================= */
+
+const CLAVES_ALMACEN = {
+  vacantes: "pt_vacantes_extra",
+  postulaciones: "pt_postulaciones",
+  temasForo: "pt_temas_foro",
+};
+
+/* Lectura tolerante a errores: si el navegador bloquea localStorage
+   o el contenido está dañado, se devuelve el valor de respaldo. */
+function leerAlmacen(clave, respaldo) {
+  try {
+    const crudo = localStorage.getItem(clave);
+    if (!crudo) return respaldo;
+    const dato = JSON.parse(crudo);
+    return dato === null || dato === undefined ? respaldo : dato;
+  } catch (error) {
+    return respaldo;
+  }
+}
+
+function escribirAlmacen(clave, valor) {
+  try {
+    localStorage.setItem(clave, JSON.stringify(valor));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/* Publicaciones hechas desde empresas.html */
+const PUBLICACIONES_EXTRA = leerAlmacen(CLAVES_ALMACEN.vacantes, []);
+
+/* Fichas largas de las vacantes publicadas, por id. La vacante 101
+   conserva su ficha original de DETALLE_VACANTE. */
+const DETALLES_VACANTE = { [DETALLE_VACANTE.id]: DETALLE_VACANTE };
+
+if (Array.isArray(PUBLICACIONES_EXTRA)) {
+  /* Se recorre de la más antigua a la más nueva para que al final
+     las recién publicadas queden arriba (igual que en empresas). */
+  PUBLICACIONES_EXTRA.slice()
+    .reverse()
+    .forEach((registro) => {
+      if (!registro || !registro.vacante) return;
+      const { vacante, detalle } = registro;
+      if (!VACANTES.some((v) => v.id === vacante.id)) {
+        VACANTES.unshift(vacante);
+      }
+      if (detalle) DETALLES_VACANTE[vacante.id] = detalle;
+    });
+}
+
+/* Guarda una vacante publicada y su ficha. La usa js/empresas.js. */
+function guardarPublicacionExtra(vacante, detalle) {
+  const registros = leerAlmacen(CLAVES_ALMACEN.vacantes, []);
+  const lista = Array.isArray(registros)
+    ? registros.filter(
+        (registro) => registro && registro.vacante && registro.vacante.id !== vacante.id
+      )
+    : [];
+  lista.unshift({ vacante, detalle });
+  return escribirAlmacen(CLAVES_ALMACEN.vacantes, lista);
+}
+
+/* Postulaciones hechas desde vacante.html (las lee el perfil) */
+function leerPostulaciones() {
+  const lista = leerAlmacen(CLAVES_ALMACEN.postulaciones, []);
+  return Array.isArray(lista) ? lista : [];
+}
+
+function guardarPostulacion(registro) {
+  const lista = leerPostulaciones().filter(
+    (item) => item.vacanteId !== registro.vacanteId
+  );
+  lista.unshift(registro);
+  return escribirAlmacen(CLAVES_ALMACEN.postulaciones, lista);
+}
+
+function yaPostulado(vacanteId) {
+  return leerPostulaciones().some((item) => item.vacanteId === vacanteId);
+}
+
+/* Temas nuevos del foro (se conservan al recargar) */
+function leerTemasForo() {
+  const lista = leerAlmacen(CLAVES_ALMACEN.temasForo, []);
+  return Array.isArray(lista) ? lista : [];
+}
+
+function guardarTemasForo(temas) {
+  return escribirAlmacen(CLAVES_ALMACEN.temasForo, temas);
 }

@@ -15,15 +15,39 @@
    Estado de la pantalla (memoria del navegador, sin servidor)
    --------------------------------------------------------------- */
 
-/* Ofertas "propias": las tres primeras vacantes del conjunto de
-   datos hacen de ofertas ya publicadas por la empresa demo. A esta
-   lista se agregan las que se publiquen en el formulario. */
-let misOfertas = VACANTES.slice(0, 3).map((vacante) => ({
-  id: vacante.id,
-  titulo: vacante.titulo,
-  publicada: vacante.publicada,
-  estado: "Abierta",
-}));
+/* Ofertas "propias": tres vacantes de ejemplo hacen de ofertas ya
+   publicadas por la empresa demo. Delante se colocan las que se
+   hayan publicado desde el formulario y quedaron guardadas en el
+   navegador (así siguen visibles al recargar la página). */
+const IDS_OFERTAS_BASE = [101, 102, 103];
+
+let misOfertas = [
+  ...(typeof PUBLICACIONES_EXTRA !== "undefined" ? PUBLICACIONES_EXTRA : []).map(
+    (registro) => ({
+      id: registro.vacante.id,
+      titulo: registro.vacante.titulo,
+      publicada: registro.vacante.publicada,
+      estado: "Abierta",
+    })
+  ),
+  ...VACANTES.filter((vacante) => IDS_OFERTAS_BASE.includes(vacante.id)).map(
+    (vacante) => ({
+      id: vacante.id,
+      titulo: vacante.titulo,
+      publicada: vacante.publicada,
+      estado: "Abierta",
+    })
+  ),
+];
+
+/* Empresa por defecto para las vacantes creadas desde el módulo empresarial */
+function empresaDemoParaPublicacion() {
+  if (typeof EMPRESAS === "undefined" || !EMPRESAS.length) {
+    return { id: 1, nombre: "Empresa Demo", iniciales: "ED" };
+  }
+  /* Se usa la primera empresa activa como referencia */
+  return EMPRESAS.find((e) => !e.suspendida) || EMPRESAS[0];
+}
 
 /* Empresas dadas de baja en el directorio (solo en memoria) */
 const empresasSuspendidas = new Set();
@@ -154,6 +178,8 @@ function publicarOferta(evento) {
   const siguienteId =
     Math.max(...VACANTES.map((v) => v.id), ...misOfertas.map((o) => o.id)) + 1;
 
+  const empresa = empresaDemoParaPublicacion();
+
   const nuevaOferta = {
     id: siguienteId,
     titulo: campos.titulo.value.trim(),
@@ -163,9 +189,76 @@ function publicarOferta(evento) {
     requisitos: campos.requisitos.value.trim().split("\n").filter(Boolean),
     descripcion: campos.descripcion.value.trim(),
     habilidades: [...habilidadesOferta],
+    empresaId: empresa.id,
+    ubicacion: document.getElementById("fUbicacion").value,
+    modalidad: document.getElementById("fModalidad").value,
+    contrato: document.getElementById("fContrato").value,
+    nivel: document.getElementById("fNivel").value,
+    sector: document.getElementById("fSector").value,
+    salarioMin: salarioTexto === "" ? null : Number(salarioTexto),
+    destacada: false,
   };
 
   misOfertas.unshift(nuevaOferta);
+
+  /* INTEGRACIÓN ENTRE MÓDULOS
+     La oferta se guarda en localStorage con la misma estructura que
+     usan el buscador, la portada y el detalle de vacante. datos.js la
+     recupera al cargar cualquier página, de modo que la publicación
+     no se pierde al navegar (el prototipo no tiene servidor). */
+  const descripcionLimpia = nuevaOferta.descripcion || "";
+  const resumenAuto =
+    descripcionLimpia.length > 140
+      ? descripcionLimpia.slice(0, 137) + "..."
+      : descripcionLimpia || nuevaOferta.titulo;
+
+  /* Objeto resumido: es el que consume la lista de resultados */
+  const vacantePublicada = {
+    id: nuevaOferta.id,
+    titulo: nuevaOferta.titulo,
+    empresaId: nuevaOferta.empresaId,
+    ciudad: nuevaOferta.ubicacion,
+    modalidad: nuevaOferta.modalidad,
+    contrato: nuevaOferta.contrato,
+    nivel: nuevaOferta.nivel,
+    sector: nuevaOferta.sector,
+    salario: nuevaOferta.salarioMin || 0,
+    publicada: nuevaOferta.publicada,
+    destacada: false,
+    resumen: resumenAuto,
+  };
+
+  /* Ficha larga: responsabilidades, requisitos, beneficios y
+     contacto que pinta vacante.html */
+  const detallePublicado = {
+    id: nuevaOferta.id,
+    responsabilidades: descripcionLimpia
+      ? descripcionLimpia.split("\n").filter(Boolean)
+      : ["Cumplir las funciones descritas en la oferta."],
+    requisitos: nuevaOferta.requisitos.length
+      ? nuevaOferta.requisitos
+      : ["Cumplir con el perfil solicitado para el puesto."],
+    beneficios: [
+      "Ambiente de trabajo colaborativo.",
+      "Oportunidades de desarrollo y aprendizaje continuo.",
+    ],
+    contacto: {
+      correo: nuevaOferta.contacto,
+      telefono: "+593 2 000 0000",
+      direccion: nuevaOferta.ubicacion,
+      responsable: `${empresa.nombre} — Talento humano`,
+    },
+  };
+
+  /* Se guarda para que aparezca al cambiar de página */
+  if (typeof guardarPublicacionExtra === "function") {
+    guardarPublicacionExtra(vacantePublicada, detallePublicado);
+  }
+
+  /* Y se refleja de inmediato en la memoria de esta página */
+  if (typeof VACANTES !== "undefined") {
+    VACANTES.unshift(vacantePublicada);
+  }
 
   /* Se refrescan el listado y el selector de postulaciones */
   pintarOfertas();
@@ -174,7 +267,7 @@ function publicarOferta(evento) {
   /* El reset dispara el evento "reset", que restaura los chips */
   formulario.reset();
 
-  avisar("Oferta publicada correctamente.", "exito");
+  avisar("Oferta publicada correctamente. Ya aparece en el buscador.", "exito");
 }
 
 /* ---------------------------------------------------------------

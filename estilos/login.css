@@ -1,0 +1,125 @@
+/* =============================================================
+   PORTAL DE TRABAJO — pantalla de inicio de sesión
+   -------------------------------------------------------------
+   Estilos propios de login.html (prefijo .login-). Reutiliza el
+   panel, los botones y las etiquetas del sistema visual; aquí
+   solo se ajusta la composición de las dos columnas.
+   ============================================================= */
+
+.login-principal {
+  padding: 3rem 0 4rem;
+}
+
+.login-panel {
+  padding: 1.8rem;
+  height: 100%;
+}
+
+.login-panel h1 {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  margin-bottom: 0.4rem;
+}
+
+.login-panel h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.login-campo {
+  margin-bottom: 1rem;
+}
+
+.login-campo label {
+  display: block;
+  font-family: var(--fuente-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+  margin-bottom: 0.35rem;
+}
+
+/* Aviso cuando se llega desde una vista protegida */
+.login-aviso {
+  border: 1px solid var(--ambar);
+  background: #f4ead4;
+  color: var(--ambar);
+  padding: 0.65rem 0.8rem;
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+}
+
+.login-error {
+  border-left: 3px solid var(--bermellon);
+  background: var(--bermellon-leche);
+  color: var(--bermellon-hondo);
+  padding: 0.55rem 0.75rem;
+  font-size: 0.88rem;
+  margin-bottom: 0.9rem;
+}
+
+.login-sesion {
+  border: var(--filete);
+  background: var(--papel-banda);
+  padding: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* Cada cuenta de prueba es un botón que rellena el formulario */
+.login-cuenta {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: var(--filete);
+  padding: 0.75rem;
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.login-cuenta:hover,
+.login-cuenta:focus-visible {
+  background: var(--papel-banda);
+  border-color: var(--tinta);
+}
+
+.login-cuenta .marca-empresa {
+  flex: 0 0 auto;
+}
+
+.login-cuenta-texto strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.login-cuenta-texto > span {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--tinta-suave);
+}
+
+.login-cuenta code {
+  display: block;
+  font-family: var(--fuente-mono);
+  font-size: 0.78rem;
+  color: var(--bermellon-hondo);
+  margin-top: 0.15rem;
+}
+
+@media (max-width: 991.98px) {
+  .login-principal {
+    padding: 2rem 0 3rem;
+  }
+}
+
+/* Pie reducido del login: sin el aire del pie completo */
+.pie-compacto {
+  padding-top: 0;
+}
+
+.pie-compacto .pie-registro {
+  margin-top: 0;
+}

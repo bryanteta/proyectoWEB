@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Iniciar sesión — Portal de Trabajo</title>
+    <meta
+      name="description"
+      content="Acceso al Portal de Trabajo con cuentas de demostración para candidatos, empresas y administración."
+    />
+    <link rel="icon" type="image/svg+xml" href="./media/favicon.svg" />
+
+    <!-- Bootstrap local (funciona sin conexión) -->
+    <link rel="stylesheet" href="./estilos/vendor/bootstrap.min.css" />
+    <!-- Tipografías descargadas al proyecto -->
+    <link rel="stylesheet" href="./estilos/tipografias.css" />
+    <!-- Sistema visual propio -->
+    <link rel="stylesheet" href="./estilos/base.css" />
+    <link rel="stylesheet" href="./estilos/componentes.css" />
+    <link rel="stylesheet" href="./estilos/pantallas.css" />
+    <!-- Estilos exclusivos de esta pantalla (prefijo .login-) -->
+    <link rel="stylesheet" href="./estilos/login.css" />
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-tinta position-absolute" href="#contenido">
+      Saltar al contenido principal
+    </a>
+
+    <!-- Cabecera reducida: en el login no hace falta el menú completo -->
+    <header class="cabecera">
+      <div class="contenedor">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap py-2">
+          <a class="marca" href="./index.html">
+            <span class="marca-marca" aria-hidden="true"></span>
+            <span class="marca-texto">
+              Portal de Trabajo
+              <small>Bolsa de empleo</small>
+            </span>
+          </a>
+          <a class="btn btn-linea btn-sm" href="./index.html">Volver al inicio</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido" class="login-principal">
+      <div class="contenedor">
+        <div class="row g-4 justify-content-center">
+          <!-- ====================================================
+               FORMULARIO DE ACCESO
+               ==================================================== -->
+          <div class="col-lg-6">
+            <div class="panel login-panel">
+              <p class="etiqueta" data-num="01">Acceso</p>
+              <h1>Inicia sesión</h1>
+              <p class="texto-suave">
+                Entra con una cuenta de demostración para ver el portal según tu rol:
+                candidato, empresa o administración.
+              </p>
+
+              <!-- Motivo por el que se llegó al login (vista protegida) -->
+              <div id="loginAviso" class="login-aviso" hidden></div>
+
+              <!-- Si ya hay una sesión abierta se ofrece continuar -->
+              <div id="loginSesionActiva" class="login-sesion" hidden></div>
+
+              <form id="formLogin" novalidate>
+                <div class="login-campo">
+                  <label for="loginUsuario">Usuario</label>
+                  <input
+                    class="form-control"
+                    type="text"
+                    id="loginUsuario"
+                    name="usuario"
+                    placeholder="admin, empresa o candidato"
+                    autocomplete="username"
+                    required
+                  />
+                </div>
+
+                <div class="login-campo">
+                  <label for="loginPass">Contraseña</label>
+                  <input
+                    class="form-control"
+                    type="password"
+                    id="loginPass"
+                    name="contrasena"
+                    placeholder="Tu contraseña"
+                    autocomplete="current-password"
+                    required
+                  />
+                </div>
+
+                <p id="loginError" class="login-error" hidden></p>
+
+                <button class="btn btn-bermellon w-100" type="submit">Entrar</button>
+              </form>
+
+              <hr class="filete my-4" />
+
+              <p class="datos texto-tenue mb-0">
+                ¿Aún no tienes cuenta? En este prototipo se entra con una de las
+                <a href="#cuentas">cuentas de prueba</a>: no hay registro real.
+              </p>
+            </div>
+          </div>
+
+          <!-- ====================================================
+               CUENTAS DE PRUEBA
+               Cada botón rellena el formulario; después se pulsa
+               "Entrar". Las credenciales son ficticias.
+               ==================================================== -->
+          <div class="col-lg-5" id="cuentas">
+            <div class="panel login-panel">
+              <p class="etiqueta" data-num="02">Demostración</p>
+              <h2>Cuentas de prueba</h2>
+              <p class="texto-suave">
+                Pulsa una cuenta para completar el formulario. Cada rol abre unas
+                vistas distintas del portal.
+              </p>
+
+              <button
+                class="login-cuenta"
+                type="button"
+                data-demo-usuario="candidato"
+                data-demo-contrasena="candidato123"
+              >
+                <span class="marca-empresa acento" aria-hidden="true">CD</span>
+                <span class="login-cuenta-texto">
+                  <strong>Candidato</strong>
+                  <span>Busca ofertas, postúlate y sigue tus postulaciones.</span>
+                  <code>candidato / candidato123</code>
+                </span>
+              </button>
+
+              <button
+                class="login-cuenta"
+                type="button"
+                data-demo-usuario="empresa"
+                data-demo-contrasena="empresa123"
+              >
+                <span class="marca-empresa" aria-hidden="true">ED</span>
+                <span class="login-cuenta-texto">
+                  <strong>Empresa</strong>
+                  <span>Publica vacantes, revisa postulantes y edita tu ficha.</span>
+                  <code>empresa / empresa123</code>
+                </span>
+              </button>
+
+              <button
+                class="login-cuenta"
+                type="button"
+                data-demo-usuario="admin"
+                data-demo-contrasena="admin123"
+              >
+                <span class="marca-empresa oscura" aria-hidden="true">AD</span>
+                <span class="login-cuenta-texto">
+                  <strong>Administración</strong>
+                  <span>Usuarios, empresas, vacantes, moderación y estadísticas.</span>
+                  <code>admin / admin123</code>
+                </span>
+              </button>
+
+              <hr class="filete my-4" />
+
+              <p class="datos texto-tenue mb-0">
+                La sesión se guarda solo en este navegador. Puedes cerrarla desde la
+                cabecera en cualquier pantalla.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="pie pie-compacto mt-auto">
+      <div class="contenedor">
+        <div class="pie-registro">
+          <span>© <span data-anio>2026</span> Portal de Trabajo · Proyecto académico</span>
+          <span>Ing. José Emerson Aguilar · Segundo período</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
+    <script src="./js/datos.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/main.js"></script>
+  </body>
+</html>
