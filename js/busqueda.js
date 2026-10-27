@@ -10,6 +10,7 @@
    Estado global de filtros
    --------------------------------------------------------------- */
 const filtrosEstado = {
+  empresaId: null,
   texto: "",
   ciudad: "",
   niveles: [],      // array de niveles seleccionados
@@ -20,6 +21,9 @@ const filtrosEstado = {
   soloDestacadas: false
 };
 
+let paginaActual = 1;
+let firmaFiltros = "";
+const TAMANO_PAGINA = 6;
 let ordenActual = "recientes"; // recientes | salario_alto | salario_bajo
 
 /* ---------------------------------------------------------------
@@ -27,8 +31,13 @@ let ordenActual = "recientes"; // recientes | salario_alto | salario_bajo
    y precarga los controles correspondientes
    --------------------------------------------------------------- */
 function leerParametrosURL() {
+  const ciudades = document.getElementById("filtroCiudad");
+  if (ciudades) [...new Set(VACANTES.map(v=>v.ciudad))].filter(Boolean).forEach(ciudad=>{
+    if (![...ciudades.options].some(o=>o.value === ciudad)) ciudades.add(new Option(ciudad,ciudad));
+  });
   const params = new URLSearchParams(window.location.search);
   
+  filtrosEstado.empresaId = params.has("empresa") ? Number(params.get("empresa")) : null;
   // Parámetros del buscador principal
   if (params.get("q")) {
     filtrosEstado.texto = params.get("q");
@@ -69,6 +78,14 @@ function leerParametrosURL() {
     });
   }
   
+  ["nivel", "sector", "contrato", "modalidad"].forEach(tipo => {
+    const valores = params.getAll(tipo);
+    document.querySelectorAll(`input[data-filtro="${tipo}"]`).forEach(c => { c.checked = valores.includes(c.value); });
+  });
+  const destacada = document.getElementById("filtroDestacada");
+  if (destacada) destacada.checked = params.get("destacada") === "1";
+  const orden = document.getElementById("ordenarPor");
+  if (orden) orden.value = ["recientes", "salario_alto", "salario_bajo"].includes(params.get("orden")) ? params.get("orden") : "recientes";
   // El name del salario en index.html es el valor mínimo en dólares
   if (params.get("salario")) {
     const salario = parseInt(params.get("salario"));
@@ -139,7 +156,8 @@ function sincronizarEstadoConControles() {
    Aplica todos los filtros sobre el array VACANTES
    --------------------------------------------------------------- */
 function aplicarFiltros() {
-  let resultados = [...VACANTES];
+  let resultados = VACANTES.filter(vacanteDisponible);
+  if (filtrosEstado.empresaId !== null) resultados = resultados.filter(v => v.empresaId === filtrosEstado.empresaId);
   
   // Filtro por texto: busca en título, resumen y nombre de empresa
   if (filtrosEstado.texto) {
@@ -207,7 +225,25 @@ function aplicarFiltros() {
    --------------------------------------------------------------- */
 function pintarResultados() {
   sincronizarEstadoConControles();
+  const query = new URLSearchParams();
+  if (filtrosEstado.texto) query.set("q", filtrosEstado.texto);
+  if (filtrosEstado.ciudad) query.set("ciudad", filtrosEstado.ciudad);
+  if (filtrosEstado.empresaId !== null) query.set("empresa", filtrosEstado.empresaId);
+  [["nivel", "niveles"], ["sector", "sectores"], ["contrato", "contratos"], ["modalidad", "modalidades"]].forEach(([param, campo]) => filtrosEstado[campo].forEach(v => query.append(param, v)));
+  if (filtrosEstado.salarioMin) query.set("salario", filtrosEstado.salarioMin);
+  if (filtrosEstado.soloDestacadas) query.set("destacada", "1");
+  if (ordenActual !== "recientes") query.set("orden", ordenActual);
+  history.replaceState(null, "", location.pathname + (query.size ? "?" + query : ""));
+  const firma = JSON.stringify([filtrosEstado, ordenActual]);
+  if (firma !== firmaFiltros) { paginaActual = 1; firmaFiltros = firma; }
   const resultados = aplicarFiltros();
+  const paginas = Math.max(1, Math.ceil(resultados.length / TAMANO_PAGINA));
+  paginaActual = Math.min(paginaActual, paginas);
+  const nav = document.querySelector(".paginacion");
+  if (nav) {
+    nav.hidden = paginas <= 1;
+    nav.innerHTML = Array.from({length: paginas}, (_, i) => `<li class="page-item ${paginaActual === i + 1 ? "activo" : ""}"><button class="page-link" type="button" data-pagina="${i + 1}" ${paginaActual === i + 1 ? 'aria-current="page"' : ""}>${i + 1}</button></li>`).join("");
+  }
   
   const contenedor = document.getElementById("listaResultados");
   const contadorPrincipal = document.getElementById("contadorResultados");
@@ -234,20 +270,20 @@ function pintarResultados() {
   if (estadoVacio) estadoVacio.classList.add("d-none");
   
   // Pinta resultados con el mismo marcado que js/inicio.js
-  contenedor.innerHTML = resultados
+  contenedor.innerHTML = resultados.slice((paginaActual - 1) * TAMANO_PAGINA, paginaActual * TAMANO_PAGINA)
     .map((vacante) => {
       const empresa = empresaPorId(vacante.empresaId);
       return `
       <article class="resultado ${vacante.destacada ? "resultado-destacado" : ""}">
-        <span class="marca-empresa ${vacante.destacada ? "acento" : ""}" aria-hidden="true">${empresa.iniciales}</span>
+        <span class="marca-empresa ${vacante.destacada ? "acento" : ""}" aria-hidden="true">${escaparHTML(empresa.iniciales)}</span>
         <div class="resultado-cuerpo">
-          <h3><a href="./vacante.html?id=${vacante.id}">${vacante.titulo}</a></h3>
-          <p class="resultado-empresa">${empresa.nombre} · ${empresa.rubro}</p>
+          <h3><a href="./vacante.html?id=${vacante.id}">${escaparHTML(vacante.titulo)}</a></h3>
+          <p class="resultado-empresa">${escaparHTML(empresa.nombre)} · ${escaparHTML(empresa.rubro)}</p>
           <div class="resultado-meta">
-            <span><span class="punto" aria-hidden="true"></span>${vacante.ciudad}</span>
-            <span><span class="punto" aria-hidden="true"></span>${vacante.modalidad}</span>
-            <span><span class="punto" aria-hidden="true"></span>${vacante.contrato}</span>
-            <span><span class="punto" aria-hidden="true"></span>${vacante.nivel}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.ciudad)}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.modalidad)}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.contrato)}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.nivel)}</span>
           </div>
         </div>
         <div class="resultado-lado">
@@ -317,33 +353,12 @@ function configurarEventos() {
     btnLimpiarVacio.addEventListener("click", limpiarFiltros);
   }
   
-  // Paginación visual: al pulsar un número, cambia la clase .activo
-  // y vuelve al inicio de la lista con scrollIntoView
-  // Nota: Es paginación visual únicamente, no se hace paginado real con 10 ofertas
-  document.querySelectorAll(".paginacion .page-link").forEach((link, index) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      
-      // Solo actuar si no está desactivado
-      if (link.parentElement.classList.contains("desactivado")) {
-        return;
-      }
-      
-      // Quitar activo de todos
-      document.querySelectorAll(".paginacion .page-item").forEach(item => {
-        item.classList.remove("activo");
-      });
-      
-      // Añadir activo al padre
-      link.parentElement.classList.add("activo");
-      
-      // Volver al inicio de la lista de resultados
-      const listaResultados = document.getElementById("listaResultados");
-      if (listaResultados) {
-        listaResultados.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    });
+  document.querySelector(".paginacion")?.addEventListener("click", evento => {
+    const boton = evento.target.closest("[data-pagina]"); if (!boton) return;
+    paginaActual = Number(boton.dataset.pagina); pintarResultados();
+    document.getElementById("listaResultados").scrollIntoView({block: "start"});
   });
+
 }
 
 /* ---------------------------------------------------------------
@@ -351,6 +366,7 @@ function configurarEventos() {
    --------------------------------------------------------------- */
 function limpiarFiltros() {
   // Resetear estado
+  filtrosEstado.empresaId = null;
   filtrosEstado.texto = "";
   filtrosEstado.ciudad = "";
   filtrosEstado.niveles = [];

@@ -1,0 +1,17 @@
+.registro-rejilla { display:grid; grid-template-columns:minmax(0, 2fr) minmax(15rem, 1fr); gap:2rem; align-items:start; }
+.registro-rejilla > * { min-width:0; }
+.registro-rejilla fieldset { min-width:0; }
+.registro-rejilla legend { font-family:var(--fuente-titulo); font-size:1.35rem; }
+.registro-rejilla small { display:block; color:var(--tinta-tenue); margin-top:.4rem; }
+.registro-error { border:1px solid var(--bermellon); padding:1rem; margin-bottom:1.5rem; }
+.registro-rejilla ol { padding-left:1.25rem; }
+.registro-rejilla li { margin-bottom:1rem; }
+.revision-texto { white-space:pre-wrap; overflow-wrap:anywhere; }
+@media(max-width:991.98px) { .registro-rejilla { grid-template-columns:minmax(0,1fr); } }
+/* Las tablas y los encabezados de revisión no ensanchan el panel móvil. */
+.admin-principal, .adm-panel { min-width:0; }
+.adm-panel .panel-cabecera { flex-wrap:wrap; }
+.adm-panel .tabla-envoltura { max-width:100%; }
+.revision-datos { display:grid; gap:.8rem; }
+.revision-datos dt { color:var(--tinta-tenue); }
+.revision-datos dd { margin-bottom:0; }

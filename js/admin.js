@@ -26,7 +26,7 @@
    --------------------------------------------------------------- */
 function cambiarSeccion(clave) {
   /* Si la clave no corresponde a ninguna sección se usa la primera */
-  const existe = document.querySelector(`.admin-lateral button[data-seccion="${clave}"]`);
+  const existe = [...document.querySelectorAll(".admin-lateral button[data-seccion]")].some(b => b.dataset.seccion === clave);
   if (!existe) clave = "principal";
 
   /* Mueve la marca .activo del índice lateral */
@@ -65,22 +65,11 @@ function pintarActividad() {
   const lista = document.getElementById("listaActividad");
   if (!lista) return;
 
-  /* Correspondencia entre el tono del dato y la clase del punto */
-  const tonos = {
-    verde: "punto-verde",
-    bermellon: "punto-bermellon",
-    ambar: "punto-ambar",
-    "": "punto",
-  };
-
-  lista.innerHTML = ACTIVIDAD_ADMIN.map(
-    (evento) => `
-    <li>
-      <span class="punto ${tonos[evento.tono] || "punto"}" aria-hidden="true"></span>
-      <p>${evento.texto}</p>
-      <time>${evento.hora}</time>
-    </li>`
-  ).join("");
+  const resultado = ejecutarFlujo(()=>flujos.actividad());
+  if (!resultado.ok) { lista.textContent=resultado.mensaje; return; }
+  lista.innerHTML = resultado.dato.map(e=>`<li><span class="punto" aria-hidden="true"></span><p>${escaparHTML(e.actor)} · ${e.tipo === "empresa" ? "Registro empresarial" : "Tema del foro"} · ${escaparHTML(e.accion)} · v${e.version}</p><time>${fechaRevision(e.fecha)}</time></li>`).join("") || '<li>Todavía no hay actividad de revisión.</li>';
+  const cifras = [cargarUsuariosAdmin().length,EMPRESAS.filter(e=>empresaHabilitada(e.id)).length,VACANTES.filter(vacanteDisponible).length,POSTULACIONES.reduce((n,p)=>n+p.candidatos.length,0)+leerTodasPostulaciones().length];
+  document.querySelectorAll("#panelPrincipal .resumen-tarjeta strong").forEach((el,i)=>el.textContent=cifras[i]);
 }
 
 /* ---------------------------------------------------------------
@@ -198,14 +187,15 @@ function fechaTexto(iso) {
 
 /* Cuentas de ejemplo: no vienen en datos.js porque son propias
    de esta pantalla (prototipo de administración) */
-const USUARIOS_BASE = [
-  { id: 1, nombre: "Ana Belén Morales", iniciales: "AM", correo: "ana.morales@correo.ec", rol: "Candidato", estado: "Activo", registro: "2026-09-12" },
-  { id: 2, nombre: "Kevin Almeida", iniciales: "KA", correo: "kevin.almeida@correo.ec", rol: "Candidato", estado: "Activo", registro: "2026-08-30" },
-  { id: 3, nombre: "Carla Andrade", iniciales: "CA", correo: "talento@andessoftware.ec", rol: "Empresa", estado: "Activo", registro: "2026-06-04" },
-  { id: 4, nombre: "Jorge Ponce", iniciales: "JP", correo: "jorge.ponce@correo.ec", rol: "Candidato", estado: "Suspendido", registro: "2026-07-21" },
-  { id: 5, nombre: "Rocío Vintimilla", iniciales: "RV", correo: "rocio.v@estudiocardinal.ec", rol: "Empresa", estado: "Activo", registro: "2026-05-18" },
-  { id: 6, nombre: "Equipo del portal", iniciales: "EP", correo: "admin@portaltrabajo.ec", rol: "Administrador", estado: "Activo", registro: "2026-01-08" },
-];
+function cargarUsuariosAdmin() {
+  const roles = { candidato: "Candidato", empresa: "Empresa", administrador: "Administrador" };
+  const estados = leerObjeto("pt_cuentas_estado");
+  const perfiles = leerObjeto("pt_perfiles");
+  return USUARIOS_PRUEBA.map((u, i) => ({ id: i + 1, usuario: u.usuario,
+    nombre: perfiles[u.usuario]?.fNombres || u.nombre, correo: perfiles[u.usuario]?.fCorreo || u.correo,
+    iniciales: u.nombre.slice(0, 2).toUpperCase(), rol: roles[(leerObjeto("pt_flujos_v1").miembros || []).some(m=>m.usuario === u.usuario) && u.rol !== "administrador" ? "empresa" : u.rol],
+    estado: estados[u.usuario] || "Activo", registro: "2026-10-26" })).filter(u => u.estado !== "Eliminado");
+}
 
 let usuariosAdmin = [];
 
@@ -247,11 +237,11 @@ function pintarUsuarios() {
       <tr>
         <td>
           <span class="adm-usuario">
-            <span class="avatar avatar-sm" aria-hidden="true">${usuario.iniciales}</span>
-            <span>${usuario.nombre}</span>
+            <span class="avatar avatar-sm" aria-hidden="true">${escaparHTML(usuario.iniciales)}</span>
+            <span>${escaparHTML(usuario.nombre)}</span>
           </span>
         </td>
-        <td class="tabla-datos">${usuario.correo}</td>
+        <td class="tabla-datos">${escaparHTML(usuario.correo)}</td>
         <td>${usuario.rol}</td>
         <td>${chipEstadoCuenta(usuario.estado)}</td>
         <td class="tabla-datos">${fechaTexto(usuario.registro)}</td>
@@ -293,6 +283,7 @@ function ofertasDeEmpresa(idEmpresa) {
 }
 
 function pintarEmpresas() {
+  pintarSolicitudesEmpresa();
   const cuerpo = document.getElementById("cuerpoEmpresas");
   if (!cuerpo) return;
 
@@ -329,15 +320,15 @@ function pintarEmpresas() {
       <tr class="${empresa.suspendida ? "adm-fila-inactiva" : ""}">
         <td>
           <span class="adm-usuario">
-            <span class="marca-empresa" aria-hidden="true">${empresa.iniciales}</span>
+            <span class="marca-empresa" aria-hidden="true">${escaparHTML(empresa.iniciales)}</span>
             <span>
-              ${empresa.nombre}
+              ${escaparHTML(empresa.nombre)}
               ${empresa.suspendida ? '<span class="etiqueta-chip ambar">Suspendida</span>' : ""}
             </span>
           </span>
         </td>
-        <td>${empresa.rubro}</td>
-        <td class="tabla-datos">${empresa.ciudad}</td>
+        <td>${escaparHTML(empresa.rubro)}</td>
+        <td class="tabla-datos">${escaparHTML(empresa.ciudad)}</td>
         <td>
           <span class="valoracion" title="Valoración media de la empresa">
             ${puntosValoracionAdm(empresa.valoracion)}
@@ -376,7 +367,7 @@ let vacantesAdmin = [];
 
 /* Chip de estado de la oferta */
 function chipEstadoVacante(estado) {
-  const tonos = { Publicada: "verde", Retirada: "ambar", Pendiente: "ambar" };
+  const tonos = { Publicada: "verde", Retirada: "ambar", Pendiente: "ambar", Cerrada: "ambar" };
   return `<span class="etiqueta-chip ${tonos[estado] || ""}">${estado}</span>`;
 }
 
@@ -385,9 +376,7 @@ function chipEstadoVacante(estado) {
    del identificador (evita números aleatorios que cambien al
    repintar la tabla) */
 function postulantesDe(vacante) {
-  const registro = POSTULACIONES.find((item) => item.vacanteId === vacante.id);
-  if (registro) return registro.candidatos.length;
-  return ((vacante.id * 7) % 15) + 1;
+  return candidatosDeVacante(vacante.id).length;
 }
 
 function pintarVacantes() {
@@ -420,8 +409,8 @@ function pintarVacantes() {
       const empresa = empresaPorId(vacante.empresaId);
       return `
       <tr class="${vacante.estado === "Retirada" ? "adm-fila-inactiva" : ""}">
-        <td><a href="./vacante.html?id=${vacante.id}">${vacante.titulo}</a></td>
-        <td>${empresa.nombre}</td>
+        <td><a href="./vacante.html?id=${vacante.id}">${escaparHTML(vacante.titulo)}</a></td>
+        <td>${escaparHTML(empresa.nombre)}</td>
         <td class="tabla-datos">${fechaTexto(vacante.publicada)}</td>
         <td>${chipEstadoVacante(vacante.estado)}</td>
         <td class="tabla-datos">${postulantesDe(vacante)}</td>
@@ -447,75 +436,7 @@ function pintarVacantes() {
    main.js prepare sus acciones genéricas, el aviso lo lanza aquí
    (evita dobles mensajes) y la tarjeta se retira del listado.
    --------------------------------------------------------------- */
-function pintarModeracion() {
-  const contenedor = document.getElementById("listaModeracion");
-  if (!contenedor) return;
-
-  /* Cuando no queda ninguna denuncia se muestra el estado vacío */
-  if (!MODERACION.length) {
-    mostrarVacioModeracion();
-    return;
-  }
-
-  contenedor.innerHTML = MODERACION.map(
-    (item) => `
-    <article class="panel">
-      <div class="panel-cabecera">
-        <span class="etiqueta-chip ambar">${item.tipo}</span>
-        <span class="datos texto-tenue">${fechaTexto(item.fecha)}</span>
-      </div>
-      <div class="panel-cuerpo">
-        <blockquote class="adm-cita">${item.contenido}</blockquote>
-        <p class="datos">Denunciado por: ${item.motivo}</p>
-        <p class="datos texto-tenue mb-0">Autor: ${item.autor}</p>
-        <div class="d-flex gap-2 mt-3">
-          <button
-            class="btn btn-bermellon btn-sm"
-            type="button"
-            data-accion="aprobar"
-            data-mensaje="Contenido aprobado. Queda publicado en el portal (demostración)."
-            data-tono="exito"
-          >
-            Aprobar contenido
-          </button>
-          <button
-            class="btn btn-linea btn-sm"
-            type="button"
-            data-accion="ocultar"
-            data-mensaje="Contenido oculto. Deja de mostrarse en el portal (demostración)."
-            data-tono="aviso"
-          >
-            Ocultar contenido
-          </button>
-        </div>
-      </div>
-    </article>`
-  ).join("");
-
-  actualizarContadorModeracion();
-}
-
-/* Recuento de denuncias pendientes en la cabecera de la sección */
-function actualizarContadorModeracion() {
-  const chip = document.getElementById("contadorModeracion");
-  if (!chip) return;
-  const pendientes = document.querySelectorAll("#listaModeracion .panel").length;
-  chip.textContent = pendientes ? `${pendientes} pendiente${pendientes === 1 ? "" : "s"}` : "Sin pendientes";
-  chip.className = `etiqueta-chip ${pendientes ? "ambar" : "verde"}`;
-}
-
-/* Estado vacío de la sección de moderación */
-function mostrarVacioModeracion() {
-  const contenedor = document.getElementById("listaModeracion");
-  if (!contenedor) return;
-  contenedor.innerHTML = `
-    <div class="vacio">
-      <span class="disco" aria-hidden="true">OK</span>
-      <h3>Todo revisado</h3>
-      <p class="texto-suave mb-0">No hay denuncias pendientes. Excelente.</p>
-    </div>`;
-  actualizarContadorModeracion();
-}
+function pintarModeracion() { pintarColaTemas(); }
 
 /* ---------------------------------------------------------------
    8. Estadísticas del sistema
@@ -603,8 +524,8 @@ function pintarTopEmpresas() {
       <tr>
         <td>
           <span class="adm-top-empresa">
-            <span class="disco disco-sm" aria-hidden="true">${empresa.iniciales}</span>
-            <span>${empresa.nombre}</span>
+            <span class="disco disco-sm" aria-hidden="true">${escaparHTML(empresa.iniciales)}</span>
+            <span>${escaparHTML(empresa.nombre)}</span>
           </span>
         </td>
         <td class="tabla-datos">${ofertas} ${ofertas === 1 ? "oferta" : "ofertas"}</td>
@@ -684,17 +605,21 @@ function prepararBusquedaPanel() {
    --------------------------------------------------------------- */
 function prepararConfiguracion() {
   document.querySelectorAll("[data-config]").forEach((control) => {
+    const configuracion = leerObjeto("pt_config");
+    if (typeof configuracion[control.dataset.config] === "boolean") control.checked = configuracion[control.dataset.config];
     control.addEventListener("change", () => {
-      avisar("Configuración actualizada (demostración).", "exito");
+      const config = leerObjeto("pt_config"); config[control.dataset.config] = control.checked;
+      if (!escribirAlmacen("pt_config", config)) { avisar("No se pudo guardar la preferencia."); return; }
+      avisar("Preferencia guardada. Su aplicación requiere el servidor.");
     });
   });
 }
 
 function restablecerDatos() {
   /* Copias frescas de los datos de prueba */
-  usuariosAdmin = USUARIOS_BASE.map((usuario) => ({ ...usuario }));
-  empresasAdmin = EMPRESAS.map((empresa) => ({ ...empresa, suspendida: false }));
-  vacantesAdmin = VACANTES.map((vacante) => ({ ...vacante, estado: "Publicada" }));
+  usuariosAdmin = cargarUsuariosAdmin();
+  empresasAdmin = EMPRESAS.map((empresa) => ({ ...empresa }));
+  vacantesAdmin = VACANTES.map((vacante) => ({ ...vacante, estado: estadoVacante(vacante) }));
 
   /* Limpia los filtros y el buscador de la cabecera */
   const filtroRol = document.getElementById("filtroRol");
@@ -719,7 +644,7 @@ function restablecerDatos() {
   pintarBarras();
   pintarTopEmpresas();
 
-  avisar("Datos restablecidos (demostración).", "exito");
+  avisar("Panel actualizado y filtros limpiados.", "exito");
 }
 
 /* ---------------------------------------------------------------
@@ -736,11 +661,13 @@ function prepararAccionesTablas() {
       if (cambiar) {
         const usuario = usuariosAdmin.find((u) => u.id === Number(cambiar.dataset.usuarioEstado));
         if (!usuario) return;
-        usuario.estado = usuario.estado === "Activo" ? "Suspendido" : "Activo";
+        const estado = usuario.estado === "Activo" ? "Suspendido" : "Activo";
+        if (!cambiarEstadoCuenta(usuario.usuario, estado)) { avisar("No se pudo cambiar la cuenta. No puedes suspender tu propia cuenta."); return; }
+        usuariosAdmin = cargarUsuariosAdmin();
         pintarUsuarios();
         avisar(
-          `${usuario.nombre}: cuenta ${usuario.estado === "Activo" ? "reactivada" : "suspendida"} (demostración).`,
-          usuario.estado === "Activo" ? "exito" : "aviso"
+          `${escaparHTML(usuario.nombre)}: cuenta ${estado === "Activo" ? "reactivada" : "suspendida"} (demostración).`,
+          estado === "Activo" ? "exito" : "aviso"
         );
         return;
       }
@@ -753,13 +680,14 @@ function prepararAccionesTablas() {
 
         /* Confirmación simple antes de borrar la cuenta */
         const aceptado = window.confirm(
-          `¿Eliminar la cuenta de ${usuario.nombre}? Esta acción no se puede deshacer.`
+          `¿Eliminar la cuenta de ${escaparHTML(usuario.nombre)}? Esta acción no se puede deshacer.`
         );
         if (!aceptado) return;
 
-        usuariosAdmin = usuariosAdmin.filter((u) => u.id !== id);
+        if (!cambiarEstadoCuenta(usuario.usuario, "Eliminado")) { avisar("No se pudo eliminar la cuenta. No puedes eliminar tu propia cuenta."); return; }
+        usuariosAdmin = cargarUsuariosAdmin();
         pintarUsuarios();
-        avisar(`Cuenta de ${usuario.nombre} eliminada (demostración).`);
+        avisar(`Cuenta de ${escaparHTML(usuario.nombre)} eliminada (demostración).`);
       }
     });
   }
@@ -772,7 +700,7 @@ function prepararAccionesTablas() {
       if (editar) {
         const empresa = empresasAdmin.find((e) => e.id === Number(editar.dataset.empresaEditar));
         if (!empresa) return;
-        avisar(`Ficha de ${empresa.nombre} abierta para su edición (demostración).`, "exito");
+        abrirEdicionEmpresa(empresa.id, () => { empresasAdmin = EMPRESAS.map(e => ({...e})); pintarEmpresas(); pintarTopEmpresas(); });
         return;
       }
 
@@ -780,9 +708,10 @@ function prepararAccionesTablas() {
       if (baja) {
         const empresa = empresasAdmin.find((e) => e.id === Number(baja.dataset.empresaBaja));
         if (!empresa) return;
+        if (!suspenderEmpresa(empresa.id, true)) { avisar("No se pudo suspender la empresa."); return; }
         empresa.suspendida = true;
         pintarEmpresas();
-        avisar(`Empresa ${empresa.nombre} dada de baja (demostración).`);
+        avisar(`Empresa ${escaparHTML(empresa.nombre)} dada de baja (demostración).`);
         return;
       }
 
@@ -790,9 +719,10 @@ function prepararAccionesTablas() {
       if (reactivar) {
         const empresa = empresasAdmin.find((e) => e.id === Number(reactivar.dataset.empresaReactivar));
         if (!empresa) return;
+        if (!suspenderEmpresa(empresa.id, false)) { avisar("No se pudo reactivar la empresa."); return; }
         empresa.suspendida = false;
         pintarEmpresas();
-        avisar(`Empresa ${empresa.nombre} reactivada (demostración).`, "exito");
+        avisar(`Empresa ${escaparHTML(empresa.nombre)} reactivada (demostración).`, "exito");
       }
     });
   }
@@ -805,6 +735,7 @@ function prepararAccionesTablas() {
       if (aprobar) {
         const vacante = vacantesAdmin.find((v) => v.id === Number(aprobar.dataset.vacanteAprobar));
         if (!vacante) return;
+        if (!cambiarEstadoVacante(vacante.id, "Publicada")) { avisar("No se pudo publicar la oferta."); return; }
         vacante.estado = "Publicada";
         pintarVacantes();
         avisar(`Oferta «${vacante.titulo}» aprobada y publicada (demostración).`, "exito");
@@ -815,6 +746,7 @@ function prepararAccionesTablas() {
       if (retirar) {
         const vacante = vacantesAdmin.find((v) => v.id === Number(retirar.dataset.vacanteRetirar));
         if (!vacante) return;
+        if (!cambiarEstadoVacante(vacante.id, "Retirada")) { avisar("No se pudo retirar la oferta."); return; }
         vacante.estado = "Retirada";
         pintarVacantes();
         avisar(`Oferta «${vacante.titulo}» retirada del portal (demostración).`);
@@ -822,27 +754,7 @@ function prepararAccionesTablas() {
     });
   }
 
-  /* --- Moderación: aprobar u ocultar el contenido denunciado --- */
-  const listaModeracion = document.getElementById("listaModeracion");
-  if (listaModeracion) {
-    listaModeracion.addEventListener("click", (evento) => {
-      const boton = evento.target.closest("button[data-accion]");
-      if (!boton) return;
 
-      const tarjeta = boton.closest(".panel");
-      if (tarjeta) tarjeta.remove();
-
-      /* Aviso con el mensaje que declara el propio botón */
-      avisar(boton.dataset.mensaje || "Contenido revisado (demostración).", boton.dataset.tono || "exito");
-
-      /* Si ya no queda ninguna denuncia se muestra el estado vacío */
-      if (!document.querySelector("#listaModeracion .panel")) {
-        mostrarVacioModeracion();
-      } else {
-        actualizarContadorModeracion();
-      }
-    });
-  }
 }
 
 /* ---------------------------------------------------------------
@@ -850,9 +762,9 @@ function prepararAccionesTablas() {
    --------------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   /* Estado inicial: copias editables de los datos de prueba */
-  usuariosAdmin = USUARIOS_BASE.map((usuario) => ({ ...usuario }));
-  empresasAdmin = EMPRESAS.map((empresa) => ({ ...empresa, suspendida: false }));
-  vacantesAdmin = VACANTES.map((vacante) => ({ ...vacante, estado: "Publicada" }));
+  usuariosAdmin = cargarUsuariosAdmin();
+  empresasAdmin = EMPRESAS.map((empresa) => ({ ...empresa }));
+  vacantesAdmin = VACANTES.map((vacante) => ({ ...vacante, estado: estadoVacante(vacante) }));
 
   /* Pintado de los siete paneles */
   pintarActividad();
@@ -866,9 +778,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* Índice lateral: cada botón muestra su panel */
   document.querySelectorAll(".admin-lateral button").forEach((boton) => {
-    boton.addEventListener("click", () => cambiarSeccion(boton.dataset.seccion));
+    boton.addEventListener("click", () => { history.replaceState(null,"","#"+boton.dataset.seccion); cambiarSeccion(boton.dataset.seccion); });
   });
-  cambiarSeccion("principal");
+  cambiarSeccion(location.hash.slice(1) || "principal");
 
   /* Filtros en vivo de las tablas */
   const filtroRol = document.getElementById("filtroRol");
@@ -890,3 +802,5 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnRestablecer = document.getElementById("btnRestablecer");
   if (btnRestablecer) btnRestablecer.addEventListener("click", restablecerDatos);
 });
+
+window.addEventListener("hashchange",()=>cambiarSeccion(location.hash.slice(1) || "principal"));

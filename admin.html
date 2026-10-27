@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="./estilos/pantallas.css" />
     <!-- Reglas exclusivas de esta pantalla (clases .adm-) -->
     <link rel="stylesheet" href="./estilos/admin.css" />
+      <link rel="stylesheet" href="./estilos/registro.css?v=20261026-revision-4">
   </head>
 
   <body class="d-flex flex-column min-vh-100">
@@ -198,7 +199,7 @@
             <div class="resumen-tarjeta">
               <div>
                 <strong>12.930</strong>
-                <span>Postulaciones del mes</span>
+                <span>Postulaciones registradas</span>
               </div>
               <span class="disco" aria-hidden="true">P</span>
             </div>
@@ -317,7 +318,7 @@
             </div>
           </div>
 
-          <div class="tabla-envoltura">
+          <section class="panel mb-4"><div class="panel-cabecera"><h2>Solicitudes de registro</h2><span class="etiqueta-chip ambar" id="contadorSolicitudesEmpresa"></span></div><div class="panel-cuerpo"><div class="d-flex gap-3 flex-wrap mb-3"><div><label class="form-label" for="estadoRevisionEmpresas">Estado de revisión</label><select class="form-select" id="estadoRevisionEmpresas"><option value="pendiente">Pendientes</option><option value="aprobado">Aprobados</option><option value="rechazado">Rechazados</option><option value="todos">Todos</option></select></div><div><label class="form-label" for="buscarRevisionEmpresas">Buscar solicitudes</label><input class="form-control" type="search" id="buscarRevisionEmpresas"></div></div><div id="listaSolicitudesEmpresa"></div><nav id="paginacionRevisionEmpresas" aria-label="Páginas de solicitudes empresariales"></nav></div></section><h2>Empresas aprobadas</h2>          <div class="tabla-envoltura">
             <table class="tabla">
               <caption class="visually-hidden">Empresas registradas en el portal</caption>
               <thead>
@@ -393,17 +394,16 @@
             <div>
               <h1>Moderación de contenido</h1>
               <p class="texto-suave mb-0">
-                Aquí se revisan las denuncias que envía la comunidad sobre reseñas, temas
-                de foro y comentarios. Aprueba el contenido si cumple las reglas del portal
-                u ocúltalo para que deje de mostrarse públicamente.
+                Revisa los temas enviados antes de su publicación. Solo los temas aprobados aparecen en el foro público. Un rechazo requiere explicar el motivo para que el autor pueda corregirlo.
               </p>
             </div>
             <!-- Contador de denuncias pendientes (lo actualiza el script) -->
-            <span class="etiqueta-chip ambar" id="contadorModeracion">3 pendientes</span>
+            <span class="etiqueta-chip ambar" id="contadorModeracion">0 pendientes</span>
           </div>
 
           <!-- Tarjetas de denuncia generadas por js/admin.js -->
-          <div id="listaModeracion" class="d-grid gap-3"></div>
+<div class="d-flex gap-3 flex-wrap mb-3"><div><label class="form-label" for="estadoRevisionForos">Estado de revisión</label><select class="form-select" id="estadoRevisionForos"><option value="pendiente">Pendientes</option><option value="aprobado">Aprobados</option><option value="rechazado">Rechazados</option><option value="todos">Todos</option></select></div><div><label class="form-label" for="buscarRevisionForos">Buscar solicitudes</label><input class="form-control" type="search" id="buscarRevisionForos"></div></div>          <div id="listaModeracion" class="d-grid gap-3"></div>
+          <nav id="paginacionRevisionForos" aria-label="Páginas de revisión de temas"></nav>
         </div>
 
         <!-- ============================================================
@@ -583,11 +583,10 @@
               </div>
               <div class="panel-cuerpo">
                 <p class="texto-suave">
-                  Devuelve usuarios, empresas, vacantes y denuncias a sus valores iniciales
-                  y limpia los filtros aplicados en este panel.
+                  Recarga los datos guardados y limpia los filtros de este panel. La tabla de usuarios corresponde a las cuentas de demostración del login.
                 </p>
                 <button class="btn btn-bermellon" type="button" id="btnRestablecer">
-                  Restablecer datos
+                  Actualizar panel
                 </button>
               </div>
             </div>
@@ -622,6 +621,7 @@
             <a href="./perfil.html">Mi perfil</a><br />
             <a href="./recursos.html">Recursos</a><br />
             <a href="./foros.html">Foros</a>
+            <a href="./registro-empresa.html">Registrar empresa</a>
           </div>
           <div class="col-6 col-lg-2">
             <h5>Empresas</h5>
@@ -650,9 +650,12 @@
     </footer>
 
     <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
-    <script src="./js/datos.js"></script>
-    <script src="./js/auth.js"></script>
-    <script src="./js/main.js"></script>
-    <script src="./js/admin.js"></script>
+    <script src="./js/datos.js?v=20261026-revision-3"></script>
+    <script src="./js/dominio-flujos.js?v=20261026-revision-3"></script>
+    <script src="./js/flujos.js?v=20261026-revision-3"></script>
+    <script src="./js/auth.js?v=20261026-revision-3"></script>
+    <script src="./js/main.js?v=20261026-revision-3"></script>
+    <script src="./js/admin.js?v=20261026-revision-3"></script>
+    <script src="./js/admin-revisiones.js?v=20261026-revision-3"></script>
   </body>
 </html>

@@ -88,3 +88,8 @@
    El párrafo hereda el color claro sobre tinta oscura.
    --------------------------------------------------------------- */
 .panel-tinta .panel-cuerpo p { color: #cfc6b4; }
+
+/* Las pestañas desplazables no deben imponer su ancho mínimo a la rejilla. */
+.perfil-rejilla > * { min-width: 0; }
+.perfil-rejilla .pestanas { list-style: none; padding-left: 0; max-width: 100%; }
+#listaGuardados, #listaMisPostulaciones { overflow-wrap: anywhere; }

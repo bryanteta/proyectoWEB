@@ -107,7 +107,7 @@
           <nav class="migas" aria-label="Migas de pan">
             <a href="./index.html">Inicio</a> / Módulo empresarial
           </nav>
-          <h1>Módulo empresarial</h1>
+          <h1>Módulo empresarial</h1><p><a href="./registro-empresa.html">Registro y estado de aprobación de empresa</a></p>
           <p class="lead mb-0">
             El espacio de las empresas del portal: publica ofertas de trabajo, controla
             el estado de tus vacantes, revisa a las personas postuladas y mantén al día
@@ -236,6 +236,7 @@
                           id="fSalario"
                           type="number"
                           min="0"
+                          step="0.01"
                           placeholder="700"
                         />
                       </div>
@@ -264,6 +265,27 @@
                       <div class="col-12">
                         <label class="form-label" for="fDescripcion">Descripción <span class="texto-acento">*</span></label>
                         <textarea class="form-control" id="fDescripcion" rows="5" required></textarea>
+                      </div>
+
+                      <div class="col-12">
+                        <label class="form-label" for="fResponsabilidades">Responsabilidades</label>
+                        <textarea class="form-control" id="fResponsabilidades" rows="3" placeholder="Una por línea"></textarea>
+                      </div>
+                      <div class="col-12">
+                        <label class="form-label" for="fBeneficios">Beneficios</label>
+                        <textarea class="form-control" id="fBeneficios" rows="3" placeholder="Uno por línea"></textarea>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="fTelefonoContacto">Teléfono de contacto</label>
+                        <input class="form-control" id="fTelefonoContacto" type="tel" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="fResponsableContacto">Responsable de selección</label>
+                        <input class="form-control" id="fResponsableContacto" type="text" />
+                      </div>
+                      <div class="col-12">
+                        <label class="form-label" for="fDireccionContacto">Dirección de contacto</label>
+                        <input class="form-control" id="fDireccionContacto" type="text" />
                       </div>
 
                       <!-- Habilidades: chips predefinidos + campo para añadir más.
@@ -415,6 +437,7 @@
             <a href="./perfil.html">Mi perfil</a><br />
             <a href="./recursos.html">Recursos</a><br />
             <a href="./foros.html">Foros</a>
+            <a href="./registro-empresa.html">Registrar empresa</a>
           </div>
           <div class="col-6 col-lg-2">
             <h5>Empresas</h5>
@@ -443,9 +466,11 @@
     </footer>
 
     <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
-    <script src="./js/datos.js"></script>
-    <script src="./js/auth.js"></script>
-    <script src="./js/main.js"></script>
-    <script src="./js/empresas.js"></script>
+    <script src="./js/datos.js?v=20261026-revision-3"></script>
+    <script src="./js/dominio-flujos.js?v=20261026-revision-3"></script>
+    <script src="./js/flujos.js?v=20261026-revision-3"></script>
+    <script src="./js/auth.js?v=20261026-revision-3"></script>
+    <script src="./js/main.js?v=20261026-revision-3"></script>
+    <script src="./js/empresas.js?v=20261026-revision-3"></script>
   </body>
 </html>

@@ -21,6 +21,7 @@
    ============================================================= */
 
 const USUARIOS_PRUEBA = [
+  { usuario:"solicitante", contrasena:"solicitante123", rol:"candidato", nombre:"Solicitante Empresa", correo:"registro@example.test", empresaId:null },
   {
     usuario: "admin",
     contrasena: "admin123",
@@ -75,14 +76,7 @@ const ACCESO_POR_PAGINA = {
 /* ---------------------------------------------------------------
    Sesión
    --------------------------------------------------------------- */
-function obtenerSesion() {
-  try {
-    const crudo = localStorage.getItem("pt_sesion");
-    return crudo ? JSON.parse(crudo) : null;
-  } catch (error) {
-    return null;
-  }
-}
+function obtenerSesion() { return sesionDatos(); }
 
 function guardarSesion(sesion) {
   try {
@@ -104,6 +98,9 @@ function iniciarSesion(usuario, contrasena) {
     return { ok: false, error: "Usuario o contraseña incorrectos." };
   }
 
+  if (["Suspendido", "Eliminado"].includes(leerObjeto("pt_cuentas_estado")[encontrado.usuario])) {
+    return { ok: false, error: "La cuenta no está activa. Contacta con administración." };
+  }
   const sesion = {
     usuario: encontrado.usuario,
     rol: encontrado.rol,
@@ -112,8 +109,8 @@ function iniciarSesion(usuario, contrasena) {
     empresaId: encontrado.empresaId || null,
   };
 
-  guardarSesion(sesion);
-  return { ok: true, sesion };
+  if (!guardarSesion(sesion)) return { ok: false, error: "No se pudo guardar la sesión. Habilita el almacenamiento del navegador." };
+  return { ok: true, sesion: obtenerSesion() };
 }
 
 function cerrarSesion() {
@@ -127,6 +124,7 @@ function cerrarSesion() {
 
 function panelDeSesion(sesion) {
   if (!sesion) return "./login.html";
+  if (sesion.usuario === "solicitante" && !sesion.empresaId) return "./registro-empresa.html";
   return PANEL_POR_ROL[sesion.rol] || "./index.html";
 }
 
@@ -167,7 +165,7 @@ function aplicarControlAcceso() {
 function pintarZonaUsuario(sesion) {
   const panel = panelDeSesion(sesion);
   const textoPanel =
-    sesion.rol === "administrador"
+    sesion.usuario === "solicitante" && !sesion.empresaId ? "Registro empresarial" : sesion.rol === "administrador"
       ? "Administración"
       : sesion.rol === "empresa"
         ? "Módulo empresarial"
@@ -177,7 +175,7 @@ function pintarZonaUsuario(sesion) {
   contenedor.className = "zona-usuario d-none d-lg-flex align-items-center gap-2";
   contenedor.innerHTML = `
     <a class="zona-usuario-datos" href="${panel}" title="Ir a ${textoPanel}">
-      <span class="zona-usuario-nombre">${sesion.nombre}</span>
+      <span class="zona-usuario-nombre">${escaparHTML(sesion.nombre)}</span>
       <span class="etiqueta-chip">${etiquetaRol(sesion.rol)}</span>
     </a>
     <button class="btn btn-linea btn-sm" type="button" data-cerrar-sesion>
@@ -295,7 +293,7 @@ function inicializarCabecera() {
       bloque.className = "d-flex flex-column gap-2";
       bloque.innerHTML = `
         <a class="zona-usuario-datos" href="${panelDeSesion(sesion)}">
-          <span class="zona-usuario-nombre">${sesion.nombre}</span>
+          <span class="zona-usuario-nombre">${escaparHTML(sesion.nombre)}</span>
           <span class="etiqueta-chip">${etiquetaRol(sesion.rol)}</span>
         </a>
         <button class="btn btn-linea" type="button" data-cerrar-sesion-movil>
@@ -345,11 +343,11 @@ function inicializarPaginaLogin() {
     zonaSesion.hidden = false;
     zonaSesion.innerHTML = `
       <p class="mb-2">
-        Sesión activa: <strong>${sesion.nombre}</strong>
+        Sesión activa: <strong>${escaparHTML(sesion.nombre)}</strong>
         <span class="etiqueta-chip">${etiquetaRol(sesion.rol)}</span>
       </p>
       <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-tinta btn-sm" href="${panelDeSesion(sesion)}">Continuar como ${sesion.nombre}</a>
+        <a class="btn btn-tinta btn-sm" href="${panelDeSesion(sesion)}">Continuar como ${escaparHTML(sesion.nombre)}</a>
         <button class="btn btn-linea btn-sm" type="button" data-cambiar-cuenta>
           Cambiar de cuenta
         </button>
@@ -395,7 +393,7 @@ function inicializarPaginaLogin() {
     /* Se respeta el destino solo si el rol puede verlo */
     const paginaDestino = destino ? destino.split("?")[0].split("#")[0] : "";
     const destinoPermitido =
-      paginaDestino && puedeVer(resultado.sesion.rol, paginaDestino);
+      /^(index|busqueda|vacante|recursos|foros|perfil|empresas|admin|registro-empresa)\.html$/.test(paginaDestino) && puedeVer(resultado.sesion.rol, paginaDestino);
 
     window.location.href = destinoPermitido
       ? `./${destino}`

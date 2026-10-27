@@ -178,32 +178,30 @@ function fijarAlturaCabecera() {
    Es una maqueta: no valida credenciales, solo demuestra el
    flujo de la interfaz.
    --------------------------------------------------------------- */
-function prepararAccesoCabecera() {
-  const formulario = document.querySelector("[data-acceso]");
-  if (!formulario) return;
-  formulario.addEventListener("submit", (evento) => {
-    evento.preventDefault();
-    const correo = formulario.querySelector("input[type='email']");
-    if (!correo.value.trim()) {
-      correo.classList.add("invalido");
-      avisar("Escribe tu correo para continuar.");
-      return;
-    }
-    correo.classList.remove("invalido");
-    avisar("Sesión iniciada (demostración). Bienvenido de vuelta.", "exito");
-  });
-}
-
 /* ---------------------------------------------------------------
    Botones genéricos con confirmación
    Cualquier botón con data-accion puede lanzar un aviso.
    Uso: <button data-accion="guardar" data-mensaje="...">`
    --------------------------------------------------------------- */
 function prepararAccionesGenericas() {
-  document.querySelectorAll("[data-accion]").forEach((boton) => {
-    boton.addEventListener("click", () => {
-      const mensaje = boton.dataset.mensaje || "Acción registrada.";
-      avisar(mensaje, boton.dataset.tono || "exito");
+  document.querySelectorAll("[data-accion]").forEach(elemento => {
+    const formulario = elemento.tagName === "FORM";
+    elemento.addEventListener(formulario ? "submit" : "click", evento => {
+      evento.preventDefault();
+      if (formulario && elemento.dataset.accion === "suscripcion") {
+        const correo = elemento.querySelector('input[type="email"]');
+        correo.required = true;
+        if (!elemento.reportValidity()) return;
+        avisar("La suscripción por correo estará disponible al conectar el servidor."); return;
+      }
+      if (elemento.dataset.accion === "editar") {
+        document.querySelector('[data-pestana="perfil"]')?.click();
+        document.getElementById("fNombres")?.focus(); return;
+      }
+      if (elemento.dataset.accion === "compartir") {
+        avisar("Los perfiles públicos compartidos estarán disponibles al conectar el servidor."); return;
+      }
+      avisar(elemento.dataset.mensaje || "Acción de demostración.", elemento.dataset.tono || "aviso");
     });
   });
 }
@@ -216,7 +214,6 @@ document.addEventListener("DOMContentLoaded", () => {
   marcarSeccionActiva();
   animarContadores();
   pintarAnillos();
-  prepararAccesoCabecera();
   prepararAccionesGenericas();
 
   /* Año del pie de página: se actualiza sin tocar el HTML */
@@ -224,3 +221,38 @@ document.addEventListener("DOMContentLoaded", () => {
     el.textContent = new Date().getFullYear();
   });
 });
+
+window.addEventListener("pageshow", evento => { if (evento.persisted) window.location.reload(); });
+window.addEventListener("storage", evento => {
+  if (evento.key?.startsWith("pt_")) {
+    // Preserve drafts: notify rather than silently discarding form input.
+    avisar("Los datos cambiaron en otra pestaña. Recarga para ver la información actualizada.");
+  }
+});
+
+function abrirEdicionEmpresa(id, alGuardar) {
+  const empresa = EMPRESAS.find(e => e.id === id), sesion = sesionDatos();
+  if (!empresa || !(sesion?.rol === "administrador" || (sesion?.rol === "empresa" && sesion.empresaId === id))) {
+    avisar("Solo puedes editar la ficha de tu empresa."); return;
+  }
+  const modal = document.createElement("div");
+  modal.className = "modal fade"; modal.tabIndex = -1;
+  modal.setAttribute("aria-labelledby", "tituloEditarEmpresa");
+  const campos = [["nombre", "Nombre"], ["rubro", "Rubro"], ["ciudad", "Ciudad"], ["tamano", "Tamaño"], ["descripcion", "Descripción"]];
+  modal.innerHTML = `<div class="modal-dialog"><form class="modal-content">
+    <div class="modal-header"><h2 class="modal-title fs-5" id="tituloEditarEmpresa">Editar empresa</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <div class="modal-body">${campos.map(([clave, titulo]) => `<label class="form-label" for="empresa-${clave}">${titulo}</label><input id="empresa-${clave}" class="form-control mb-3" name="${clave}" value="${escaparHTML(empresa[clave])}" required maxlength="500">`).join("")}</div>
+    <div class="modal-footer"><button type="submit" class="btn btn-bermellon">Guardar ficha</button></div></form></div>`;
+  document.body.append(modal);
+  const instancia = new bootstrap.Modal(modal);
+  modal.addEventListener("hidden.bs.modal", () => { instancia.dispose(); modal.remove(); });
+  modal.querySelector("form").addEventListener("submit", evento => {
+    evento.preventDefault();
+    const cambios = Object.fromEntries(campos.map(([clave]) => [clave, modal.querySelector(`[name="${clave}"]`).value.trim()]));
+    if (Object.values(cambios).some(v => !v)) { avisar("Completa los campos de la empresa."); return; }
+    const fichas = leerObjeto("pt_empresas_fichas"); fichas[id] = cambios;
+    if (!escribirAlmacen("pt_empresas_fichas", fichas)) { avisar("No se pudo guardar la ficha."); return; }
+    Object.assign(empresa, cambios); instancia.hide(); alGuardar(); avisar("Ficha de empresa actualizada.", "exito");
+  });
+  instancia.show();
+}

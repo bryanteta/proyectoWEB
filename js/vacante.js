@@ -17,14 +17,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Funcionalidad: leer parámetro id para mostrar la oferta correcta
   // Lógica: si no existe o no coincide con ninguna vacante, usar 101 por defecto (respaldo del prototipo)
   const params = new URLSearchParams(location.search);
-  let vacanteId = parseInt(params.get("id"), 10);
-  let vacante = VACANTES.find((v) => v.id === vacanteId);
-
+  const vacanteId = params.has("id") ? Number(params.get("id")) : 101;
+  const vacante = VACANTES.find(v => v.id === vacanteId);
   if (!vacante) {
-    // Respaldo del prototipo: cargar vacante 101 por defecto cuando el id es inválido o falta
-    vacanteId = 101;
-    vacante = VACANTES.find((v) => v.id === 101);
+    const contenido = document.getElementById("contenido");
+    contenido.innerHTML = '<div class="container py-5"><h1>Oferta no encontrada</h1><p>La vacante solicitada no existe.</p><a href="./busqueda.html">Volver a buscar empleos</a></div>';
+    document.title = "Oferta no encontrada — Portal de Trabajo";
+    return;
   }
+  document.title = `${vacante.titulo} — Portal de Trabajo`;
 
   // Obtener empresa asociada
   const empresa = empresaPorId(vacante.empresaId);
@@ -53,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const chipNivel = document.getElementById("chipNivel");
   if (chipNivel) chipNivel.textContent = vacante.nivel;
 
+  document.getElementById("datoSector").textContent = vacante.sector;
   // Ficha de datos
   const datoUbicacion = document.getElementById("datoUbicacion");
   if (datoUbicacion) datoUbicacion.textContent = vacante.ciudad;
@@ -94,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   const linkOfertasEmpresa = document.getElementById("linkOfertasEmpresa");
   if (linkOfertasEmpresa) {
-    linkOfertasEmpresa.href = `./busqueda.html?sector=${encodeURIComponent(empresa.rubro)}`;
+    linkOfertasEmpresa.href = `./busqueda.html?empresa=${empresa.id}`;
   }
 
   // Valoración empresa lateral
@@ -176,26 +178,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Las publicaciones nuevas conservan todo el texto; migración de fichas antiguas.
+  if (descResumen) descResumen.textContent = detalle.descripcion || (fichaGuardada && vacante.id !== 101 ? fichaGuardada.responsabilidades?.join("\n") : "") || vacante.resumen;
+  if (descContexto && fichaGuardada?.descripcion) descContexto.hidden = true;
+  pintarLista("listaHabilidades", detalle.habilidades || []);
+  document.getElementById("seccionHabilidades").hidden = !detalle.habilidades?.length;
+  if (fichaGuardada) {
+    ["responsabilidades", "beneficios"].forEach(campo => {
+      if (!fichaGuardada[campo]?.length) detalle[campo] = [];
+    });
+  }
   pintarLista("listaResponsabilidades", detalle.responsabilidades);
   pintarLista("listaRequisitos", detalle.requisitos);
   pintarLista("listaBeneficios", detalle.beneficios);
+  ["listaBeneficios", "listaResponsabilidades"].forEach(id => {
+    const lista = document.getElementById(id); if (!lista.children.length) lista.closest("section").hidden = true;
+  });
 
   // Contacto
   const contactoCorreo = document.getElementById("contactoCorreo");
   if (contactoCorreo) contactoCorreo.textContent = detalle.contacto.correo;
   const contactoTelefono = document.getElementById("contactoTelefono");
-  if (contactoTelefono) contactoTelefono.textContent = detalle.contacto.telefono;
+  if (contactoTelefono) contactoTelefono.textContent = detalle.contacto.telefono || "No indicado";
   const contactoDireccion = document.getElementById("contactoDireccion");
-  if (contactoDireccion) contactoDireccion.textContent = detalle.contacto.direccion;
+  if (contactoDireccion) contactoDireccion.textContent = detalle.contacto.direccion || "No indicada";
   const contactoResponsable = document.getElementById("contactoResponsable");
-  if (contactoResponsable) contactoResponsable.textContent = detalle.contacto.responsable;
+  if (contactoResponsable) contactoResponsable.textContent = detalle.contacto.responsable || "No indicado";
 
   /* ------------------------------------------------------------
      4. Botones Postularme (principal y lateral) sincronizados
      ------------------------------------------------------------ */
   // Estados: se recupera del navegador si esta vacante ya se postuló
   let postulada = typeof yaPostulado === "function" && yaPostulado(vacante.id);
-  let contadorPost = postulada ? 28 : 27; // valor inicial mostrado en lateral
+  let contadorPost = candidatosDeVacante(vacante.id).length; // valor inicial mostrado en lateral
   const btnPostularme = document.getElementById("btnPostularme");
   const btnPostularmeLateral = document.getElementById("btnPostularmeLateral");
   const contadorPostulacionesEl = document.getElementById("contadorPostulaciones");
@@ -231,6 +246,12 @@ document.addEventListener("DOMContentLoaded", () => {
         btnPostularmeLateral.innerHTML = `<span class="punto" aria-hidden="true"></span>Postularme ahora`;
       }
     }
+    if (!vacanteDisponible(vacante)) {
+      [btnPostularme, btnPostularmeLateral].forEach(b => { if (b) { b.disabled = true; b.textContent = "Oferta no disponible"; } });
+    }
+    if (vacanteDisponible(vacante) && sesionDatos() && sesionDatos().rol !== "candidato") {
+      [btnPostularme, btnPostularmeLateral].forEach(b => { if (b) { b.disabled = true; b.textContent = "Solo candidatos pueden postular"; } });
+    }
     if (contadorPostulacionesEl) {
       contadorPostulacionesEl.textContent = contadorPost.toString();
     }
@@ -239,19 +260,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Lógica de postulación: cambia estado, muestra aviso, incrementa el
   // contador y guarda la postulación para que aparezca en el perfil.
   function postular() {
-    if (postulada) return;
-    postulada = true;
-    contadorPost += 1;
-
-    if (typeof guardarPostulacion === "function") {
-      guardarPostulacion({
-        vacanteId: vacante.id,
-        titulo: vacante.titulo,
-        empresaId: vacante.empresaId,
-        fecha: new Date().toISOString().slice(0, 10),
-        estado: "Enviada",
-      });
+    if (postulada || !vacanteDisponible(vacante)) return;
+    const sesion = sesionDatos();
+    if (!sesion) {
+      window.location.href = `./login.html?destino=${encodeURIComponent("vacante.html?id=" + vacante.id)}&motivo=sin_sesion`; return;
     }
+    if (sesion.rol !== "candidato") { avisar("Inicia sesión como candidato para postularte."); return; }
+    if (!guardarPostulacion({ vacanteId: vacante.id })) {
+      avisar("No se pudo guardar la postulación."); return;
+    }
+    postulada = true;
+    contadorPost = candidatosDeVacante(vacante.id).length;
 
     // Mostrar aviso de éxito
     if (typeof avisar === "function") {
@@ -268,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
      5. Botón Guardar oferta
      ------------------------------------------------------------ */
   // Funcionalidad: alternar texto y estilo, mostrar avisos
-  let guardada = false;
+  let guardada = leerGuardados("vacantes").includes(vacante.id);
   const btnGuardar = document.getElementById("btnGuardar");
   function actualizarGuardar() {
     if (!btnGuardar) return;
@@ -284,6 +303,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (btnGuardar) {
     btnGuardar.addEventListener("click", () => {
+      if (!sesionDatos()) { window.location.href = `./login.html?destino=${encodeURIComponent("vacante.html?id=" + vacante.id)}`; return; }
+      if (!alternarGuardado("vacantes", vacante.id)) { avisar("No se pudo guardar la oferta."); return; }
       guardada = !guardada;
       if (typeof avisar === "function") {
         if (guardada) {
@@ -301,7 +322,7 @@ document.addEventListener("DOMContentLoaded", () => {
      6. Reseñas: pintar, calcular media y formulario
      ------------------------------------------------------------ */
   // Datos base
-  let reseñas = Array.isArray(RESENAS_EMPRESA) ? RESENAS_EMPRESA.slice() : [];
+  let reseñas = resenasDeEmpresa(empresa.id);
   const listaResenasEl = document.getElementById("listaResenas");
   const notaMediaEl = document.getElementById("notaMedia");
 
@@ -380,6 +401,8 @@ document.addEventListener("DOMContentLoaded", () => {
         listaResenasEl.appendChild(crearResenaElemento(r));
       });
     }
+    if (empresaResenas) empresaResenas.textContent = `${reseñas.length} reseñas`;
+    if (valoracionEmpresa) pintarPuntos(valoracionEmpresa, Math.round(calcularMedia()), 5);
     if (notaMediaEl) {
       notaMediaEl.textContent = calcularMedia().toFixed(1);
     }
@@ -441,7 +464,10 @@ document.addEventListener("DOMContentLoaded", () => {
         texto: texto,
       };
       // Agregar al inicio de la lista
-      reseñas.unshift(nueva);
+      if (!guardarResena(empresa.id, notaSeleccionada, texto)) {
+        avisar("Inicia sesión y verifica el almacenamiento para publicar una reseña."); return;
+      }
+      reseñas = resenasDeEmpresa(empresa.id);
       // Limpiar formulario
       notaSeleccionada = 0;
       if (valoracionFormulario) {
@@ -467,7 +493,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!otrasOfertasEl) return;
     otrasOfertasEl.innerHTML = "";
     // Obtener ofertas de la misma empresa, excluyendo la actual
-    const otras = VACANTES.filter((v) => v.empresaId === empresa.id && v.id !== vacante.id);
+    const otras = VACANTES.filter((v) => v.empresaId === empresa.id && v.id !== vacante.id && vacanteDisponible(v));
     if (otras.length === 0) {
       // Mostrar vacío pequeño
       const vacio = document.createElement("div");

@@ -91,6 +91,15 @@ const EMPRESAS = [
   },
 ];
 
+/* Las seis empresas de demostración representan registros ya aprobados. */
+EMPRESAS.forEach(e => { e.estadoRegistro = "aprobado"; });
+const empresasRegistradas = leerObjeto("pt_flujos_v1").empresas;
+if (Array.isArray(empresasRegistradas)) {
+  empresasRegistradas.filter(e => e && Number.isSafeInteger(e.id) && e.estadoRegistro === "aprobado").forEach(e => {
+    if (!EMPRESAS.some(base => base.id === e.id)) EMPRESAS.push(e);
+  });
+}
+
 /* Vacantes: cada una indica el tipo de contrato, modalidad,
    nivel de experiencia y salario mensual en dólares. */
 const VACANTES = [
@@ -513,12 +522,16 @@ const ACTIVIDAD_ADMIN = [
 
 /* Utilidad compartida: convierte la fecha en texto cercano */
 function fechaCercana(iso) {
-  const dias = Math.round((new Date("2026-10-20") - new Date(iso)) / 86400000);
+  const fecha = new Date(iso + (String(iso).length == 10 ? "T00:00:00" : ""));
+  if (Number.isNaN(fecha.getTime())) return "Fecha no disponible";
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const dias = Math.floor((hoy - fecha) / 86400000);
+  if (dias < 0) return "Próximamente";
   if (dias <= 0) return "hoy";
   if (dias === 1) return "ayer";
   if (dias < 7) return `hace ${dias} días`;
-  if (dias < 30) return `hace ${Math.round(dias / 7)} semanas`;
-  return `hace ${Math.round(dias / 30)} meses`;
+  if (dias < 30) return `hace ${Math.floor(dias / 7)} ${Math.floor(dias / 7) === 1 ? "semana" : "semanas"}`;
+  return `hace ${Math.floor(dias / 30)} ${Math.floor(dias / 30) === 1 ? "mes" : "meses"}`;
 }
 
 /* Devuelve el nombre de la empresa a partir del id */
@@ -529,7 +542,7 @@ function empresaPorId(id) {
 /* Formatea el salario en dólares. Las ofertas publicadas sin salario
    (el campo es opcional) se muestran como "A convenir". */
 function salarioFormateado(valor) {
-  if (!valor) return "A convenir";
+  if (valor === null || valor === undefined || valor === "") return "A convenir";
   return `$${Number(valor).toLocaleString("es-EC")}`;
 }
 
@@ -572,7 +585,7 @@ function escribirAlmacen(clave, valor) {
 }
 
 /* Publicaciones hechas desde empresas.html */
-const PUBLICACIONES_EXTRA = leerAlmacen(CLAVES_ALMACEN.vacantes, []);
+const PUBLICACIONES_EXTRA = leerLista(CLAVES_ALMACEN.vacantes).filter(r => r && r.vacante && Number.isSafeInteger(r.vacante.id) && typeof r.vacante.titulo === "string" && EMPRESAS.some(e => e.id === r.vacante.empresaId));
 
 /* Fichas largas de las vacantes publicadas, por id. La vacante 101
    conserva su ficha original de DETALLE_VACANTE. */
@@ -595,6 +608,8 @@ if (Array.isArray(PUBLICACIONES_EXTRA)) {
 
 /* Guarda una vacante publicada y su ficha. La usa js/empresas.js. */
 function guardarPublicacionExtra(vacante, detalle) {
+  const sesion = sesionDatos();
+  if (!vacante || !empresaHabilitada(vacante.empresaId) || !(sesion?.rol === "administrador" || (sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId))) return false;
   const registros = leerAlmacen(CLAVES_ALMACEN.vacantes, []);
   const lista = Array.isArray(registros)
     ? registros.filter(
@@ -606,21 +621,28 @@ function guardarPublicacionExtra(vacante, detalle) {
 }
 
 /* Postulaciones hechas desde vacante.html (las lee el perfil) */
+function leerTodasPostulaciones() {
+  return leerLista(CLAVES_ALMACEN.postulaciones).filter(r => r && Number.isSafeInteger(r.vacanteId))
+    .map(r => ({ ...r, usuario: r.usuario || "candidato" }));
+}
 function leerPostulaciones() {
-  const lista = leerAlmacen(CLAVES_ALMACEN.postulaciones, []);
-  return Array.isArray(lista) ? lista : [];
+  const usuario = sesionDatos()?.usuario;
+  return leerTodasPostulaciones().filter(r => r.usuario === usuario);
 }
-
 function guardarPostulacion(registro) {
-  const lista = leerPostulaciones().filter(
-    (item) => item.vacanteId !== registro.vacanteId
-  );
-  lista.unshift(registro);
-  return escribirAlmacen(CLAVES_ALMACEN.postulaciones, lista);
+  const sesion = sesionDatos();
+  const vacante = VACANTES.find(v => v.id === registro.vacanteId);
+  if (sesion?.rol !== "candidato" || !vacanteDisponible(vacante)) return false;
+  if (yaPostulado(registro.vacanteId)) return true;
+  const perfil = leerPerfil();
+  const nueva = { vacanteId: vacante.id, usuario: sesion.usuario, empresaId: vacante.empresaId,
+    nombre: perfil.fNombres || sesion.nombre, correo: perfil.fCorreo || sesion.correo,
+    titulo: perfil.fPerfil || "Candidato", habilidades: perfil.habilidades || [],
+    fecha: fechaHoy(), estado: "Nueva" };
+  return escribirAlmacen(CLAVES_ALMACEN.postulaciones, [nueva, ...leerTodasPostulaciones()]);
 }
-
 function yaPostulado(vacanteId) {
-  return leerPostulaciones().some((item) => item.vacanteId === vacanteId);
+  return leerPostulaciones().some(item => item.vacanteId === vacanteId);
 }
 
 /* Temas nuevos del foro (se conservan al recargar) */
@@ -631,4 +653,123 @@ function leerTemasForo() {
 
 function guardarTemasForo(temas) {
   return escribirAlmacen(CLAVES_ALMACEN.temasForo, temas);
+}
+
+/* Repositorio local compartido. Los módulos consumen las mismas entidades.
+   La futura API Node debe conservar estas reglas y aplicarlas en servidor. */
+function leerLista(clave) {
+  const valor = leerAlmacen(clave, []);
+  return Array.isArray(valor) ? valor : [];
+}
+function leerObjeto(clave) {
+  const valor = leerAlmacen(clave, {});
+  return valor && typeof valor === "object" && !Array.isArray(valor) ? valor : {};
+}
+function sesionDatos() {
+  const sesion = leerAlmacen("pt_sesion", null);
+  const estado = leerObjeto("pt_cuentas_estado")[sesion?.usuario];
+  if (estado === "Suspendido" || estado === "Eliminado" || !sesion) return null;
+  const miembros = leerObjeto("pt_flujos_v1").miembros;
+  const miembro = Array.isArray(miembros) ? miembros.find(m => m.usuario === sesion.usuario) : null;
+  return miembro && sesion.rol !== "administrador" ? {...sesion,rol:"empresa",empresaId:miembro.empresaId} : sesion;
+}
+function cambiarEstadoCuenta(usuario, estado) {
+  const sesion = sesionDatos();
+  if (sesion?.rol !== "administrador" || usuario === sesion.usuario || !["Activo", "Suspendido", "Eliminado"].includes(estado)) return false;
+  const estados = leerObjeto("pt_cuentas_estado"); estados[usuario] = estado;
+  return escribirAlmacen("pt_cuentas_estado", estados);
+}
+function escaparHTML(valor) {
+  return String(valor ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"}[c]));
+}
+function estadoVacante(vacante) {
+  return leerObjeto("pt_estados_vacantes")[vacante.id] || vacante.estado || "Publicada";
+}
+function vacanteDisponible(vacante) {
+  return !!vacante && estadoVacante(vacante) === "Publicada" && empresaHabilitada(vacante.empresaId);
+}
+function cambiarEstadoVacante(id, estado) {
+  const vacante = VACANTES.find(v => v.id === id), sesion = sesionDatos();
+  if (!vacante || !["Publicada", "Cerrada", "Retirada", "Pendiente"].includes(estado)) return false;
+  if (sesion?.rol !== "administrador" && !(sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId && ["Cerrada", "Publicada"].includes(estado) && estadoVacante(vacante) !== "Retirada")) return false;
+  const estados = leerObjeto("pt_estados_vacantes"); estados[id] = estado;
+  return escribirAlmacen("pt_estados_vacantes", estados);
+}
+function suspenderEmpresa(id, suspendida) {
+  if (sesionDatos()?.rol !== "administrador") return false;
+  const estados = leerObjeto("pt_empresas_estado"); estados[id] = suspendida;
+  if (!escribirAlmacen("pt_empresas_estado", estados)) return false;
+  const empresa = EMPRESAS.find(e => e.id === id);
+  if (empresa) empresa.suspendida = suspendida;
+  return true;
+}
+EMPRESAS.forEach(e => { e.suspendida = leerObjeto("pt_empresas_estado")[e.id] === true; });
+function candidatosDeVacante(id) {
+  const estados = leerObjeto("pt_candidatos_estado");
+  const base = (POSTULACIONES.find(p => p.vacanteId === id)?.candidatos || []).map((c, i) => ({ ...c, clave: `demo-${i}` }));
+  const nuevas = leerTodasPostulaciones().filter(p => p.vacanteId === id).map(p => ({ ...p,
+    clave: p.usuario, iniciales: p.nombre?.slice(0, 2).toUpperCase() || "CA", experiencia: "Postulación desde el portal" }));
+  return [...nuevas, ...base].map(c => ({ ...c, estado: estados[`${id}:${c.clave}`] || c.estado }));
+}
+function actualizarEstadoCandidato(id, clave, estado) {
+  const sesion = sesionDatos(), vacante = VACANTES.find(v => v.id === id);
+  if (!vacante || !(sesion?.rol === "administrador" || (sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId))) return false;
+  const estados = leerObjeto("pt_candidatos_estado"); estados[`${id}:${clave}`] = estado;
+  return escribirAlmacen("pt_candidatos_estado", estados);
+}
+function estadoPostulacion(p) { return leerObjeto("pt_candidatos_estado")[`${p.vacanteId}:${p.usuario}`] || p.estado; }
+function leerPerfil() { return leerObjeto("pt_perfiles")[sesionDatos()?.usuario] || {}; }
+function guardarPerfil(perfil) {
+  const usuario = sesionDatos()?.usuario; if (!usuario) return false;
+  const perfiles = leerObjeto("pt_perfiles"); perfiles[usuario] = perfil;
+  return escribirAlmacen("pt_perfiles", perfiles);
+}
+function leerGuardados(tipo) { const ids = leerObjeto("pt_guardados")[sesionDatos()?.usuario]?.[tipo]; return Array.isArray(ids) ? ids : []; }
+function alternarGuardado(tipo, id) {
+  const usuario = sesionDatos()?.usuario; if (!usuario) return false;
+  const todos = leerObjeto("pt_guardados"), datos = todos[usuario] || {};
+  const ids = Array.isArray(datos[tipo]) ? datos[tipo] : [];
+  datos[tipo] = ids.includes(id) ? ids.filter(x => x !== id) : [...ids, id];
+  todos[usuario] = datos; return escribirAlmacen("pt_guardados", todos);
+}
+function resenasDeEmpresa(id) {
+  return [...leerLista("pt_resenas").filter(r => r.empresaId === id), ...(id === 1 ? RESENAS_EMPRESA : [])];
+}
+function guardarResena(empresaId, nota, texto) {
+  const sesion = sesionDatos();
+  if (!sesion || !EMPRESAS.some(e => e.id === empresaId) || nota < 1 || nota > 5 || !texto.trim()) return false;
+  const resena = { id: Date.now(), empresaId, usuario: sesion.usuario, autor: leerPerfil().fNombres || sesion.nombre,
+    iniciales: sesion.nombre.slice(0, 2), fecha: fechaHoy(), nota, texto: texto.trim() };
+  const ok = escribirAlmacen("pt_resenas", [resena, ...leerLista("pt_resenas")]);
+  if (ok) actualizarResumenResenas();
+  return ok;
+}
+
+function fechaHoy() {
+  const fecha = new Date();
+  return [fecha.getFullYear(), String(fecha.getMonth() + 1).padStart(2, "0"), String(fecha.getDate()).padStart(2, "0")].join("-");
+}
+
+function actualizarResumenResenas() {
+  EMPRESAS.forEach(e => {
+    const resenas = resenasDeEmpresa(e.id);
+    e.resenas = resenas.length;
+    e.valoracion = resenas.length ? resenas.reduce((s, r) => s + r.nota, 0) / resenas.length : 0;
+  });
+}
+actualizarResumenResenas();
+
+EMPRESAS.forEach(empresa => {
+  const ficha = leerObjeto("pt_empresas_fichas")[empresa.id];
+  if (ficha && typeof ficha === "object") {
+    ["nombre", "rubro", "ciudad", "tamano", "descripcion"].forEach(clave => {
+      if (typeof ficha[clave] === "string") empresa[clave] = ficha[clave];
+    });
+  }
+});
+
+function empresaHabilitada(id) {
+  const empresa = EMPRESAS.find(e => e.id === id);
+  const suspendida = leerObjeto("pt_empresas_estado")[id] === true;
+  return !!empresa && empresa.estadoRegistro === "aprobado" && !suspendida;
 }

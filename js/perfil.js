@@ -26,6 +26,7 @@ function inicializarPestanas() {
   botones.forEach((boton) => {
     boton.addEventListener("click", () => {
       const clave = boton.dataset.pestana;
+      history.replaceState(null, "", "#" + clave);
       /* La clave "valoraciones" genera el id "pestanaValoraciones" */
       const idPanel = "pestana" + clave.charAt(0).toUpperCase() + clave.slice(1);
 
@@ -42,6 +43,8 @@ function inicializarPestanas() {
     });
   });
 
+  const inicial = [...botones].find(b => b.dataset.pestana === location.hash.slice(1));
+  if (inicial) { inicial.click(); return; }
   /* Las pestañas se inicializan en "Perfil": se oculta todo
      panel que no sea el primero por seguridad */
   paneles.forEach((panel) => {
@@ -59,6 +62,9 @@ function inicializarFormularioPerfil() {
   const formulario = document.getElementById("formPerfil");
   if (!formulario) return;
 
+  const guardado = leerPerfil();
+  formulario.querySelectorAll("input[id], select[id], textarea[id]").forEach(c => { if (guardado[c.id] !== undefined) c.value = guardado[c.id]; });
+  const titulo = document.querySelector("#contenido h1"); if (titulo) titulo.textContent = guardado.fNombres || sesionDatos()?.nombre || "Mi perfil";
   /* Expresión sencilla para verificar el correo */
   const patronCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -87,6 +93,11 @@ function inicializarFormularioPerfil() {
       return;
     }
 
+    const perfil = { ...leerPerfil() };
+    formulario.querySelectorAll("input[id], select[id], textarea[id]").forEach(c => { perfil[c.id] = c.value; });
+    perfil.habilidades = [...document.querySelectorAll("#listaHabilidades .etiqueta-chip")].map(c => c.dataset.valor || c.childNodes[0].textContent.trim());
+    if (!guardarPerfil(perfil)) { avisar("No se pudo guardar el perfil."); return; }
+    const titulo = document.querySelector("#contenido h1"); if (titulo) titulo.textContent = perfil.fNombres;
     avisar("Perfil actualizado correctamente.", "exito");
   });
 
@@ -128,6 +139,11 @@ function inicializarHabilidades() {
     return chip;
   }
 
+  const guardadas = leerPerfil().habilidades;
+  if (Array.isArray(guardadas)) {
+    lista.querySelectorAll(".etiqueta-chip").forEach(c => c.remove());
+    guardadas.forEach(h => lista.insertBefore(crearChip(h), entrada));
+  }
   /* Añade la habilidad escrita en el campo */
   function agregarHabilidad() {
     const texto = entrada.value.trim();
@@ -219,11 +235,12 @@ function inicializarCurriculum() {
 
     /* Demostración: si no hay archivo elegido (por ejemplo al
        cancelar el diálogo), se simula con un nombre de ejemplo */
-    const nombre = archivo ? archivo.name : "curriculum-ana-morales.pdf";
+    if (!archivo) return;
+    const nombre = archivo.name;
     const peso = archivo ? pesoLegible(archivo.size) : "240 KB";
 
     agregarFila(nombre, peso);
-    avisar(`Currículum «${nombre}» cargado correctamente.`, "exito");
+    avisar(`Vista previa de «${nombre}». La carga al servidor aún no está disponible.`);
     input.value = ""; /* Se limpia para poder volver a elegir */
   });
 
@@ -289,16 +306,15 @@ function inicializarAlertas() {
     return fila;
   }
 
-  /* Tres alertas de ejemplo iniciales */
-  const alertasEjemplo = [
-    { titulo: "Tecnología en Quito", detalle: "Salario desde $900 · diaria", activa: true },
-    { titulo: "Diseño remoto", detalle: "Salario desde $600 · semanal", activa: true },
-    { titulo: "Prácticas en Quito", detalle: "Salario desde $300 · inmediata", activa: false },
-  ];
-
-  alertasEjemplo.forEach((alerta) => {
-    lista.appendChild(crearFilaAlerta(alerta.titulo, alerta.detalle, alerta.activa));
-  });
+  function guardarAlertas() {
+    const alertas = [...lista.querySelectorAll(".alerta-fila")].map(f => ({ titulo: f.querySelector("strong").textContent, detalle: f.querySelector("small").textContent, activa: f.querySelector("input").checked }));
+    const contador = document.querySelector('[data-pestana="alertas"] .contador'); if (contador) contador.textContent = alertas.length;
+    return guardarPerfil({ ...leerPerfil(), alertas });
+  }
+  lista.innerHTML = "";
+  (leerPerfil().alertas || []).forEach(a => lista.append(crearFilaAlerta(a.titulo, a.detalle, a.activa)));
+  const contador = document.querySelector('[data-pestana="alertas"] .contador'); if (contador) contador.textContent = (leerPerfil().alertas || []).length;
+  lista.addEventListener("change", () => { if (!guardarAlertas()) avisar("No se pudo guardar la alerta."); });
 
   /* El botón "Nueva alerta" alterna la visibilidad del formulario */
   botonNueva.addEventListener("click", () => {
@@ -314,7 +330,9 @@ function inicializarAlertas() {
     const titulo = `${sector} en ${ciudad}`;
     const detalle = `Salario desde $${Number(salario).toLocaleString("es-EC")} · diaria`;
 
-    lista.appendChild(crearFilaAlerta(titulo, detalle, true));
+    const fila = crearFilaAlerta(titulo, detalle, true);
+    lista.appendChild(fila);
+    if (!guardarAlertas()) { fila.remove(); avisar("No se pudo guardar la alerta."); return; }
     formulario.hidden = true;
     avisar(`Alerta «${titulo}» creada.`, "exito");
   });
@@ -425,6 +443,8 @@ function inicializarValoraciones() {
     return resena;
   }
 
+  lista.innerHTML = "";
+  leerLista("pt_resenas").filter(r => r.usuario === sesionDatos()?.usuario).forEach(r => lista.append(crearResena(empresaPorId(r.empresaId).nombre, r.nota, r.texto)));
   formulario.addEventListener("submit", (evento) => {
     evento.preventDefault();
 
@@ -440,6 +460,7 @@ function inicializarValoraciones() {
     /* La empresa elegida en el select se busca en el directorio */
     const empresa = EMPRESAS.find((e) => e.id === Number(select.value)) || EMPRESAS[0];
 
+    if (!guardarResena(empresa.id, nota, texto)) { avisar("No se pudo guardar la valoración."); return; }
     lista.prepend(crearResena(empresa.nombre, nota, texto));
     formulario.reset();
     pintarNota(0);
@@ -457,35 +478,8 @@ function inicializarPostulaciones() {
   const contenedor = document.getElementById("listaMisPostulaciones");
   if (!contenedor) return;
 
-  /* Postulaciones de ejemplo del prototipo */
-  const ejemplos = [
-    { vacanteId: 101, estado: "En revisión", tono: "cielo" },
-    { vacanteId: 102, estado: "Preseleccionada", tono: "verde" },
-    { vacanteId: 103, estado: "Recibida", tono: "ambar" },
-    { vacanteId: 107, estado: "Recibida", tono: "ambar" },
-  ];
-
-  /* Las enviadas desde el detalle de la vacante tienen prioridad */
-  const enviadas = (typeof leerPostulaciones === "function" ? leerPostulaciones() : []).map(
-    (registro) => ({
-      vacanteId: registro.vacanteId,
-      estado: registro.estado || "Enviada",
-      tono: "ambar",
-      fecha: registro.fecha,
-    })
-  );
-
-  /* Se evita duplicar una vacante que ya está en los ejemplos y se
-     descartan postulaciones cuya vacante ya no exista (por ejemplo,
-     si se borraron los datos guardados del navegador). */
-  const idsEjemplo = new Set(ejemplos.map((item) => item.vacanteId));
-  const lista = [
-    ...enviadas.filter(
-      (item) => !idsEjemplo.has(item.vacanteId) && VACANTES.some((v) => v.id === item.vacanteId)
-    ),
-    ...ejemplos.filter((item) => VACANTES.some((v) => v.id === item.vacanteId)),
-  ];
-
+  const lista = leerPostulaciones().filter(p => VACANTES.some(v => v.id === p.vacanteId)).map(p => ({ ...p,
+    estado: estadoPostulacion(p), tono: estadoPostulacion(p) === "Preseleccionada" ? "verde" : "ambar" }));
   contenedor.innerHTML = lista
     .map((item) => {
       const vacante = VACANTES.find((v) => v.id === item.vacanteId);
@@ -497,13 +491,13 @@ function inicializarPostulaciones() {
       <article class="resultado">
         <span class="marca-empresa" aria-hidden="true">${empresa.iniciales}</span>
         <div class="resultado-cuerpo">
-          <h3><a href="./vacante.html?id=${vacante.id}">${vacante.titulo}</a></h3>
+          <h3><a href="./vacante.html?id=${vacante.id}">${escaparHTML(vacante.titulo)}</a></h3>
           <p class="resultado-empresa">${empresa.nombre} · ${empresa.rubro}</p>
           <div class="resultado-meta">
-            <span><span class="punto" aria-hidden="true"></span>${vacante.ciudad}</span>
-            <span><span class="punto" aria-hidden="true"></span>${vacante.modalidad}</span>
-            <span><span class="punto" aria-hidden="true"></span>${vacante.contrato}</span>
-            <span><span class="punto" aria-hidden="true"></span>${vacante.nivel}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.ciudad)}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.modalidad)}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.contrato)}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.nivel)}</span>
           </div>
         </div>
         <div class="resultado-lado">
@@ -514,6 +508,8 @@ function inicializarPostulaciones() {
       </article>`;
     })
     .join("");
+
+  if (!lista.length) contenedor.innerHTML = '<p class="texto-suave">Todavía no has enviado postulaciones. <a href="./busqueda.html">Buscar empleos</a></p>';
 
   /* Contadores de la pestaña y del panel */
   const total = lista.length;
@@ -541,4 +537,17 @@ document.addEventListener("DOMContentLoaded", () => {
   inicializarGraficoVisitas();
   inicializarValoraciones();
   inicializarPostulaciones();
+});
+
+// Listas personales compartidas con el detalle de vacante y recursos.
+document.addEventListener("DOMContentLoaded", () => {
+  const lista = document.getElementById("listaGuardados");
+  const vacantes = leerGuardados("vacantes").map(id => VACANTES.find(v => v.id === id)).filter(Boolean);
+  const recursos = leerGuardados("recursos").map(id => RECURSOS.find(r => r.id === id)).filter(Boolean);
+  if (lista) {
+    lista.innerHTML = [...vacantes.map(v => `<p><a href="./vacante.html?id=${v.id}">${escaparHTML(v.titulo)}</a> · ${escaparHTML(estadoVacante(v))}</p>`),
+      ...recursos.map(r => `<p><a href="./recursos.html?id=${r.id}">${escaparHTML(r.titulo)}</a> · Recurso</p>`)].join("") || "Todavía no tienes guardados.";
+  }
+  document.getElementById("totalPostulacionesPerfil").textContent = leerPostulaciones().length;
+  document.getElementById("totalGuardadosPerfil").textContent = vacantes.length;
 });

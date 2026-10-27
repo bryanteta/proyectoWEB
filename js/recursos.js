@@ -178,10 +178,13 @@ function limpiarFiltros() {
        demostración del mapa TEXTOS_POR_CATEGORIA).
      · Ficha final: autor, tipo y duración.
    --------------------------------------------------------------- */
+let recursoAbierto = null;
 function abrirRecurso(id) {
   const recurso = RECURSOS.find((item) => item.id === id);
   if (!recurso) return;
 
+  recursoAbierto = id;
+  document.getElementById("btnGuardarModal").textContent = leerGuardados("recursos").includes(id) ? "Quitar de mi lista" : "Guardar en mi lista";
   /* Cabecera del modal: tipo y título */
   document.getElementById("modalRecursoTipo").textContent = recurso.tipo;
   document.getElementById("modalRecursoTitulo").textContent = recurso.titulo;
@@ -215,6 +218,8 @@ document.addEventListener("DOMContentLoaded", () => {
   pintarDestacado();
   pintarRejilla();
   prepararFiltros();
+  const id = Number(new URLSearchParams(location.search).get("id"));
+  if (id) abrirRecurso(id);
 
   /* Clic en "Leer" de cualquier tarjeta (evento delegado) */
   document.getElementById("rejillaRecursos").addEventListener("click", (evento) => {
@@ -229,6 +234,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* "Guardar en mi lista" dentro del modal */
   document.getElementById("btnGuardarModal").addEventListener("click", () => {
-    avisar("Recurso guardado en tu lista.", "exito");
+    if (!sesionDatos()) { window.location.href = `./login.html?destino=${encodeURIComponent("recursos.html?id=" + recursoAbierto)}`; return; }
+    if (!alternarGuardado("recursos", recursoAbierto)) { avisar("No se pudo guardar el recurso."); return; }
+    const guardado = leerGuardados("recursos").includes(recursoAbierto);
+    document.getElementById("btnGuardarModal").textContent = guardado ? "Quitar de mi lista" : "Guardar en mi lista";
+    avisar(guardado ? "Recurso guardado en tu perfil." : "Recurso eliminado de tu lista.", "exito");
   });
 });

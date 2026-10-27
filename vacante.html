@@ -163,6 +163,8 @@
                   <dd id="datoModalidad">-</dd>
                 </div>
                 <div>
+                  <dt>Sector</dt><dd id="datoSector">-</dd>
+                </div><div>
                   <dt>Nivel de experiencia</dt>
                   <dd id="datoNivel">-</dd>
                 </div>
@@ -175,7 +177,7 @@
               <!-- Descripción del puesto -->
               <section class="detalle-seccion">
                 <h2>Descripción del puesto</h2>
-                <p id="descResumen">-</p>
+                <p id="descResumen" style="white-space: pre-line">-</p>
                 <p id="descContexto">-</p>
               </section>
 
@@ -193,6 +195,10 @@
                 </ul>
               </section>
 
+              <section class="detalle-seccion" id="seccionHabilidades" hidden>
+                <h2>Habilidades requeridas</h2>
+                <ul class="detalle-lista" id="listaHabilidades"></ul>
+              </section>
               <!-- Beneficios -->
               <section class="detalle-seccion">
                 <h2>Beneficios</h2>
@@ -346,6 +352,7 @@
             <a href="./perfil.html">Mi perfil</a><br />
             <a href="./recursos.html">Recursos</a><br />
             <a href="./foros.html">Foros</a>
+            <a href="./registro-empresa.html">Registrar empresa</a>
           </div>
           <div class="col-6 col-lg-2">
             <h5>Empresas</h5>
@@ -374,10 +381,12 @@
     </footer>
 
     <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
-    <script src="./js/datos.js"></script>
-    <script src="./js/auth.js"></script>
-    <script src="./js/main.js"></script>
+    <script src="./js/datos.js?v=20261026-revision-3"></script>
+    <script src="./js/dominio-flujos.js?v=20261026-revision-3"></script>
+    <script src="./js/flujos.js?v=20261026-revision-3"></script>
+    <script src="./js/auth.js?v=20261026-revision-3"></script>
+    <script src="./js/main.js?v=20261026-revision-3"></script>
     <!-- Lógica específica de detalle de vacante -->
-    <script src="./js/vacante.js"></script>
+    <script src="./js/vacante.js?v=20261026-revision-3"></script>
   </body>
 </html>

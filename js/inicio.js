@@ -19,7 +19,7 @@ function pintarCategorias() {
 
   /* Cuenta las vacantes de cada sector */
   const sectores = {};
-  VACANTES.forEach((vacante) => {
+  VACANTES.filter(vacanteDisponible).forEach((vacante) => {
     sectores[vacante.sector] = (sectores[vacante.sector] || 0) + 1;
   });
 
@@ -57,7 +57,7 @@ function pintarRecientes() {
   const contenedor = document.getElementById("listaRecientes");
   if (!contenedor) return;
 
-  const recientes = [...VACANTES]
+  const recientes = VACANTES.filter(vacanteDisponible)
     .sort((a, b) => new Date(b.publicada) - new Date(a.publicada))
     .slice(0, 5);
 
@@ -66,15 +66,15 @@ function pintarRecientes() {
       const empresa = empresaPorId(vacante.empresaId);
       return `
       <article class="resultado ${vacante.destacada ? "resultado-destacado" : ""}">
-        <span class="marca-empresa ${vacante.destacada ? "acento" : ""}" aria-hidden="true">${empresa.iniciales}</span>
+        <span class="marca-empresa ${vacante.destacada ? "acento" : ""}" aria-hidden="true">${escaparHTML(empresa.iniciales)}</span>
         <div class="resultado-cuerpo">
-          <h3><a href="./vacante.html?id=${vacante.id}">${vacante.titulo}</a></h3>
-          <p class="resultado-empresa">${empresa.nombre} · ${empresa.rubro}</p>
+          <h3><a href="./vacante.html?id=${vacante.id}">${escaparHTML(vacante.titulo)}</a></h3>
+          <p class="resultado-empresa">${escaparHTML(empresa.nombre)} · ${escaparHTML(empresa.rubro)}</p>
           <div class="resultado-meta">
-            <span><span class="punto" aria-hidden="true"></span>${vacante.ciudad}</span>
-            <span><span class="punto" aria-hidden="true"></span>${vacante.modalidad}</span>
-            <span><span class="punto" aria-hidden="true"></span>${vacante.contrato}</span>
-            <span><span class="punto" aria-hidden="true"></span>${vacante.nivel}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.ciudad)}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.modalidad)}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.contrato)}</span>
+            <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.nivel)}</span>
           </div>
         </div>
         <div class="resultado-lado">
@@ -101,7 +101,7 @@ function pintarRecursosInicio() {
       const clase = recurso.tipo === "Video" ? "disco-tinta" : "";
       return `
       <div class="col-md-4">
-        <a class="tarjeta recurso-tarjeta h-100 text-decoration-none" href="./recursos.html">
+        <a class="tarjeta recurso-tarjeta h-100 text-decoration-none" href="./recursos.html?id=${recurso.id}">
           <div class="recurso-miniatura">
             <span class="disco ${clase}" aria-hidden="true">${recurso.tipo.slice(0, 2).toUpperCase()}</span>
             <span class="duracion">${recurso.duracion}</span>

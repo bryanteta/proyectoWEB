@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="./estilos/pantallas.css" />
     <!-- Estilos propios de esta pantalla -->
     <link rel="stylesheet" href="./estilos/foros.css" />
+      <link rel="stylesheet" href="./estilos/registro.css?v=20261026-revision-4">
   </head>
 
   <body class="d-flex flex-column min-vh-100">
@@ -176,15 +177,15 @@
                 <div class="panel-cuerpo">
                   <div class="for-cifra">
                     <span class="disco" aria-hidden="true">1</span>
-                    <span>128 temas abiertos</span>
+                    <span id="totalTemasPublicos">0 temas publicados</span>
                   </div>
                   <div class="for-cifra">
                     <span class="disco" aria-hidden="true">2</span>
-                    <span>1.940 respuestas</span>
+                    <span id="totalRespuestasPublicas">0 respuestas</span>
                   </div>
                   <div class="for-cifra mb-0">
                     <span class="disco" aria-hidden="true">3</span>
-                    <span>342 miembros activos</span>
+                    <span>Solo temas aprobados</span>
                   </div>
                 </div>
               </div>
@@ -219,13 +220,14 @@
                    con el botón de arriba (js/foros.js) -->
               <div class="panel for-panel-nuevo" id="panelNuevoTema" hidden>
                 <div class="panel-cabecera">
-                  <h3>Abrir un nuevo tema</h3>
+                  <h3 id="tituloFormularioTema">Enviar un tema a revisión</h3>
                 </div>
                 <div class="panel-cuerpo">
+                  <p>Los temas nuevos requieren aprobación. Podrás consultar el estado y corregir un rechazo en «Mis envíos a moderación».</p><p id="errorTema" class="registro-error" role="alert" tabindex="-1" hidden></p>
                   <form id="formTema" novalidate>
                     <div class="for-campo mb-3">
                       <label class="form-label" for="fTitulo">Título del tema</label>
-                      <input class="form-control" id="fTitulo" type="text" placeholder="Escribe una pregunta clara y concreta" required />
+                      <input class="form-control" id="fTitulo" minlength="8" maxlength="160" type="text" placeholder="Escribe una pregunta clara y concreta" required />
                       <span class="campo-error">El título es obligatorio.</span>
                     </div>
                     <div class="for-campo mb-3">
@@ -242,14 +244,14 @@
                       <label class="form-label" for="fMensaje">Mensaje</label>
                       <textarea
                         class="form-control"
-                        id="fMensaje"
+                        id="fMensaje" minlength="20" maxlength="10000"
                         placeholder="Cuenta tu consulta o experiencia"
                         required
                       ></textarea>
                       <span class="campo-error">El mensaje es obligatorio.</span>
                     </div>
                     <div class="for-acciones">
-                      <button class="btn btn-bermellon" type="submit">Publicar tema</button>
+                      <button class="btn btn-bermellon" type="submit">Enviar a moderación</button>
                       <button class="btn btn-linea" id="btnCancelarTema" type="button">Cancelar</button>
                     </div>
                   </form>
@@ -257,6 +259,7 @@
               </div>
 
               <!-- Listado de temas: lo repinta por completo js/foros.js -->
+              <section class="panel mb-4" id="seccionMisTemas" hidden><div class="panel-cabecera"><h2>Mis envíos a moderación</h2></div><div class="panel-cuerpo" id="misTemasForo"></div></section>
               <div id="listaTemas"></div>
             </div>
           </div>
@@ -289,6 +292,7 @@
             <a href="./perfil.html">Mi perfil</a><br />
             <a href="./recursos.html">Recursos</a><br />
             <a href="./foros.html">Foros</a>
+            <a href="./registro-empresa.html">Registrar empresa</a>
           </div>
           <div class="col-6 col-lg-2">
             <h5>Empresas</h5>
@@ -316,10 +320,18 @@
       </div>
     </footer>
 
+    <div class="modal fade" id="modalHilo" tabindex="-1" aria-labelledby="tituloHilo" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h2 class="modal-title fs-5" id="tituloHilo"></h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+        <div class="modal-body"><p class="datos" id="autorHilo"></p><p id="mensajeHilo" style="white-space: pre-wrap"></p><p class="texto-suave">Las respuestas todavía no están disponibles.</p></div>
+      </div></div>
+    </div>
     <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
-    <script src="./js/datos.js"></script>
-    <script src="./js/auth.js"></script>
-    <script src="./js/main.js"></script>
-    <script src="./js/foros.js"></script>
+    <script src="./js/datos.js?v=20261026-revision-3"></script>
+    <script src="./js/dominio-flujos.js?v=20261026-revision-3"></script>
+    <script src="./js/flujos.js?v=20261026-revision-3"></script>
+    <script src="./js/auth.js?v=20261026-revision-3"></script>
+    <script src="./js/main.js?v=20261026-revision-3"></script>
+    <script src="./js/foros.js?v=20261026-revision-3"></script>
   </body>
 </html>

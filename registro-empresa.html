@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Registrar empresa — Portal de Trabajo</title>
+    <meta
+      name="description"
+      content="Envía los datos de tu empresa y consulta su revisión y aprobación administrativa."
+    />
+    <link rel="icon" type="image/svg+xml" href="./media/favicon.svg" />
+
+    <!-- Bootstrap local (funciona sin conexión) -->
+    <link rel="stylesheet" href="./estilos/vendor/bootstrap.min.css" />
+    <!-- Tipografías descargadas al proyecto -->
+    <link rel="stylesheet" href="./estilos/tipografias.css" />
+    <!-- Sistema visual propio: variables, componentes y pantallas -->
+    <link rel="stylesheet" href="./estilos/base.css" />
+    <link rel="stylesheet" href="./estilos/componentes.css" />
+    <link rel="stylesheet" href="./estilos/pantallas.css" />
+    <!-- Estilos propios de esta pantalla -->
+    <link rel="stylesheet" href="./estilos/registro.css?v=20261026-revision-4" />
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-tinta position-absolute" href="#contenido">
+      Saltar al contenido principal
+    </a>
+
+    <!-- ============================================================
+         CABECERA
+         Encabezado con logo, formulario de inicio de sesión y botón
+         de registro (según el requerimiento de la página de inicio).
+         ============================================================ -->
+    <header class="cabecera">
+      <div class="contenedor">
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap py-2">
+          <a class="marca" href="./index.html">
+            <span class="marca-marca" aria-hidden="true"></span>
+            <span class="marca-texto">
+              Portal de Trabajo
+              <small>Bolsa de empleo</small>
+            </span>
+          </a>
+
+          <!-- Navegación principal: se marca sola según el archivo abierto -->
+          <nav class="nav-principal d-none d-lg-flex" aria-label="Secciones del portal">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+          </nav>
+
+          <!-- Acceso: maqueta, no valida credenciales -->
+          <form class="acceso d-none d-lg-flex" data-acceso novalidate>
+            <input class="acceso-campo" type="email" placeholder="Correo" aria-label="Correo electrónico" />
+            <input class="acceso-campo" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <button class="btn btn-tinta btn-sm" type="submit">Entrar</button>
+            <a class="btn btn-linea btn-sm" href="./perfil.html">Registrarse</a>
+          </form>
+
+          <button
+            class="btn btn-tinta btn-sm d-lg-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menuMovil"
+            aria-expanded="false"
+            aria-controls="menuMovil"
+          >
+            Menú
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú para pantallas pequeñas -->
+      <div class="collapse menu-desplegable" id="menuMovil">
+        <div class="contenedor py-3">
+          <nav class="nav flex-column" aria-label="Secciones del portal (móvil)">
+            <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
+            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./recursos.html">Recursos</a>
+            <a class="nav-link" href="./foros.html">Foros</a>
+            <a class="nav-link" href="./perfil.html">Mi perfil</a>
+            <a class="nav-link" href="./admin.html">Administración</a>
+          </nav>
+          <hr class="filete my-3" />
+          <form class="gap-2 d-flex flex-column" data-acceso novalidate>
+            <input class="form-control" type="email" placeholder="Correo electrónico" aria-label="Correo electrónico" />
+            <input class="form-control" type="password" placeholder="Contraseña" aria-label="Contraseña" />
+            <div class="d-flex gap-2">
+              <button class="btn btn-tinta flex-fill" type="submit">Entrar</button>
+              <a class="btn btn-linea flex-fill" href="./perfil.html">Registrarse</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <section class="pagina-cabecera"><div class="contenedor">
+        <nav class="migas" aria-label="Migas de pan"><a href="./index.html">Inicio</a> / Registro de empresa</nav>
+        <h1>Registra tu empresa</h1>
+        <p class="lead">Envía los datos de tu organización. Administración revisará la solicitud antes de habilitar la publicación de vacantes.</p>
+      </div></section>
+      <section class="seccion-ajustada"><div class="contenedor registro-rejilla">
+        <div>
+          <div id="registroAcceso" class="panel mb-4" hidden><div class="panel-cuerpo"><h2>Primero inicia sesión</h2><p>La solicitud quedará vinculada a tu cuenta para que puedas consultar el resultado y corregir los datos.</p><a class="btn btn-bermellon" href="./login.html?destino=registro-empresa.html">Iniciar sesión</a></div></div>
+          <section class="panel mb-4" id="estadoRegistro"><div class="panel-cabecera"><h2>Mis solicitudes</h2></div><div class="panel-cuerpo" id="listaSolicitudesPropias" aria-live="polite"></div></section>
+          <form class="panel" id="formRegistroEmpresa" novalidate>
+            <div class="panel-cabecera"><h2 id="tituloRegistro">Datos para revisión</h2><span class="datos">* Obligatorio</span></div>
+            <div class="panel-cuerpo">
+              <div class="registro-error" id="erroresRegistro" role="alert" tabindex="-1" hidden></div>
+              <fieldset><legend>Información de la organización</legend><div class="row g-3">
+                <div class="col-md-6"><label class="form-label" for="razonSocial">Razón social *</label><input class="form-control" id="razonSocial" name="razonSocial" required minlength="3" maxlength="160" autocomplete="organization"></div>
+                <div class="col-md-6"><label class="form-label" for="nombreComercial">Nombre comercial *</label><input class="form-control" id="nombreComercial" name="nombreComercial" required minlength="3" maxlength="120"></div>
+                <div class="col-md-6"><label class="form-label" for="pais">País de registro *</label><select class="form-select" id="pais" name="pais" required><option value="">Seleccionar país</option><option value="EC">Ecuador</option><option value="SV">El Salvador</option><option value="GT">Guatemala</option><option value="HN">Honduras</option><option value="NI">Nicaragua</option><option value="CR">Costa Rica</option><option value="PA">Panamá</option><option value="MX">México</option><option value="CO">Colombia</option><option value="PE">Perú</option><option value="ES">España</option><option value="US">Estados Unidos</option><option value="OT">Otro</option></select></div>
+                <div class="col-md-6"><label class="form-label" for="identificacionFiscal">Identificación fiscal *</label><input class="form-control" id="identificacionFiscal" name="identificacionFiscal" required minlength="5" maxlength="40" aria-describedby="ayudaFiscal"><small id="ayudaFiscal">RUC, NIT o equivalente. Lo revisará administración.</small></div>
+                <div class="col-md-6"><label class="form-label" for="sector">Sector *</label><select class="form-select" id="sector" name="sector" required></select></div>
+                <div class="col-md-6"><label class="form-label" for="tamano">Número de empleados *</label><select class="form-select" id="tamano" name="tamano" required><option value="">Seleccionar tamaño</option><option>1–10</option><option>11–50</option><option>51–200</option><option>201–500</option><option>Más de 500</option></select></div>
+                <div class="col-md-6"><label class="form-label" for="ciudad">Ciudad *</label><input class="form-control" id="ciudad" name="ciudad" required minlength="2" maxlength="100" autocomplete="address-level2"></div>
+                <div class="col-md-6"><label class="form-label" for="sitioWeb">Sitio web</label><input class="form-control" id="sitioWeb" name="sitioWeb" type="url" maxlength="300" placeholder="https://empresa.com"></div>
+                <div class="col-12"><label class="form-label" for="direccion">Dirección comercial *</label><input class="form-control" id="direccion" name="direccion" required minlength="10" maxlength="250" autocomplete="street-address"></div>
+                <div class="col-12"><label class="form-label" for="descripcion">Actividad de la empresa *</label><textarea class="form-control" id="descripcion" name="descripcion" rows="4" required minlength="50" maxlength="3000" aria-describedby="ayudaDescripcion"></textarea><small id="ayudaDescripcion">Entre 50 y 3000 caracteres. Explica qué hace la organización.</small></div>
+              </div></fieldset>
+              <fieldset class="mt-4"><legend>Contacto responsable</legend><p>Estos datos se usan para revisar tu solicitud; no aparecen en el directorio público.</p><div class="row g-3">
+                <div class="col-md-6"><label class="form-label" for="contactoNombre">Nombre completo *</label><input class="form-control" id="contactoNombre" name="contactoNombre" required minlength="3" maxlength="120" autocomplete="name"></div>
+                <div class="col-md-6"><label class="form-label" for="contactoCargo">Cargo *</label><input class="form-control" id="contactoCargo" name="contactoCargo" required minlength="2" maxlength="100" autocomplete="organization-title"></div>
+                <div class="col-md-6"><label class="form-label" for="contactoCorreo">Correo de contacto *</label><input class="form-control" id="contactoCorreo" name="contactoCorreo" type="email" required maxlength="160" autocomplete="email"></div>
+                <div class="col-md-6"><label class="form-label" for="contactoTelefono">Teléfono de contacto *</label><input class="form-control" id="contactoTelefono" name="contactoTelefono" type="tel" required maxlength="30" autocomplete="tel"></div>
+              </div></fieldset>
+              <label class="d-flex gap-2 mt-4"><input type="checkbox" id="declaracion" name="declaracion" required><span>Confirmo que represento a esta organización y que los datos enviados son correctos. *</span></label>
+              <p class="datos texto-tenue mt-3">No publiques documentos de identidad ni información sensible en la descripción.</p>
+              <button class="btn btn-bermellon mt-3" type="submit" id="enviarRegistro">Enviar solicitud a revisión</button>
+              <button class="btn btn-linea mt-3" type="button" id="cancelarCorreccion" hidden>Cancelar corrección</button>
+            </div>
+          </form>
+        </div>
+        <aside><div class="panel"><div class="panel-cabecera"><h2>Cómo funciona</h2></div><div class="panel-cuerpo"><ol><li>Completa los datos de la empresa y del contacto.</li><li>Envía la solicitud y consulta aquí su estado.</li><li>Si se rechaza, lee el motivo, corrige y vuelve a enviarla.</li><li>Una vez aprobada, accede al módulo empresarial para publicar.</li></ol><p>La revisión es manual. No hay un plazo de aprobación garantizado.</p></div></div></aside>
+      </div></section>
+    </main>
+
+
+    <!-- ============================================================
+         MODAL DE LECTURA
+         Ventana de Bootstrap (sin radios por la regla global del
+         proyecto) con el texto del recurso. El contenido se genera
+         desde js/recursos.js al pulsar "Leer" en cualquier tarjeta.
+         ============================================================ -->
+    <div class="modal fade" id="modalRecurso" tabindex="-1" aria-labelledby="modalRecursoTitulo" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content panel res-modal">
+          <div class="modal-header res-modal-cabecera">
+            <div>
+              <span class="etiqueta-chip acento" id="modalRecursoTipo">—</span>
+              <h2 class="mt-2 mb-0" id="modalRecursoTitulo">—</h2>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <!-- Cuerpo con el texto del recurso (lo escribe el JS) -->
+          <div class="modal-body" id="modalRecursoCuerpo"></div>
+          <div class="modal-footer">
+            <button class="btn btn-bermellon" type="button" id="btnGuardarModal">
+              <span class="punto" aria-hidden="true"></span>
+              Guardar en mi lista
+            </button>
+            <button class="btn btn-linea" type="button" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         PIE DE PÁGINA
+         ============================================================ -->
+    <footer class="pie mt-auto">
+      <div class="contenedor">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <a class="marca mb-3" href="./index.html">
+              <span class="marca-marca" aria-hidden="true"></span>
+              <span class="marca-texto">
+                Portal de Trabajo
+                <small>Bolsa de empleo</small>
+              </span>
+            </a>
+            <p style="max-width: 34ch; font-size: 0.9rem">
+              Prototipo académico de portal de búsqueda de empleo. Todas las empresas,
+              personas y cifras mostradas son ficticias.
+            </p>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Candidatos</h5>
+            <a href="./busqueda.html">Buscar empleos</a><br />
+            <a href="./perfil.html">Mi perfil</a><br />
+            <a href="./recursos.html">Recursos</a><br />
+            <a href="./foros.html">Foros</a>
+            <a href="./registro-empresa.html">Registrar empresa</a>
+          </div>
+          <div class="col-6 col-lg-2">
+            <h5>Empresas</h5>
+            <a href="./empresas.html">Publicar oferta</a><br />
+            <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
+            <a href="./empresas.html#directorio">Directorio</a><br />
+            <a href="./admin.html">Administración</a>
+          </div>
+          <div class="col-lg-4">
+            <h5>Boletín de empleo</h5>
+            <p style="font-size: 0.9rem; max-width: 32ch">
+              Recibe las ofertas de la semana según tu sector.
+            </p>
+            <form class="d-flex gap-2" data-accion="suscripcion" data-mensaje="Suscripción registrada. Recibirás el próximo boletín el lunes." data-tono="exito">
+              <input class="form-control" type="email" placeholder="Tu correo" aria-label="Correo para el boletín" />
+              <button class="btn btn-bermellon" type="submit">Suscribirme</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="pie-registro">
+          <span>© <span data-anio>2026</span> Portal de Trabajo · Proyecto académico</span>
+          <span>Ing. José Emerson Aguilar · Segundo período</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
+    <script src="./js/datos.js?v=20261026-revision-3"></script>
+    <script src="./js/dominio-flujos.js?v=20261026-revision-3"></script>
+    <script src="./js/flujos.js?v=20261026-revision-3"></script>
+    <script src="./js/auth.js?v=20261026-revision-3"></script>
+    <script src="./js/main.js?v=20261026-revision-3"></script>
+    <script src="./js/registro-empresa.js?v=20261026-revision-3"></script>
+  </body>
+</html>
