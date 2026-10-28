@@ -78,8 +78,8 @@ test('texto de usuario se escapa y fechas no dependen de una fecha fija', () => 
 });
 
 test('formulario empresarial publica descripción larga, habilidades y contactos sin inventarlos', () => {
-  const storage = new Map([['pt_sesion',JSON.stringify({usuario:'empresa',rol:'empresa',empresaId:1})]]);
-  const fields = Object.fromEntries(Object.entries({fTitulo:'QA completo',fCorreo:'qa@example.test',fRequisitos:'SQL\nNode',fDescripcion:'Descripción larga '.repeat(30),fSalario:'',fUbicacion:'Quito',fModalidad:'Remoto',fContrato:'Indefinido',fNivel:'Junior',fSector:'Tecnología',fResponsabilidades:'Probar',fBeneficios:'Horario flexible',fTelefonoContacto:'',fDireccionContacto:'',fResponsableContacto:''}).map(([id,value])=>[id,{value,classList:{remove(){},add(){}},focus(){}}]));
+  const storage = new Map([['pt_sesion',JSON.stringify({usuario:'empresa',nombre:'Empresa Demo',rol:'empresa',empresaId:1})]]);
+  const fields = Object.fromEntries(Object.entries({fTitulo:'QA completo',fCorreo:'qa@example.test',fRequisitos:'SQL\nNode',fDescripcion:'Descripción larga '.repeat(30),fSalario:'',fUbicacion:'San Salvador',fModalidad:'Remoto',fContrato:'Indefinido',fNivel:'Junior',fSector:'Tecnología',fResponsabilidades:'Probar',fBeneficios:'Horario flexible',fTelefonoContacto:'',fDireccionContacto:'',fResponsableContacto:''}).map(([id,value])=>[id,{value,classList:{remove(){},add(){}},focus(){}}]));
   const context = vm.createContext({localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},document:{getElementById:id=>fields[id],addEventListener(){}},avisar(){}});
   vm.runInContext(source,context);
   vm.runInContext(fs.readFileSync('js/empresas.js','utf8'),context);
@@ -106,4 +106,50 @@ test('administración suspende y reactiva las mismas cuentas del login', () => {
   p.login('candidato','candidato'); assert.equal(p.run('sesionDatos()'),null);
   p.login('administrador','admin'); p.run('cambiarEstadoCuenta("candidato","Activo")');
   assert.equal(p.run('iniciarSesion("candidato","candidato123").ok'),true);
+});
+
+test('dos pestañas no sobrescriben vacantes con el mismo ID',()=>{
+  const a=portal(),b=portal(a.storage);a.login('empresa');
+  const primero=a.run('siguienteIdVacante()');assert.equal(b.run('siguienteIdVacante()'),primero);
+  assert.equal(a.run(`guardarPublicacionExtra({id:${primero},empresaId:1,titulo:'Primera'},{})`),true);
+  assert.equal(b.run(`guardarPublicacionExtra({id:${primero},empresaId:1,titulo:'Otra'},{})`),false);
+  assert.equal(b.run('siguienteIdVacante()'),primero+1);
+  assert.equal(JSON.parse(a.storage.get('pt_vacantes_extra'))[0].vacante.titulo,'Primera');
+  assert.equal(a.run('guardarPublicacionExtra({id:101,empresaId:1,titulo:"Sobrescritura"},{})'),false);
+});
+test('estados de candidatos validan existencia y transiciones',()=>{
+  const p=portal();p.login('empresa');
+  assert.equal(p.run('actualizarEstadoCandidato(101,"no-existe","Preseleccionada")'),false);
+  assert.equal(p.run('actualizarEstadoCandidato(101,"demo-0","Contratado")'),false);
+  assert.equal(p.run('actualizarEstadoCandidato(101,"demo-0","Preseleccionada")'),true);
+  assert.equal(p.run('actualizarEstadoCandidato(101,"demo-0","Nueva")'),false);
+  assert.equal(p.run('actualizarEstadoCandidato(101,"demo-0","Preseleccionada")'),true);
+  p.login('administrador');p.run('suspenderEmpresa(1,true)');p.login('empresa');
+  assert.equal(p.run('actualizarEstadoCandidato(101,"demo-1","Preseleccionada")'),false);
+  assert.equal(p.run('cambiarEstadoVacante(101,"Publicada")'),false);
+});
+test('datos dañados no se borran al intentar guardar encima',()=>{
+  const p=portal();p.login('candidato');
+  for(const crudo of ['{roto','[]','"texto"']) {
+    p.storage.set('pt_perfiles',crudo);assert.equal(p.run('guardarPerfil({fNombres:"QA"})'),false);assert.equal(p.storage.get('pt_perfiles'),crudo);
+  }
+});
+test('sesiones mal formadas no se consideran autenticadas',()=>{
+  const p=portal();for(const sesion of [[],"admin",{}, {usuario:'x',nombre:'X',rol:'inexistente'},{usuario:'empresa',nombre:'Empresa',rol:'empresa'}]) {
+    p.storage.set('pt_sesion',JSON.stringify(sesion));assert.equal(p.run('sesionDatos()'),null);
+  }
+});
+test('reseñas inválidas no alteran las valoraciones',()=>{
+  const p=portal();p.login('candidato');
+  for(const nota of ['NaN','Infinity','"5"','0','6','1.5'])assert.equal(p.run(`guardarResena(1,${nota},"Prueba")`),false);
+  assert.equal(p.run('guardarResena(1,5,null)'),false);assert.equal(p.run('resenasDeEmpresa(1).length'),3);
+});
+test('postulaciones antiguas sin nombre ni habilidades se normalizan y deduplican',()=>{
+  const p=portal();p.login('candidato');p.storage.set('pt_postulaciones',JSON.stringify([{vacanteId:101,estado:'Enviada'},{vacanteId:101,estado:'Enviada'}]));
+  assert.equal(p.run('leerPostulaciones().length'),1);assert.equal(p.run('candidatosDeVacante(101)[0].habilidades.length'),0);
+  assert.equal(typeof p.run('candidatosDeVacante(101)[0].nombre'),'string');
+});
+
+test('reseñas antiguas dañadas no rompen la carga del portal',()=>{
+ const p=portal(new Map([['pt_resenas',JSON.stringify([null,{empresaId:1,nota:null,texto:'Inválida'}])]]));assert.equal(p.run('resenasDeEmpresa(1).length'),3);
 });

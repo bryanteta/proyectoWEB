@@ -30,77 +30,37 @@ let ordenActual = "recientes"; // recientes | salario_alto | salario_bajo
    Lee los parámetros de la URL que envía el buscador de index.html
    y precarga los controles correspondientes
    --------------------------------------------------------------- */
+function normalizarBusqueda(texto) {
+  return String(texto ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+const indiceBusqueda = new Map(VACANTES.map(v=>{
+  const detalle = DETALLES_VACANTE[v.id];
+  return [v.id, normalizarBusqueda([v.titulo,v.resumen,empresaPorId(v.empresaId).nombre,detalle?.descripcion,...(Array.isArray(detalle?.habilidades) ? detalle.habilidades : [])].join(" "))];
+}));
 function leerParametrosURL() {
+  const params = new URLSearchParams(window.location.search);
   const ciudades = document.getElementById("filtroCiudad");
   if (ciudades) [...new Set(VACANTES.map(v=>v.ciudad))].filter(Boolean).forEach(ciudad=>{
     if (![...ciudades.options].some(o=>o.value === ciudad)) ciudades.add(new Option(ciudad,ciudad));
   });
-  const params = new URLSearchParams(window.location.search);
-  
-  filtrosEstado.empresaId = params.has("empresa") ? Number(params.get("empresa")) : null;
-  // Parámetros del buscador principal
-  if (params.get("q")) {
-    filtrosEstado.texto = params.get("q");
-    const inputTexto = document.getElementById("filtroTexto");
-    if (inputTexto) inputTexto.value = filtrosEstado.texto;
-  }
-  
-  if (params.get("ciudad")) {
-    filtrosEstado.ciudad = params.get("ciudad");
-    const selectCiudad = document.getElementById("filtroCiudad");
-    if (selectCiudad) selectCiudad.value = filtrosEstado.ciudad;
-  }
-  
-  if (params.get("contrato")) {
-    const contrato = params.get("contrato");
-    filtrosEstado.contratos = [contrato];
-    const checkContratos = document.querySelectorAll('input[data-filtro="contrato"]');
-    checkContratos.forEach(chk => {
-      if (chk.value === contrato) chk.checked = true;
-    });
-  }
-  
-  if (params.get("nivel")) {
-    const nivel = params.get("nivel");
-    filtrosEstado.niveles = [nivel];
-    const checkNiveles = document.querySelectorAll('input[data-filtro="nivel"]');
-    checkNiveles.forEach(chk => {
-      if (chk.value === nivel) chk.checked = true;
-    });
-  }
-  
-  if (params.get("sector")) {
-    const sector = params.get("sector");
-    filtrosEstado.sectores = [sector];
-    const checkSectores = document.querySelectorAll('input[data-filtro="sector"]');
-    checkSectores.forEach(chk => {
-      if (chk.value === sector) chk.checked = true;
-    });
-  }
-  
-  ["nivel", "sector", "contrato", "modalidad"].forEach(tipo => {
+  const empresa = Number(params.get("empresa"));
+  filtrosEstado.empresaId = params.has("empresa") && Number.isSafeInteger(empresa) && empresa > 0 ? empresa : null;
+  const texto = document.getElementById("filtroTexto"); if (texto) texto.value = params.get("q") || "";
+  if (ciudades) ciudades.value = params.get("ciudad") || "";
+  ["nivel","sector","contrato","modalidad"].forEach(tipo=>{
     const valores = params.getAll(tipo);
-    document.querySelectorAll(`input[data-filtro="${tipo}"]`).forEach(c => { c.checked = valores.includes(c.value); });
+    document.querySelectorAll(`input[data-filtro="${tipo}"]`).forEach(c=>{c.checked=valores.includes(c.value);});
   });
-  const destacada = document.getElementById("filtroDestacada");
-  if (destacada) destacada.checked = params.get("destacada") === "1";
-  const orden = document.getElementById("ordenarPor");
-  if (orden) orden.value = ["recientes", "salario_alto", "salario_bajo"].includes(params.get("orden")) ? params.get("orden") : "recientes";
-  // El name del salario en index.html es el valor mínimo en dólares
-  if (params.get("salario")) {
-    const salario = parseInt(params.get("salario"));
-    if (!isNaN(salario)) {
-      filtrosEstado.salarioMin = salario;
-      const rangeSalario = document.getElementById("filtroSalario");
-      const outputSalario = document.getElementById("salarioOutput");
-      if (rangeSalario) {
-        rangeSalario.value = salario;
-        if (outputSalario) {
-          outputSalario.textContent = `$${salario}`;
-        }
-      }
-    }
-  }
+  const destacada = document.getElementById("filtroDestacada"); if (destacada) destacada.checked = params.get("destacada") === "1";
+  const orden = document.getElementById("ordenarPor"); if (orden) orden.value = ["recientes","salario_alto","salario_bajo"].includes(params.get("orden")) ? params.get("orden") : "recientes";
+  const valor = Number(params.get("salario"));
+  const salario = Number.isFinite(valor) && valor >= 0 && valor <= 1000000 ? Math.floor(valor) : 0;
+  const rango = document.getElementById("filtroSalario");
+  if (rango) { rango.step="1"; rango.max=Math.max(5000,salario,...VACANTES.map(v=>Number(v.salario)||0)); rango.value=salario; }
+  const salida = document.getElementById("salarioOutput"); if (salida) salida.textContent=`$${salario}`;
+  sincronizarEstadoConControles();
+  firmaFiltros = JSON.stringify([filtrosEstado,ordenActual]);
+  const pagina = Number(params.get("pagina")); paginaActual = Number.isSafeInteger(pagina) && pagina > 0 ? pagina : 1;
 }
 
 /* ---------------------------------------------------------------
@@ -164,11 +124,7 @@ function aplicarFiltros() {
     resultados = resultados.filter(vacante => {
       const empresa = empresaPorId(vacante.empresaId);
       const textoBuscado = filtrosEstado.texto;
-      return (
-        vacante.titulo.toLowerCase().includes(textoBuscado) ||
-        vacante.resumen.toLowerCase().includes(textoBuscado) ||
-        empresa.nombre.toLowerCase().includes(textoBuscado)
-      );
+      return (indiceBusqueda.get(vacante.id) || normalizarBusqueda(vacante.titulo)).includes(normalizarBusqueda(textoBuscado));
     });
   }
   
@@ -209,9 +165,9 @@ function aplicarFiltros() {
   
   // Ordenamiento
   if (ordenActual === "salario_alto") {
-    resultados.sort((a, b) => b.salario - a.salario);
+    resultados.sort((a,b)=>a.salario == null ? (b.salario == null ? 0 : 1) : b.salario == null ? -1 : b.salario-a.salario);
   } else if (ordenActual === "salario_bajo") {
-    resultados.sort((a, b) => a.salario - b.salario);
+    resultados.sort((a,b)=>a.salario == null ? (b.salario == null ? 0 : 1) : b.salario == null ? -1 : a.salario-b.salario);
   } else {
     // Por defecto: más recientes primero
     resultados.sort((a, b) => new Date(b.publicada) - new Date(a.publicada));
@@ -233,12 +189,25 @@ function pintarResultados() {
   if (filtrosEstado.salarioMin) query.set("salario", filtrosEstado.salarioMin);
   if (filtrosEstado.soloDestacadas) query.set("destacada", "1");
   if (ordenActual !== "recientes") query.set("orden", ordenActual);
-  history.replaceState(null, "", location.pathname + (query.size ? "?" + query : ""));
   const firma = JSON.stringify([filtrosEstado, ordenActual]);
   if (firma !== firmaFiltros) { paginaActual = 1; firmaFiltros = firma; }
   const resultados = aplicarFiltros();
   const paginas = Math.max(1, Math.ceil(resultados.length / TAMANO_PAGINA));
   paginaActual = Math.min(paginaActual, paginas);
+  if (paginaActual > 1) query.set("pagina",paginaActual);
+  history.replaceState(null,"",location.pathname + (query.size ? "?"+query : "") + location.hash);
+  let contextoEmpresa = document.getElementById("filtroEmpresaActivo");
+  if (!contextoEmpresa) {
+    contextoEmpresa = document.createElement("div"); contextoEmpresa.id="filtroEmpresaActivo"; contextoEmpresa.className="datos mb-3";
+    document.getElementById("listaResultados")?.before(contextoEmpresa);
+  }
+  contextoEmpresa.hidden = filtrosEstado.empresaId === null;
+  contextoEmpresa.textContent = "";
+  if (!contextoEmpresa.hidden) {
+    contextoEmpresa.append(document.createTextNode("Empresa: "+(EMPRESAS.find(e=>e.id === filtrosEstado.empresaId)?.nombre || "No encontrada")+" "));
+    const quitar = document.createElement("button"); quitar.type="button"; quitar.className="btn btn-linea btn-sm"; quitar.textContent="Quitar filtro de empresa";
+    quitar.addEventListener("click",()=>{filtrosEstado.empresaId=null;pintarResultados();}); contextoEmpresa.append(quitar);
+  }
   const nav = document.querySelector(".paginacion");
   if (nav) {
     nav.hidden = paginas <= 1;
@@ -365,6 +334,7 @@ function configurarEventos() {
    Limpia todos los filtros, vacía los controles y repinta
    --------------------------------------------------------------- */
 function limpiarFiltros() {
+  paginaActual = 1;
   // Resetear estado
   filtrosEstado.empresaId = null;
   filtrosEstado.texto = "";
@@ -419,3 +389,5 @@ document.addEventListener("DOMContentLoaded", () => {
   // Pintar resultados iniciales
   pintarResultados();
 });
+
+window.addEventListener("popstate",()=>{leerParametrosURL();pintarResultados();});

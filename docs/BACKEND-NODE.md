@@ -56,7 +56,7 @@ Hoy existe un resumen `VACANTES` y una ficha `DETALLES_VACANTE` por compatibilid
   "id": 111,
   "empresaId": 1,
   "titulo": "Desarrollador Node.js",
-  "ciudad": "Quito",
+  "ciudad": "San Salvador",
   "sector": "Tecnología",
   "modalidad": "Remoto",
   "contrato": "Indefinido",

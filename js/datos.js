@@ -15,19 +15,33 @@
      MODERACION    -> contenidos denunciados (administración)
    ============================================================= */
 
+/* Configuración nacional compartida por formularios, filtros y fechas. */
+const CONFIG_PORTAL = Object.freeze({
+  pais:"SV", nombrePais:"El Salvador", locale:"es-SV", moneda:"USD",
+  zonaHoraria:"America/El_Salvador", prefijoTelefono:"+503",
+  ciudades:Object.freeze(["San Salvador","Santa Tecla","Santa Ana","San Miguel","Sonsonate"])
+});
+// Compatibilidad de la demo anterior. No se reescriben textos ni auditorías.
+const CIUDADES_DEMO_ANTERIORES = Object.freeze({Quito:"San Salvador",Guayaquil:"Santa Tecla",Cuenca:"San Miguel",Loja:"Santa Ana",Ambato:"Sonsonate"});
+function ciudadDelPortal(ciudad) { return CIUDADES_DEMO_ANTERIORES[ciudad] || ciudad; }
+function correoDemoLocal(correo) {
+  const anteriores={"admin@portaltrabajo.ec":"admin@portaltrabajo.example","rrhh@empresa-demo.ec":"rrhh@empresa-demo.example","candidato@demo.ec":"candidato@demo.example","ana.morales@correo.ec":"ana.morales@correo.example","talento@andessoftware.ec":"talento@cuscatlansoftware.example"};
+  return anteriores[correo] || correo;
+}
+
 /* Empresa de ejemplo reutilizada en varias pantallas */
 const EMPRESAS = [
   {
     id: 1,
-    nombre: "Andes Software",
-    iniciales: "AS",
+    nombre: "Cuscatlán Software",
+    iniciales: "CS",
     rubro: "Tecnología",
     tamano: "120 empleados",
-    ciudad: "Quito",
+    ciudad: "San Salvador",
     valoracion: 4.6,
     resenas: 38,
     descripcion:
-      "Empresa ecuatoriana de desarrollo de software para el sector financiero. Trabaja con equipos pequeños, metodología ágil y horarios flexibles.",
+      "Empresa salvadoreña de desarrollo de software para el sector financiero. Trabaja con equipos pequeños, metodología ágil y horarios flexibles.",
   },
   {
     id: 2,
@@ -35,7 +49,7 @@ const EMPRESAS = [
     iniciales: "CA",
     rubro: "Agroindustria",
     tamano: "310 empleados",
-    ciudad: "Loja",
+    ciudad: "Santa Ana",
     valoracion: 4.1,
     resenas: 52,
     descripcion:
@@ -47,7 +61,7 @@ const EMPRESAS = [
     iniciales: "EC",
     rubro: "Diseño y publicidad",
     tamano: "24 empleados",
-    ciudad: "Guayaquil",
+    ciudad: "Santa Tecla",
     valoracion: 4.8,
     resenas: 17,
     descripcion:
@@ -59,11 +73,11 @@ const EMPRESAS = [
     iniciales: "SI",
     rubro: "Salud",
     tamano: "540 empleados",
-    ciudad: "Cuenca",
+    ciudad: "San Miguel",
     valoracion: 3.7,
     resenas: 64,
     descripcion:
-      "Red de clínicas privadas con presencia en cuatro provincias. Ofrece turnos rotativos y convenios de especialización.",
+      "Red de clínicas privadas con presencia en cuatro departamentos. Ofrece turnos rotativos y convenios de especialización.",
   },
   {
     id: 5,
@@ -71,7 +85,7 @@ const EMPRESAS = [
     iniciales: "RN",
     rubro: "Logística",
     tamano: "210 empleados",
-    ciudad: "Ambato",
+    ciudad: "Sonsonate",
     valoracion: 4.0,
     resenas: 29,
     descripcion:
@@ -83,7 +97,7 @@ const EMPRESAS = [
     iniciales: "BV",
     rubro: "Finanzas",
     tamano: "890 empleados",
-    ciudad: "Quito",
+    ciudad: "San Salvador",
     valoracion: 3.9,
     resenas: 81,
     descripcion:
@@ -92,10 +106,10 @@ const EMPRESAS = [
 ];
 
 /* Las seis empresas de demostración representan registros ya aprobados. */
-EMPRESAS.forEach(e => { e.estadoRegistro = "aprobado"; });
+EMPRESAS.forEach(e => { e.estadoRegistro = "aprobado"; e.pais=CONFIG_PORTAL.pais; });
 const empresasRegistradas = leerObjeto("pt_flujos_v1").empresas;
 if (Array.isArray(empresasRegistradas)) {
-  empresasRegistradas.filter(e => e && Number.isSafeInteger(e.id) && e.estadoRegistro === "aprobado").forEach(e => {
+  empresasRegistradas.filter(e => e && Number.isSafeInteger(e.id) && e.estadoRegistro === "aprobado" && ["nombre","iniciales","rubro","tamano","ciudad","descripcion"].every(k=>typeof e[k] === "string")).forEach(e => {
     if (!EMPRESAS.some(base => base.id === e.id)) EMPRESAS.push(e);
   });
 }
@@ -107,7 +121,7 @@ const VACANTES = [
     id: 101,
     titulo: "Desarrollador Frontend Junior",
     empresaId: 1,
-    ciudad: "Quito",
+    ciudad: "San Salvador",
     modalidad: "Híbrido",
     contrato: "Indefinido",
     nivel: "Junior",
@@ -122,7 +136,7 @@ const VACANTES = [
     id: 102,
     titulo: "Analista de Datos",
     empresaId: 6,
-    ciudad: "Quito",
+    ciudad: "San Salvador",
     modalidad: "Presencial",
     contrato: "Indefinido",
     nivel: "Semi senior",
@@ -137,7 +151,7 @@ const VACANTES = [
     id: 103,
     titulo: "Diseñador Gráfico",
     empresaId: 3,
-    ciudad: "Guayaquil",
+    ciudad: "Santa Tecla",
     modalidad: "Remoto",
     contrato: "Por proyecto",
     nivel: "Mid level",
@@ -152,7 +166,7 @@ const VACANTES = [
     id: 104,
     titulo: "Técnico de Mantenimiento",
     empresaId: 2,
-    ciudad: "Loja",
+    ciudad: "Santa Ana",
     modalidad: "Presencial",
     contrato: "Indefinido",
     nivel: "Junior",
@@ -167,7 +181,7 @@ const VACANTES = [
     id: 105,
     titulo: "Enfermera/o de Turno",
     empresaId: 4,
-    ciudad: "Cuenca",
+    ciudad: "San Miguel",
     modalidad: "Presencial",
     contrato: "Por horas",
     nivel: "Junior",
@@ -182,7 +196,7 @@ const VACANTES = [
     id: 106,
     titulo: "Coordinador de Logística",
     empresaId: 5,
-    ciudad: "Ambato",
+    ciudad: "Sonsonate",
     modalidad: "Híbrido",
     contrato: "Indefinido",
     nivel: "Senior",
@@ -197,7 +211,7 @@ const VACANTES = [
     id: 107,
     titulo: "Prácticas en Recursos Humanos",
     empresaId: 6,
-    ciudad: "Quito",
+    ciudad: "San Salvador",
     modalidad: "Híbrido",
     contrato: "Prácticas",
     nivel: "Estudiante",
@@ -212,7 +226,7 @@ const VACANTES = [
     id: 108,
     titulo: "Desarrollador Backend",
     empresaId: 1,
-    ciudad: "Quito",
+    ciudad: "San Salvador",
     modalidad: "Remoto",
     contrato: "Indefinido",
     nivel: "Semi senior",
@@ -227,7 +241,7 @@ const VACANTES = [
     id: 109,
     titulo: "Contador General",
     empresaId: 2,
-    ciudad: "Loja",
+    ciudad: "Santa Ana",
     modalidad: "Presencial",
     contrato: "Indefinido",
     nivel: "Senior",
@@ -242,7 +256,7 @@ const VACANTES = [
     id: 110,
     titulo: "Community Manager",
     empresaId: 3,
-    ciudad: "Guayaquil",
+    ciudad: "Santa Tecla",
     modalidad: "Remoto",
     contrato: "Por horas",
     nivel: "Junior",
@@ -254,6 +268,8 @@ const VACANTES = [
       "Gestión de contenidos en redes sociales para tres marcas del portafolio del estudio.",
   },
 ];
+
+VACANTES.forEach(v=>{v.pais=CONFIG_PORTAL.pais;});
 
 /* Vacante completa para la pantalla de detalle.
    Las demás pantallas usan los datos resumidos de arriba. */
@@ -269,7 +285,7 @@ const DETALLE_VACANTE = {
     "Conocimientos sólidos de HTML, CSS y JavaScript moderno.",
     "Experiencia previa con al menos un framework de interfaz (React, Vue o similar).",
     "Nivel de inglés técnico de lectura.",
-    "Disponibilidad para trabajo híbrido en Quito (3 días en oficina).",
+    "Disponibilidad para trabajo híbrido en San Salvador (3 días en oficina).",
   ],
   beneficios: [
     "Jornada de 40 horas semanales con horario flexible.",
@@ -278,9 +294,9 @@ const DETALLE_VACANTE = {
     "Dos días de trabajo remoto adicionales al mes para formación.",
   ],
   contacto: {
-    correo: "talento@andessoftware.ec",
-    telefono: "+593 2 555 0142",
-    direccion: "Av. República N36-141, Quito",
+    correo: "talento@cuscatlansoftware.example",
+    telefono: "+503 0000 0000",
+    direccion: "Dirección de demostración, San Salvador",
     responsable: "Carla Andrade — Talento humano",
   },
 };
@@ -288,8 +304,8 @@ const DETALLE_VACANTE = {
 /* Reseñas de la empresa asociada a la vacante en detalle */
 const RESENAS_EMPRESA = [
   {
-    autor: "Mateo Chalá",
-    iniciales: "MC",
+    autor: "Mateo López",
+    iniciales: "ML",
     fecha: "2026-09-28",
     nota: 5,
     texto:
@@ -304,12 +320,12 @@ const RESENAS_EMPRESA = [
       "El horario flexible ayuda mucho. Mejorable: la comunicación entre equipos depende demasiado de una sola persona.",
   },
   {
-    autor: "Diego Yépez",
-    iniciales: "DY",
+    autor: "Diego Pérez",
+    iniciales: "DP",
     fecha: "2026-07-02",
     nota: 5,
     texto:
-      "Los proyectos son interesantes y el salario está por encima del promedio del sector en Quito.",
+      "Los proyectos son interesantes y el salario está por encima del promedio del sector en San Salvador.",
   },
 ];
 
@@ -331,7 +347,7 @@ const RECURSOS = [
     titulo: "Simulacro de entrevista técnica: 25 minutos",
     resumen:
       "Grabación de una entrevista real simulada con preguntas de fondo técnico, algoritmos y trabajo en equipo, con comentarios del entrevistador.",
-    autor: "Andes Software",
+    autor: "Cuscatlán Software",
     duracion: "25:40",
     categoria: "Entrevistas",
   },
@@ -340,8 +356,8 @@ const RECURSOS = [
     tipo: "Tutorial",
     titulo: "Negociar el salario sin perder la oferta",
     resumen:
-      "Guía paso a paso con rangos salariales del mercado ecuatoriano y frases concretas para usar durante la conversación.",
-    autor: "Rocío Vintimilla",
+      "Guía paso a paso con rangos salariales del mercado salvadoreño y frases concretas para usar durante la conversación.",
+    autor: "Rocío López",
     duracion: "12 min de lectura",
     categoria: "Carrera",
   },
@@ -361,7 +377,7 @@ const RECURSOS = [
     titulo: "Errores comunes en la prueba práctica",
     resumen:
       "Revisión de cinco pruebas reales anonimizadas: qué separa un entregado aceptable de uno sobresaliente.",
-    autor: "Andes Software",
+    autor: "Cuscatlán Software",
     duracion: "18:12",
     categoria: "Entrevistas",
   },
@@ -405,8 +421,8 @@ const TEMAS_FORO = [
     id: 3,
     titulo: "Prácticas remotas: ¿sirven tanto como las presenciales?",
     categoria: "Primer empleo",
-    autor: "Iván Zambrano",
-    iniciales: "IZ",
+    autor: "Iván García",
+    iniciales: "IG",
     respuestas: 27,
     vistas: 910,
     ultimo: "ayer",
@@ -416,8 +432,8 @@ const TEMAS_FORO = [
     id: 4,
     titulo: "Portfolio de diseño sin clientes: qué proyectos poner",
     categoria: "Diseño",
-    autor: "Camila Toapanta",
-    iniciales: "CT",
+    autor: "Camila Flores",
+    iniciales: "CF",
     respuestas: 19,
     vistas: 640,
     ultimo: "hace 3 días",
@@ -455,23 +471,23 @@ const POSTULACIONES = [
       {
         nombre: "Ana Belén Morales",
         iniciales: "AM",
-        titulo: "Ingeniera en Sistemas — EPN",
+        titulo: "Ingeniera en Sistemas — UES",
         experiencia: "1 año de prácticas",
         habilidades: ["React", "CSS", "Git"],
         estado: "Nueva",
       },
       {
-        nombre: "Kevin Almeida",
-        iniciales: "KA",
-        titulo: "Tecnólogo en Software — UTPL",
+        nombre: "Kevin Hernández",
+        iniciales: "KH",
+        titulo: "Técnico en Desarrollo de Software — ITCA-FEPADE",
         experiencia: "2 años freelance",
         habilidades: ["Vue", "JavaScript", "REST"],
         estado: "En revisión",
       },
       {
-        nombre: "Marcela Ordóñez",
-        iniciales: "MO",
-        titulo: "Diseñadora de Interacción — USFQ",
+        nombre: "Marcela Martínez",
+        iniciales: "MM",
+        titulo: "Diseñadora de Interacción — UDB",
         experiencia: "1.5 años",
         habilidades: ["Figma", "React", "Accesibilidad"],
         estado: "Preseleccionada",
@@ -513,7 +529,7 @@ const MODERACION = [
 
 /* Actividad reciente del panel administrativo */
 const ACTIVIDAD_ADMIN = [
-  { texto: "Andes Software publicó la vacante «Desarrollador Backend»", hora: "hace 1 h", tono: "bermellon" },
+  { texto: "Cuscatlán Software publicó la vacante «Desarrollador Backend»", hora: "hace 1 h", tono: "bermellon" },
   { texto: "32 nuevas postulaciones registradas hoy", hora: "hace 2 h", tono: "verde" },
   { texto: "Salud Integral actualizó su ficha de empresa", hora: "hace 4 h", tono: "" },
   { texto: "Se denunció una reseña de la empresa Ruta Norte", hora: "hace 6 h", tono: "ambar" },
@@ -522,10 +538,10 @@ const ACTIVIDAD_ADMIN = [
 
 /* Utilidad compartida: convierte la fecha en texto cercano */
 function fechaCercana(iso) {
-  const fecha = new Date(iso + (String(iso).length == 10 ? "T00:00:00" : ""));
-  if (Number.isNaN(fecha.getTime())) return "Fecha no disponible";
-  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-  const dias = Math.floor((hoy - fecha) / 86400000);
+  if (typeof iso !== "string" || !iso.trim()) return "Fecha no disponible";
+  const fecha = typeof iso === "string" && /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : fechaISOElSalvador(new Date(iso));
+  if (!fecha || Number.isNaN(Date.parse(fecha))) return "Fecha no disponible";
+  const dias = Math.round((Date.parse(fechaHoy()+"T00:00:00Z")-Date.parse(fecha+"T00:00:00Z"))/86400000);
   if (dias < 0) return "Próximamente";
   if (dias <= 0) return "hoy";
   if (dias === 1) return "ayer";
@@ -543,7 +559,7 @@ function empresaPorId(id) {
    (el campo es opcional) se muestran como "A convenir". */
 function salarioFormateado(valor) {
   if (valor === null || valor === undefined || valor === "") return "A convenir";
-  return `$${Number(valor).toLocaleString("es-EC")}`;
+  return `$${Number(valor).toLocaleString(CONFIG_PORTAL.locale,{maximumFractionDigits:2})}`;
 }
 
 /* =============================================================
@@ -577,6 +593,12 @@ function leerAlmacen(clave, respaldo) {
 
 function escribirAlmacen(clave, valor) {
   try {
+    // Un almacén dañado no debe desaparecer al intentar guardar un cambio.
+    const anterior = localStorage.getItem(clave);
+    if (anterior !== null) {
+      const existente = JSON.parse(anterior);
+      if (existente !== null && (typeof existente !== typeof valor || Array.isArray(existente) !== Array.isArray(valor))) return false;
+    }
     localStorage.setItem(clave, JSON.stringify(valor));
     return true;
   } catch (error) {
@@ -585,7 +607,14 @@ function escribirAlmacen(clave, valor) {
 }
 
 /* Publicaciones hechas desde empresas.html */
-const PUBLICACIONES_EXTRA = leerLista(CLAVES_ALMACEN.vacantes).filter(r => r && r.vacante && Number.isSafeInteger(r.vacante.id) && typeof r.vacante.titulo === "string" && EMPRESAS.some(e => e.id === r.vacante.empresaId));
+const PUBLICACIONES_EXTRA = leerLista(CLAVES_ALMACEN.vacantes).filter(r => r && r.vacante && Number.isSafeInteger(r.vacante.id) && typeof r.vacante.titulo === "string" && EMPRESAS.some(e => e.id === r.vacante.empresaId)).map(r=>({
+  ...r,vacante:{...r.vacante,ciudad:ciudadDelPortal(r.vacante.ciudad),pais:r.vacante.pais || CONFIG_PORTAL.pais},
+  detalle:r.detalle ? {...r.detalle,contacto:r.detalle.contacto ? {...r.detalle.contacto,
+    correo:correoDemoLocal(r.detalle.contacto.correo),
+    telefono:r.detalle.contacto.telefono === "+593 2 000 0000" ? "" : r.detalle.contacto.telefono,
+    direccion:ciudadDelPortal(r.detalle.contacto.direccion)
+  } : r.detalle.contacto} : r.detalle
+}));
 
 /* Fichas largas de las vacantes publicadas, por id. La vacante 101
    conserva su ficha original de DETALLE_VACANTE. */
@@ -610,6 +639,7 @@ if (Array.isArray(PUBLICACIONES_EXTRA)) {
 function guardarPublicacionExtra(vacante, detalle) {
   const sesion = sesionDatos();
   if (!vacante || !empresaHabilitada(vacante.empresaId) || !(sesion?.rol === "administrador" || (sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId))) return false;
+  if (!Number.isSafeInteger(vacante.id) || vacante.id < 1 || VACANTES.some(v=>v.id === vacante.id) || leerLista(CLAVES_ALMACEN.vacantes).some(r=>r?.vacante?.id === vacante.id)) return false;
   const registros = leerAlmacen(CLAVES_ALMACEN.vacantes, []);
   const lista = Array.isArray(registros)
     ? registros.filter(
@@ -622,14 +652,27 @@ function guardarPublicacionExtra(vacante, detalle) {
 
 /* Postulaciones hechas desde vacante.html (las lee el perfil) */
 function leerTodasPostulaciones() {
-  return leerLista(CLAVES_ALMACEN.postulaciones).filter(r => r && Number.isSafeInteger(r.vacanteId))
-    .map(r => ({ ...r, usuario: r.usuario || "candidato" }));
+  const unicas = new Map(), perfiles = leerObjeto("pt_perfiles");
+  for (const registro of leerLista(CLAVES_ALMACEN.postulaciones)) {
+    if (!registro || !Number.isSafeInteger(registro.vacanteId)) continue;
+    const usuario = typeof registro.usuario === "string" && registro.usuario ? registro.usuario : "candidato";
+    const clave = `${usuario}:${registro.vacanteId}`;
+    if (unicas.has(clave)) continue;
+    unicas.set(clave,{...registro,usuario,
+      nombre:typeof registro.nombre === "string" ? registro.nombre : perfiles[usuario]?.fNombres || usuario,
+      titulo:typeof registro.titulo === "string" ? registro.titulo : "Candidato",
+      habilidades:Array.isArray(registro.habilidades) ? registro.habilidades.filter(h=>typeof h === "string") : [],
+      estado:["Nueva","Enviada","Recibida","En revisión","Preseleccionada","Rechazada"].includes(registro.estado) ? registro.estado : "Nueva"
+    });
+  }
+  return [...unicas.values()];
 }
 function leerPostulaciones() {
   const usuario = sesionDatos()?.usuario;
   return leerTodasPostulaciones().filter(r => r.usuario === usuario);
 }
 function guardarPostulacion(registro) {
+  if (!registro || !Number.isSafeInteger(registro.vacanteId)) return false;
   const sesion = sesionDatos();
   const vacante = VACANTES.find(v => v.id === registro.vacanteId);
   if (sesion?.rol !== "candidato" || !vacanteDisponible(vacante)) return false;
@@ -668,8 +711,11 @@ function leerObjeto(clave) {
 function sesionDatos() {
   const sesion = leerAlmacen("pt_sesion", null);
   const estado = leerObjeto("pt_cuentas_estado")[sesion?.usuario];
-  if (estado === "Suspendido" || estado === "Eliminado" || !sesion) return null;
+  if (estado === "Suspendido" || estado === "Eliminado" || !sesion || typeof sesion !== "object" || Array.isArray(sesion)) return null;
+  if (typeof sesion.usuario !== "string" || !sesion.usuario.trim() || typeof sesion.nombre !== "string" || !sesion.nombre.trim() || !["candidato","empresa","administrador"].includes(sesion.rol)) return null;
+  if (sesion.rol === "empresa" && !Number.isSafeInteger(sesion.empresaId)) return null;
   const miembros = leerObjeto("pt_flujos_v1").miembros;
+  sesion.correo = correoDemoLocal(sesion.correo);
   const miembro = Array.isArray(miembros) ? miembros.find(m => m.usuario === sesion.usuario) : null;
   return miembro && sesion.rol !== "administrador" ? {...sesion,rol:"empresa",empresaId:miembro.empresaId} : sesion;
 }
@@ -691,12 +737,13 @@ function vacanteDisponible(vacante) {
 function cambiarEstadoVacante(id, estado) {
   const vacante = VACANTES.find(v => v.id === id), sesion = sesionDatos();
   if (!vacante || !["Publicada", "Cerrada", "Retirada", "Pendiente"].includes(estado)) return false;
+  if (sesion?.rol === "empresa" && !empresaHabilitada(vacante.empresaId)) return false;
   if (sesion?.rol !== "administrador" && !(sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId && ["Cerrada", "Publicada"].includes(estado) && estadoVacante(vacante) !== "Retirada")) return false;
   const estados = leerObjeto("pt_estados_vacantes"); estados[id] = estado;
   return escribirAlmacen("pt_estados_vacantes", estados);
 }
 function suspenderEmpresa(id, suspendida) {
-  if (sesionDatos()?.rol !== "administrador") return false;
+  if (sesionDatos()?.rol !== "administrador" || !EMPRESAS.some(e=>e.id === id) || typeof suspendida !== "boolean") return false;
   const estados = leerObjeto("pt_empresas_estado"); estados[id] = suspendida;
   if (!escribirAlmacen("pt_empresas_estado", estados)) return false;
   const empresa = EMPRESAS.find(e => e.id === id);
@@ -713,14 +760,24 @@ function candidatosDeVacante(id) {
 }
 function actualizarEstadoCandidato(id, clave, estado) {
   const sesion = sesionDatos(), vacante = VACANTES.find(v => v.id === id);
-  if (!vacante || !(sesion?.rol === "administrador" || (sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId))) return false;
+  if (!vacante || !(sesion?.rol === "administrador" || (sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId && empresaHabilitada(vacante.empresaId)))) return false;
+  const candidato = candidatosDeVacante(id).find(c=>c.clave === clave);
+  const transiciones = { Nueva:["En revisión","Preseleccionada","Rechazada"], Enviada:["En revisión","Preseleccionada","Rechazada"], Recibida:["En revisión","Preseleccionada","Rechazada"], "En revisión":["Preseleccionada","Rechazada"], Preseleccionada:["Rechazada"], Rechazada:[] };
+  if (!candidato || !Object.hasOwn(transiciones, estado)) return false;
+  if (candidato.estado === estado) return true;
+  if (!transiciones[candidato.estado]?.includes(estado)) return false;
   const estados = leerObjeto("pt_candidatos_estado"); estados[`${id}:${clave}`] = estado;
   return escribirAlmacen("pt_candidatos_estado", estados);
 }
 function estadoPostulacion(p) { return leerObjeto("pt_candidatos_estado")[`${p.vacanteId}:${p.usuario}`] || p.estado; }
-function leerPerfil() { return leerObjeto("pt_perfiles")[sesionDatos()?.usuario] || {}; }
+function leerPerfil() {
+  const perfil = leerObjeto("pt_perfiles")[sesionDatos()?.usuario];
+  return perfil && typeof perfil === "object" && !Array.isArray(perfil) ? {...perfil,fCiudad:ciudadDelPortal(perfil.fCiudad),fCorreo:correoDemoLocal(perfil.fCorreo),
+    alertas:Array.isArray(perfil.alertas) ? perfil.alertas.map(a=>a && typeof a.titulo === "string" ? {...a,titulo:a.titulo.replace(/ en (Quito|Guayaquil|Cuenca|Loja|Ambato)$/,(_,ciudad)=>" en "+ciudadDelPortal(ciudad))} : a) : perfil.alertas
+  } : {};
+}
 function guardarPerfil(perfil) {
-  const usuario = sesionDatos()?.usuario; if (!usuario) return false;
+  const usuario = sesionDatos()?.usuario; if (!usuario || !perfil || typeof perfil !== "object" || Array.isArray(perfil)) return false;
   const perfiles = leerObjeto("pt_perfiles"); perfiles[usuario] = perfil;
   return escribirAlmacen("pt_perfiles", perfiles);
 }
@@ -733,11 +790,11 @@ function alternarGuardado(tipo, id) {
   todos[usuario] = datos; return escribirAlmacen("pt_guardados", todos);
 }
 function resenasDeEmpresa(id) {
-  return [...leerLista("pt_resenas").filter(r => r.empresaId === id), ...(id === 1 ? RESENAS_EMPRESA : [])];
+  return [...leerLista("pt_resenas").filter(r => r && r.empresaId === id && Number.isInteger(r.nota) && r.nota >= 1 && r.nota <= 5 && typeof r.texto === "string"), ...(id === 1 ? RESENAS_EMPRESA : [])];
 }
 function guardarResena(empresaId, nota, texto) {
   const sesion = sesionDatos();
-  if (!sesion || !EMPRESAS.some(e => e.id === empresaId) || nota < 1 || nota > 5 || !texto.trim()) return false;
+  if (!sesion || !EMPRESAS.some(e => e.id === empresaId) || !Number.isInteger(nota) || nota < 1 || nota > 5 || typeof texto !== "string" || !texto.trim() || texto.trim().length > 3000) return false;
   const resena = { id: Date.now(), empresaId, usuario: sesion.usuario, autor: leerPerfil().fNombres || sesion.nombre,
     iniciales: sesion.nombre.slice(0, 2), fecha: fechaHoy(), nota, texto: texto.trim() };
   const ok = escribirAlmacen("pt_resenas", [resena, ...leerLista("pt_resenas")]);
@@ -745,10 +802,12 @@ function guardarResena(empresaId, nota, texto) {
   return ok;
 }
 
-function fechaHoy() {
-  const fecha = new Date();
-  return [fecha.getFullYear(), String(fecha.getMonth() + 1).padStart(2, "0"), String(fecha.getDate()).padStart(2, "0")].join("-");
+function fechaISOElSalvador(fecha = new Date()) {
+  if (!(fecha instanceof Date) || Number.isNaN(fecha.getTime())) return null;
+  const partes = Object.fromEntries(new Intl.DateTimeFormat(CONFIG_PORTAL.locale,{timeZone:CONFIG_PORTAL.zonaHoraria,year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(fecha).map(p=>[p.type,p.value]));
+  return `${partes.year}-${partes.month}-${partes.day}`;
 }
+function fechaHoy() { return fechaISOElSalvador(); }
 
 function actualizarResumenResenas() {
   EMPRESAS.forEach(e => {
@@ -763,7 +822,11 @@ EMPRESAS.forEach(empresa => {
   const ficha = leerObjeto("pt_empresas_fichas")[empresa.id];
   if (ficha && typeof ficha === "object") {
     ["nombre", "rubro", "ciudad", "tamano", "descripcion"].forEach(clave => {
-      if (typeof ficha[clave] === "string") empresa[clave] = ficha[clave];
+      if (typeof ficha[clave] === "string") {
+        empresa[clave] = clave === "ciudad" ? ciudadDelPortal(ficha[clave]) : ficha[clave];
+        if (empresa.id === 1 && clave === "nombre" && ficha[clave] === "Andes Software") empresa.nombre="Cuscatlán Software";
+        if (empresa.id === 1 && clave === "descripcion" && ficha[clave].startsWith("Empresa ecuatoriana de desarrollo")) empresa.descripcion=ficha[clave].replace("Empresa ecuatoriana","Empresa salvadoreña");
+      }
     });
   }
 });
@@ -772,4 +835,9 @@ function empresaHabilitada(id) {
   const empresa = EMPRESAS.find(e => e.id === id);
   const suspendida = leerObjeto("pt_empresas_estado")[id] === true;
   return !!empresa && empresa.estadoRegistro === "aprobado" && !suspendida;
+}
+
+// Releer el almacenamiento evita reutilizar IDs calculados en otra pestaña.
+function siguienteIdVacante() {
+  return Math.max(0,...VACANTES.map(v=>v.id),...leerLista(CLAVES_ALMACEN.vacantes).map(r=>r?.vacante?.id).filter(Number.isSafeInteger)) + 1;
 }

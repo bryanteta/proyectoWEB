@@ -13,7 +13,9 @@ function leerEstadoFlujos() {
   return {schemaVersion:1,temas,solicitudes:[],empresas:[],miembros:[],auditoria:[]};
 }
 const flujos = crearServicioFlujos({
+  paisObjetivo:CONFIG_PORTAL.pais,
   leer:leerEstadoFlujos, guardar:s=>escribirAlmacen(CLAVE_FLUJOS,s),
+  cuentaActiva:usuario=>!["Suspendido","Eliminado"].includes(leerObjeto("pt_cuentas_estado")[usuario]),
   actor:()=>sesionDatos(), nuevoId:()=>crypto.randomUUID(), ahora:()=>new Date().toISOString(), empresasBase:EMPRESAS
 });
 function ejecutarFlujo(accion) {
@@ -23,4 +25,4 @@ function ejecutarFlujo(accion) {
 function etiquetaRevision(estado, femenino = false) {
   return {pendiente:"Pendiente",aprobado:femenino?"Aprobada":"Aprobado",rechazado:femenino?"Rechazada":"Rechazado"}[estado] || "Pendiente";
 }
-function fechaRevision(iso) { return new Date(iso).toLocaleString("es",{dateStyle:"medium",timeStyle:"short"}); }
+function fechaRevision(iso) { return new Date(iso).toLocaleString(CONFIG_PORTAL.locale,{timeZone:CONFIG_PORTAL.zonaHoraria,dateStyle:"medium",timeStyle:"short"}); }

@@ -27,7 +27,7 @@ const USUARIOS_PRUEBA = [
     contrasena: "admin123",
     rol: "administrador",
     nombre: "Administrador",
-    correo: "admin@portaltrabajo.ec",
+    correo: "admin@portaltrabajo.example",
     empresaId: null,
   },
   {
@@ -35,7 +35,7 @@ const USUARIOS_PRUEBA = [
     contrasena: "empresa123",
     rol: "empresa",
     nombre: "Empresa Demo",
-    correo: "rrhh@empresa-demo.ec",
+    correo: "rrhh@empresa-demo.example",
     empresaId: 1,
   },
   {
@@ -43,7 +43,7 @@ const USUARIOS_PRUEBA = [
     contrasena: "candidato123",
     rol: "candidato",
     nombre: "Candidato Demo",
-    correo: "candidato@demo.ec",
+    correo: "candidato@demo.example",
     empresaId: null,
   },
 ];
@@ -175,7 +175,7 @@ function pintarZonaUsuario(sesion) {
   contenedor.className = "zona-usuario d-none d-lg-flex align-items-center gap-2";
   contenedor.innerHTML = `
     <a class="zona-usuario-datos" href="${panel}" title="Ir a ${textoPanel}">
-      <span class="zona-usuario-nombre">${escaparHTML(sesion.nombre)}</span>
+      <span class="zona-usuario-nombre">${escaparHTML(leerPerfil().fNombres || sesion.nombre)}</span>
       <span class="etiqueta-chip">${etiquetaRol(sesion.rol)}</span>
     </a>
     <button class="btn btn-linea btn-sm" type="button" data-cerrar-sesion>
@@ -293,7 +293,7 @@ function inicializarCabecera() {
       bloque.className = "d-flex flex-column gap-2";
       bloque.innerHTML = `
         <a class="zona-usuario-datos" href="${panelDeSesion(sesion)}">
-          <span class="zona-usuario-nombre">${escaparHTML(sesion.nombre)}</span>
+          <span class="zona-usuario-nombre">${escaparHTML(leerPerfil().fNombres || sesion.nombre)}</span>
           <span class="etiqueta-chip">${etiquetaRol(sesion.rol)}</span>
         </a>
         <button class="btn btn-linea" type="button" data-cerrar-sesion-movil>
@@ -343,11 +343,11 @@ function inicializarPaginaLogin() {
     zonaSesion.hidden = false;
     zonaSesion.innerHTML = `
       <p class="mb-2">
-        Sesión activa: <strong>${escaparHTML(sesion.nombre)}</strong>
+        Sesión activa: <strong>${escaparHTML(leerPerfil().fNombres || sesion.nombre)}</strong>
         <span class="etiqueta-chip">${etiquetaRol(sesion.rol)}</span>
       </p>
       <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-tinta btn-sm" href="${panelDeSesion(sesion)}">Continuar como ${escaparHTML(sesion.nombre)}</a>
+        <a class="btn btn-tinta btn-sm" href="${panelDeSesion(sesion)}">Continuar como ${escaparHTML(leerPerfil().fNombres || sesion.nombre)}</a>
         <button class="btn btn-linea btn-sm" type="button" data-cambiar-cuenta>
           Cambiar de cuenta
         </button>
@@ -409,3 +409,36 @@ document.addEventListener("DOMContentLoaded", () => {
   inicializarCabecera();
   inicializarPaginaLogin();
 });
+
+// Una pestaña conserva el contexto con que se abrió. Nunca envía un formulario
+// anterior usando silenciosamente la cuenta iniciada en otra pestaña.
+function huellaSesion(sesion) {
+  return JSON.stringify(sesion ? [sesion.usuario, sesion.rol, sesion.empresaId || null] : null);
+}
+function instalarProteccionSesion() {
+  const inicial = huellaSesion(obtenerSesion());
+  let bloqueada = false;
+  function comprobar(evento) {
+    if (evento?.target?.closest?.('[data-actualizar-sesion]')) return true;
+    if (!bloqueada && huellaSesion(obtenerSesion()) === inicial) return true;
+    evento?.preventDefault?.(); evento?.stopImmediatePropagation?.();
+    if (bloqueada) return false;
+    bloqueada = true;
+    const contenido = document.getElementById("contenido");
+    if (contenido) { contenido.hidden = true; contenido.inert = true; }
+    const mensaje = document.createElement("section");
+    mensaje.className = "contenedor seccion"; mensaje.setAttribute("role", "alert");
+    const titulo = document.createElement("h1"); titulo.textContent = "La sesión cambió";
+    const texto = document.createElement("p"); texto.textContent = "Tu cuenta o tus permisos cambiaron en otra pestaña. Actualiza esta página antes de continuar para evitar guardar datos en otra cuenta.";
+    const boton = document.createElement("button"); boton.type = "button"; boton.className = "btn btn-bermellon"; boton.dataset.actualizarSesion = ""; boton.textContent = "Actualizar sesión";
+    boton.addEventListener("click",()=>window.location.reload());
+    mensaje.append(titulo,texto,boton); if (contenido) contenido.before(mensaje); else document.body.prepend(mensaje); boton.focus();
+    return false;
+  }
+  document.addEventListener("submit",comprobar,true);
+  document.addEventListener("click",comprobar,true);
+  window.addEventListener("focus",()=>comprobar());
+  document.addEventListener("visibilitychange",()=>{if (!document.hidden) comprobar();});
+  window.addEventListener("storage",evento=>{if (!evento.key || ["pt_sesion","pt_cuentas_estado","pt_flujos_v1"].includes(evento.key)) comprobar();});
+}
+document.addEventListener("DOMContentLoaded",instalarProteccionSesion);

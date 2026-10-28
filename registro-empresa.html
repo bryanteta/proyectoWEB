@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-SV">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -114,8 +114,8 @@
               <fieldset><legend>Información de la organización</legend><div class="row g-3">
                 <div class="col-md-6"><label class="form-label" for="razonSocial">Razón social *</label><input class="form-control" id="razonSocial" name="razonSocial" required minlength="3" maxlength="160" autocomplete="organization"></div>
                 <div class="col-md-6"><label class="form-label" for="nombreComercial">Nombre comercial *</label><input class="form-control" id="nombreComercial" name="nombreComercial" required minlength="3" maxlength="120"></div>
-                <div class="col-md-6"><label class="form-label" for="pais">País de registro *</label><select class="form-select" id="pais" name="pais" required><option value="">Seleccionar país</option><option value="EC">Ecuador</option><option value="SV">El Salvador</option><option value="GT">Guatemala</option><option value="HN">Honduras</option><option value="NI">Nicaragua</option><option value="CR">Costa Rica</option><option value="PA">Panamá</option><option value="MX">México</option><option value="CO">Colombia</option><option value="PE">Perú</option><option value="ES">España</option><option value="US">Estados Unidos</option><option value="OT">Otro</option></select></div>
-                <div class="col-md-6"><label class="form-label" for="identificacionFiscal">Identificación fiscal *</label><input class="form-control" id="identificacionFiscal" name="identificacionFiscal" required minlength="5" maxlength="40" aria-describedby="ayudaFiscal"><small id="ayudaFiscal">RUC, NIT o equivalente. Lo revisará administración.</small></div>
+                <div class="col-md-6"><label class="form-label" for="pais">País de registro *</label><select class="form-select" id="pais" name="pais" required><option value="SV" selected>El Salvador</option></select></div>
+                <div class="col-md-6"><label class="form-label" for="identificacionFiscal">NIT de la empresa *</label><input class="form-control" id="identificacionFiscal" name="identificacionFiscal" required minlength="5" maxlength="40" aria-describedby="ayudaFiscal"><small id="ayudaFiscal">NIT de la organización. Administración revisará los datos.</small></div>
                 <div class="col-md-6"><label class="form-label" for="sector">Sector *</label><select class="form-select" id="sector" name="sector" required></select></div>
                 <div class="col-md-6"><label class="form-label" for="tamano">Número de empleados *</label><select class="form-select" id="tamano" name="tamano" required><option value="">Seleccionar tamaño</option><option>1–10</option><option>11–50</option><option>51–200</option><option>201–500</option><option>Más de 500</option></select></div>
                 <div class="col-md-6"><label class="form-label" for="ciudad">Ciudad *</label><input class="form-control" id="ciudad" name="ciudad" required minlength="2" maxlength="100" autocomplete="address-level2"></div>
@@ -127,7 +127,7 @@
                 <div class="col-md-6"><label class="form-label" for="contactoNombre">Nombre completo *</label><input class="form-control" id="contactoNombre" name="contactoNombre" required minlength="3" maxlength="120" autocomplete="name"></div>
                 <div class="col-md-6"><label class="form-label" for="contactoCargo">Cargo *</label><input class="form-control" id="contactoCargo" name="contactoCargo" required minlength="2" maxlength="100" autocomplete="organization-title"></div>
                 <div class="col-md-6"><label class="form-label" for="contactoCorreo">Correo de contacto *</label><input class="form-control" id="contactoCorreo" name="contactoCorreo" type="email" required maxlength="160" autocomplete="email"></div>
-                <div class="col-md-6"><label class="form-label" for="contactoTelefono">Teléfono de contacto *</label><input class="form-control" id="contactoTelefono" name="contactoTelefono" type="tel" required maxlength="30" autocomplete="tel"></div>
+                <div class="col-md-6"><label class="form-label" for="contactoTelefono">Teléfono de contacto *</label><input class="form-control" id="contactoTelefono" name="contactoTelefono" type="tel" placeholder="+503 0000 0000" required maxlength="30" autocomplete="tel"></div>
               </div></fieldset>
               <label class="d-flex gap-2 mt-4"><input type="checkbox" id="declaracion" name="declaracion" required><span>Confirmo que represento a esta organización y que los datos enviados son correctos. *</span></label>
               <p class="datos texto-tenue mt-3">No publiques documentos de identidad ni información sensible en la descripción.</p>
@@ -185,7 +185,7 @@
               </span>
             </a>
             <p style="max-width: 34ch; font-size: 0.9rem">
-              Prototipo académico de portal de búsqueda de empleo. Todas las empresas,
+              Prototipo académico de portal de búsqueda de empleo en El Salvador. Todas las empresas,
               personas y cifras mostradas son ficticias.
             </p>
           </div>
@@ -194,7 +194,7 @@
             <a href="./busqueda.html">Buscar empleos</a><br />
             <a href="./perfil.html">Mi perfil</a><br />
             <a href="./recursos.html">Recursos</a><br />
-            <a href="./foros.html">Foros</a>
+            <a href="./foros.html">Foros</a><br />
             <a href="./registro-empresa.html">Registrar empresa</a>
           </div>
           <div class="col-6 col-lg-2">
@@ -224,11 +224,11 @@
     </footer>
 
     <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
-    <script src="./js/datos.js?v=20261026-revision-3"></script>
-    <script src="./js/dominio-flujos.js?v=20261026-revision-3"></script>
-    <script src="./js/flujos.js?v=20261026-revision-3"></script>
-    <script src="./js/auth.js?v=20261026-revision-3"></script>
-    <script src="./js/main.js?v=20261026-revision-3"></script>
-    <script src="./js/registro-empresa.js?v=20261026-revision-3"></script>
+    <script src="./js/datos.js?v=20261027-el-salvador-1"></script>
+    <script src="./js/dominio-flujos.js?v=20261027-el-salvador-1"></script>
+    <script src="./js/flujos.js?v=20261027-el-salvador-1"></script>
+    <script src="./js/auth.js?v=20261027-el-salvador-1"></script>
+    <script src="./js/main.js?v=20261027-el-salvador-1"></script>
+    <script src="./js/registro-empresa.js?v=20261027-el-salvador-1"></script>
   </body>
 </html>

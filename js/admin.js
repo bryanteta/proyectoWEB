@@ -473,16 +473,16 @@ function pintarBarras() {
         class="barra ${resaltada ? "resalte" : ""}"
         style="height: ${alto}%"
         data-alto="${alto}"
-        title="${dato.mes}: ${dato.valor.toLocaleString("es-EC")} postulaciones"
+        title="${dato.mes}: ${dato.valor.toLocaleString(CONFIG_PORTAL.locale)} postulaciones"
       >
-        ${resaltada ? `<span class="adm-barra-valor">${dato.valor.toLocaleString("es-EC")}</span>` : ""}
+        ${resaltada ? `<span class="adm-barra-valor">${dato.valor.toLocaleString(CONFIG_PORTAL.locale)}</span>` : ""}
       </div>`;
   }).join("");
 
   /* Etiqueta accesible del gráfico completo */
   grafico.setAttribute(
     "aria-label",
-    `Postulaciones por mes: ${POSTULACIONES_MES[0].valor.toLocaleString("es-EC")} en ${POSTULACIONES_MES[0].mes} hasta ${maximo.toLocaleString("es-EC")} en ${POSTULACIONES_MES[ultimo].mes}`
+    `Postulaciones por mes: ${POSTULACIONES_MES[0].valor.toLocaleString(CONFIG_PORTAL.locale)} en ${POSTULACIONES_MES[0].mes} hasta ${maximo.toLocaleString(CONFIG_PORTAL.locale)} en ${POSTULACIONES_MES[ultimo].mes}`
   );
 }
 

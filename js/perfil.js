@@ -20,36 +20,41 @@
    (ej. data-pestana="curriculum" -> id="pestanaCurriculum").
    --------------------------------------------------------------- */
 function inicializarPestanas() {
-  const botones = document.querySelectorAll(".pestanas-enlace");
+  const botones = [...document.querySelectorAll(".pestanas-enlace")];
   const paneles = document.querySelectorAll("[id^='pestana']");
-
-  botones.forEach((boton) => {
-    boton.addEventListener("click", () => {
-      const clave = boton.dataset.pestana;
-      history.replaceState(null, "", "#" + clave);
-      /* La clave "valoraciones" genera el id "pestanaValoraciones" */
-      const idPanel = "pestana" + clave.charAt(0).toUpperCase() + clave.slice(1);
-
-      /* Se marca solo el botón pulsado y se muestra su panel */
-      botones.forEach((b) => {
-        const activo = b === boton;
-        b.classList.toggle("activo", activo);
-        b.setAttribute("aria-selected", activo ? "true" : "false");
-      });
-
-      paneles.forEach((panel) => {
-        panel.hidden = panel.id !== idPanel;
-      });
+  const idPanel = clave => "pestana"+clave.charAt(0).toUpperCase()+clave.slice(1);
+  function activar(clave, cambiarURL = false) {
+    if (!botones.some(b=>b.dataset.pestana === clave)) clave="perfil";
+    botones.forEach(b=>{
+      const activo=b.dataset.pestana === clave;
+      b.classList.toggle("activo",activo); b.setAttribute("aria-selected",String(activo)); b.tabIndex=activo?0:-1;
+    });
+    paneles.forEach(p=>{p.hidden=p.id !== idPanel(clave);});
+    if (cambiarURL) history.replaceState(null,"","#"+clave);
+  }
+  botones.forEach((boton,i)=>{
+    boton.id="boton-pestana-"+boton.dataset.pestana;
+    boton.setAttribute("aria-controls",idPanel(boton.dataset.pestana));
+    document.getElementById(idPanel(boton.dataset.pestana))?.setAttribute("aria-labelledby",boton.id);
+    boton.addEventListener("click",()=>activar(boton.dataset.pestana,true));
+    boton.addEventListener("keydown",e=>{
+      const siguiente={ArrowRight:(i+1)%botones.length,ArrowLeft:(i+botones.length-1)%botones.length,Home:0,End:botones.length-1}[e.key];
+      if (siguiente === undefined) return;
+      e.preventDefault(); activar(botones[siguiente].dataset.pestana,true); botones[siguiente].focus();
     });
   });
+  window.addEventListener("hashchange",()=>activar(location.hash.slice(1)));
+  window.addEventListener("popstate",()=>activar(location.hash.slice(1)));
+  activar(location.hash.slice(1));
+}
 
-  const inicial = [...botones].find(b => b.dataset.pestana === location.hash.slice(1));
-  if (inicial) { inicial.click(); return; }
-  /* Las pestañas se inicializan en "Perfil": se oculta todo
-     panel que no sea el primero por seguridad */
-  paneles.forEach((panel) => {
-    panel.hidden = panel.id !== "pestanaPerfil";
-  });
+function actualizarResumenPerfil() {
+  const nombre = document.getElementById("fNombres")?.value.trim() || sesionDatos()?.nombre || "Mi perfil";
+  const titulo = document.querySelector(".perfil-cabecera h1"); if (titulo) titulo.textContent=nombre;
+  const avatar = document.querySelector(".perfil-cabecera .avatar"); if(avatar) avatar.textContent=nombre.split(/\s+/).slice(0,2).map(n=>n[0]).join("").toUpperCase();
+  const profesion = document.querySelector(".perfil-cabecera p.texto-suave");
+  if(profesion) profesion.textContent=[document.getElementById("fPerfil")?.value.trim(),document.getElementById("fCiudad")?.value].filter(Boolean).join(" · ");
+  document.querySelectorAll(".zona-usuario-nombre").forEach(el=>el.textContent=nombre);
 }
 
 /* ---------------------------------------------------------------
@@ -64,7 +69,7 @@ function inicializarFormularioPerfil() {
 
   const guardado = leerPerfil();
   formulario.querySelectorAll("input[id], select[id], textarea[id]").forEach(c => { if (guardado[c.id] !== undefined) c.value = guardado[c.id]; });
-  const titulo = document.querySelector("#contenido h1"); if (titulo) titulo.textContent = guardado.fNombres || sesionDatos()?.nombre || "Mi perfil";
+  actualizarResumenPerfil();
   /* Expresión sencilla para verificar el correo */
   const patronCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -97,7 +102,7 @@ function inicializarFormularioPerfil() {
     formulario.querySelectorAll("input[id], select[id], textarea[id]").forEach(c => { perfil[c.id] = c.value; });
     perfil.habilidades = [...document.querySelectorAll("#listaHabilidades .etiqueta-chip")].map(c => c.dataset.valor || c.childNodes[0].textContent.trim());
     if (!guardarPerfil(perfil)) { avisar("No se pudo guardar el perfil."); return; }
-    const titulo = document.querySelector("#contenido h1"); if (titulo) titulo.textContent = perfil.fNombres;
+    actualizarResumenPerfil();
     avisar("Perfil actualizado correctamente.", "exito");
   });
 
@@ -293,14 +298,6 @@ function inicializarAlertas() {
     const pista = document.createElement("span");
     pista.className = "pista-i";
 
-    /* Aviso según el nuevo estado del interruptor */
-    check.addEventListener("change", () => {
-      avisar(
-        check.checked ? "Alerta activada." : "Alerta desactivada.",
-        check.checked ? "exito" : "aviso"
-      );
-    });
-
     etiqueta.append(check, pista);
     fila.append(texto, etiqueta);
     return fila;
@@ -308,13 +305,18 @@ function inicializarAlertas() {
 
   function guardarAlertas() {
     const alertas = [...lista.querySelectorAll(".alerta-fila")].map(f => ({ titulo: f.querySelector("strong").textContent, detalle: f.querySelector("small").textContent, activa: f.querySelector("input").checked }));
-    const contador = document.querySelector('[data-pestana="alertas"] .contador'); if (contador) contador.textContent = alertas.length;
-    return guardarPerfil({ ...leerPerfil(), alertas });
+    const ok = guardarPerfil({ ...leerPerfil(), alertas });
+    const contador = document.querySelector('[data-pestana="alertas"] .contador'); if (ok && contador) contador.textContent = alertas.length;
+    return ok;
   }
   lista.innerHTML = "";
-  (leerPerfil().alertas || []).forEach(a => lista.append(crearFilaAlerta(a.titulo, a.detalle, a.activa)));
-  const contador = document.querySelector('[data-pestana="alertas"] .contador'); if (contador) contador.textContent = (leerPerfil().alertas || []).length;
-  lista.addEventListener("change", () => { if (!guardarAlertas()) avisar("No se pudo guardar la alerta."); });
+  const guardadas = Array.isArray(leerPerfil().alertas) ? leerPerfil().alertas : [];
+  guardadas.filter(a=>a && typeof a.titulo === "string").forEach(a => lista.append(crearFilaAlerta(a.titulo, a.detalle, a.activa)));
+  const contador = document.querySelector('[data-pestana="alertas"] .contador'); if (contador) contador.textContent = guardadas.length;
+  lista.addEventListener("change", evento => {
+    if (!guardarAlertas()) { evento.target.checked = !evento.target.checked; avisar("No se pudo guardar la alerta. Se conservó su estado anterior."); return; }
+    avisar(evento.target.checked ? "Alerta activada." : "Alerta desactivada.","exito");
+  });
 
   /* El botón "Nueva alerta" alterna la visibilidad del formulario */
   botonNueva.addEventListener("click", () => {
@@ -328,7 +330,7 @@ function inicializarAlertas() {
     const salario = document.getElementById("fSalarioAlerta").value;
 
     const titulo = `${sector} en ${ciudad}`;
-    const detalle = `Salario desde $${Number(salario).toLocaleString("es-EC")} · diaria`;
+    const detalle = `Salario desde $${Number(salario).toLocaleString(CONFIG_PORTAL.locale)} · diaria`;
 
     const fila = crearFilaAlerta(titulo, detalle, true);
     lista.appendChild(fila);
@@ -444,7 +446,7 @@ function inicializarValoraciones() {
   }
 
   lista.innerHTML = "";
-  leerLista("pt_resenas").filter(r => r.usuario === sesionDatos()?.usuario).forEach(r => lista.append(crearResena(empresaPorId(r.empresaId).nombre, r.nota, r.texto)));
+  leerLista("pt_resenas").filter(r => r && r.usuario === sesionDatos()?.usuario && Number.isInteger(r.nota) && r.nota >= 1 && r.nota <= 5 && typeof r.texto === "string").forEach(r => lista.append(crearResena(empresaPorId(r.empresaId).nombre, r.nota, r.texto)));
   formulario.addEventListener("submit", (evento) => {
     evento.preventDefault();
 

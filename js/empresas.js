@@ -23,7 +23,7 @@ const sesionEmpresa = sesionDatos();
 let misOfertas = VACANTES.filter(v => sesionEmpresa?.rol === "administrador" || v.empresaId === sesionEmpresa?.empresaId)
   .map(v => ({ ...v, estado: estadoVacante(v) === "Publicada" ? "Abierta" : estadoVacante(v) }));
 function empresaDemoParaPublicacion() {
-  return EMPRESAS.find(e => e.id === sesionEmpresa?.empresaId) || EMPRESAS[0];
+  return EMPRESAS.find(e => e.id === sesionEmpresa?.empresaId) || (sesionEmpresa?.rol === "administrador" ? EMPRESAS[0] : {id:null,ciudad:""});
 }
 
 /* Empresas dadas de baja en el directorio (solo en memoria) */
@@ -154,8 +154,7 @@ function publicarOferta(evento) {
   }
 
   /* Todo correcto: se arma la oferta con los datos del formulario */
-  const siguienteId =
-    Math.max(...VACANTES.map((v) => v.id), ...misOfertas.map((o) => o.id)) + 1;
+  const siguienteId = siguienteIdVacante();
 
   const empresa = empresaDemoParaPublicacion();
 
@@ -197,6 +196,7 @@ function publicarOferta(evento) {
     titulo: nuevaOferta.titulo,
     empresaId: nuevaOferta.empresaId,
     ciudad: nuevaOferta.ubicacion,
+    pais: CONFIG_PORTAL.pais,
     modalidad: nuevaOferta.modalidad,
     contrato: nuevaOferta.contrato,
     nivel: nuevaOferta.nivel,

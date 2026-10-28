@@ -9,7 +9,7 @@ La cola administrativa permite filtrar por estado, buscar, revisar el mensaje co
 Las empresas disponen de `registro-empresa.html`. La solicitud exige una cuenta autenticada y estos datos:
 
 - Razón social y nombre comercial.
-- País de registro e identificación fiscal (RUC, NIT o equivalente).
+- País de registro El Salvador e identificación fiscal de la empresa (NIT).
 - Sector, tamaño, ciudad, dirección comercial y descripción de la actividad.
 - Nombre, cargo, correo y teléfono del contacto responsable.
 - Confirmación de representación y exactitud de la información.
@@ -104,3 +104,6 @@ Se comprobó en navegador el flujo completo: tema pendiente → aprobación → 
 La aplicación continúa siendo estática. Los controles locales pueden ser alterados desde el navegador y no sustituyen la autorización de un backend. No se ha desplegado ningún servicio ni enviado información a terceros.
 
 Revisión visual: registro, foro, login y colas administrativas comprobados a 480 px; corregido el ancho mínimo del panel empresarial, también con datos privados e historial desplegados. No se detectaron errores de consola en los flujos probados. La sesión de revisión quedó en administración y las solicitudes QA muestran las decisiones persistidas.
+
+
+Actualización de localización: el registro nuevo se limita a El Salvador (SV); el teléfono acepta ocho dígitos nacionales, con prefijo +503 opcional, y se guarda con ese prefijo. La revisión no comprueba la autenticidad tributaria del NIT. Los registros e historiales anteriores conservan sus datos originales.

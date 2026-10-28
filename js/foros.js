@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   let categoria = "", correccion = null, publicos = [], mios = [];
   const modal = new bootstrap.Modal(document.getElementById("modalHilo"));
   function pintar() {
-    const visibles = ejecutarFlujo(()=>flujos.temasPublicos()), personales = ejecutarFlujo(()=>flujos.misTemas());
+    const visibles = ejecutarFlujo(()=>flujos.vistaForo()), personales = visibles;
     if (!visibles.ok || !personales.ok) { lista.textContent = visibles.mensaje || personales.mensaje; return; }
-    publicos = [...visibles.dato,...TEMAS_FORO.map(t=>({...t,estado:"aprobado"}))]; mios = personales.dato;
+    publicos = [...visibles.dato.publicos,...TEMAS_FORO.map(t=>({...t,estado:"aprobado"}))]; mios = personales.dato.propios;
     const texto = buscar.value.trim().toLowerCase();
     const filtrados = publicos.filter(t=>(!categoria || t.categoria===categoria) && `${t.titulo} ${t.autor}`.toLowerCase().includes(texto)).sort((a,b)=>Number(b.fijado)-Number(a.fijado));
     document.getElementById("totalTemasPublicos").textContent = `${publicos.length} temas publicados`;

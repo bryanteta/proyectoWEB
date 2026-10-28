@@ -6,6 +6,22 @@
    de formato. No depende de Bootstrap más allá de los menús.
    ============================================================= */
 
+// Una sola lista de ubicaciones para portada, búsqueda, perfil y empresas.
+function prepararUbicacionesDelPortal() {
+  const ciudades = [...new Set([...CONFIG_PORTAL.ciudades,
+    ...EMPRESAS.filter(e=>e.pais === CONFIG_PORTAL.pais).map(e=>e.ciudad),
+    ...VACANTES.filter(v=>!v.pais || v.pais === CONFIG_PORTAL.pais).map(v=>ciudadDelPortal(v.ciudad))
+  ])].filter(Boolean);
+  ["campoCiudad","filtroCiudad","fUbicacion","fCiudad","fCiudadAlerta"].forEach(id=>{
+    const select=document.getElementById(id); if(!select) return;
+    const valor=ciudadDelPortal(select.value), vacia=[...select.options].find(o=>o.value === "");
+    select.replaceChildren();
+    if(vacia) select.add(new Option("Todo El Salvador",""));
+    ciudades.forEach(ciudad=>select.add(new Option(ciudad,ciudad)));
+    if(ciudades.includes(valor) || valor === "") select.value=valor;
+  });
+}
+
 /* ---------------------------------------------------------------
    Avisos flotantes (equivalente liviano a los toasts)
    Se crea una sola vez y se reutiliza en todas las pantallas.
@@ -70,7 +86,7 @@ function animarContadores() {
           const avance = Math.min((ahora - inicio) / duracion, 1);
           /* curva suave: la mayoría del avance ocurre al inicio */
           const suavizado = 1 - Math.pow(1 - avance, 3);
-          el.textContent = Math.round(destino * suavizado).toLocaleString("es-EC") + sufijo;
+          el.textContent = Math.round(destino * suavizado).toLocaleString(CONFIG_PORTAL.locale) + sufijo;
           if (avance < 1) requestAnimationFrame(paso);
         }
 
@@ -210,6 +226,7 @@ function prepararAccionesGenericas() {
    Arranque
    --------------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
+  prepararUbicacionesDelPortal();
   fijarAlturaCabecera();
   marcarSeccionActiva();
   animarContadores();
@@ -226,7 +243,9 @@ window.addEventListener("pageshow", evento => { if (evento.persisted) window.loc
 window.addEventListener("storage", evento => {
   if (evento.key?.startsWith("pt_")) {
     // Preserve drafts: notify rather than silently discarding form input.
-    avisar("Los datos cambiaron en otra pestaña. Recarga para ver la información actualizada.");
+    setTimeout(()=>{
+      if (!document.querySelector("[data-actualizar-sesion]")) avisar("Los datos cambiaron en otra pestaña. Recarga para ver la información actualizada.");
+    },0);
   }
 });
 

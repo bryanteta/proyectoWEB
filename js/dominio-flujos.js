@@ -1,15 +1,18 @@
 /* Reglas de negocio sin DOM ni almacenamiento concreto. Reutilizables desde Node.
    El repositorio real debe ejecutar cada mutación en una transacción. */
-function crearServicioFlujos({ leer, guardar, actor, nuevoId, ahora, empresasBase = [] }) {
+function crearServicioFlujos({ leer, guardar, actor, nuevoId, ahora, empresasBase = [], cuentaActiva = () => true, paisObjetivo = "SV" }) {
   const categorias = ["Tecnología", "Salud", "Primer empleo", "Diseño", "Seguridad laboral"];
   const sectores = ["Tecnología", "Finanzas", "Diseño", "Agroindustria", "Salud", "Logística", "Educación", "Comercio", "Servicios", "Otro"];
   function error(codigo, mensaje, campos = {}) { const e = new Error(mensaje); e.codigo = codigo; e.campos = campos; throw e; }
   function estado() {
     const s = leer();
-    if (s.schemaVersion !== 1 || !["temas", "solicitudes", "empresas", "miembros", "auditoria"].every(k => Array.isArray(s[k]))) error("ALMACEN_INVALIDO", "No se pueden leer los datos. No se ha modificado el almacenamiento.");
+    const objeto = v => v && typeof v === "object" && !Array.isArray(v);
+    const identidad = v => objeto(v) && typeof v.id === "string" && typeof v.usuario === "string" && Number.isSafeInteger(v.version) && v.version >= 1 && ["pendiente","aprobado","rechazado"].includes(v.estado);
+    const valido = objeto(s) && s.schemaVersion === 1 && ["temas","solicitudes","empresas","miembros","auditoria"].every(k=>Array.isArray(s[k]));
+    if (!valido || !s.temas.every(t=>identidad(t) && typeof t.titulo === "string" && typeof t.mensaje === "string" && typeof t.autor === "string" && typeof t.categoria === "string") || !s.solicitudes.every(t=>identidad(t) && objeto(t.datos) && ["nombreComercial","razonSocial","identificacionFiscal","pais"].every(k=>typeof t.datos[k] === "string")) || !s.empresas.every(e=>objeto(e) && Number.isSafeInteger(e.id)) || !s.miembros.every(m=>objeto(m) && typeof m.usuario === "string" && Number.isSafeInteger(m.empresaId)) || !s.auditoria.every(a=>objeto(a) && typeof a.entidadId === "string")) error("ALMACEN_INVALIDO", "Los datos guardados están dañados o tienen una versión incompatible. No se ha modificado el almacenamiento.");
     return JSON.parse(JSON.stringify(s));
   }
-  function usuario() { const u = actor(); if (!u) error("NO_AUTENTICADO", "Inicia sesión para continuar."); return u; }
+  function usuario() { const u = actor(); if (!u || !["candidato","empresa","administrador"].includes(u.rol) || typeof u.usuario !== "string" || typeof u.nombre !== "string" || !cuentaActiva(u.usuario)) error("NO_AUTENTICADO", "Inicia sesión para continuar."); return u; }
   function admin() { const u = usuario(); if (u.rol !== "administrador") error("SIN_PERMISO", "Solo administración puede revisar solicitudes."); return u; }
   function registrar(s, tipo, entidad, accion, u, motivo = "") {
     s.auditoria.push({ id: nuevoId(), tipo, entidadId: entidad.id, accion, actor: u.usuario, fecha: ahora(), motivo, version: entidad.version, contenido: accion === "enviado" || accion === "enviada" || accion === "reenviado" ? JSON.parse(JSON.stringify(tipo === "empresa" ? entidad.datos : {titulo:entidad.titulo,categoria:entidad.categoria,mensaje:entidad.mensaje})) : undefined });
@@ -33,11 +36,14 @@ function crearServicioFlujos({ leer, guardar, actor, nuevoId, ahora, empresasBas
     for (const [campo, min, max] of [["razonSocial",3,160],["nombreComercial",3,120],["identificacionFiscal",5,40],["pais",2,2],["ciudad",2,100],["direccion",10,250],["tamano",2,40],["descripcion",50,3000],["contactoNombre",3,120],["contactoCargo",2,100],["contactoCorreo",5,160],["contactoTelefono",7,30]]) limpio[campo] = texto(d[campo], min, max, campo, e);
     limpio.identificacionFiscal = limpio.identificacionFiscal.toUpperCase().replace(/[\s.-]/g, "");
     if (!/^[A-Z0-9]{5,40}$/.test(limpio.identificacionFiscal)) e.identificacionFiscal = "Usa letras y números; no se verifica aquí su validez legal.";
-    if (!["EC", "SV", "GT", "HN", "NI", "CR", "PA", "MX", "CO", "PE", "ES", "US", "OT"].includes(limpio.pais)) e.pais = "Selecciona un país.";
+    if (limpio.pais !== paisObjetivo) e.pais = "Este portal registra empresas de El Salvador.";
     if (!sectores.includes(d.sector)) e.sector = "Selecciona un sector válido.";
     if (!["1–10", "11–50", "51–200", "201–500", "Más de 500"].includes(limpio.tamano)) e.tamano = "Selecciona el tamaño de la empresa.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(limpio.contactoCorreo)) e.contactoCorreo = "Introduce un correo válido.";
-    if (!/^[+\d\s()\-]{7,30}$/.test(limpio.contactoTelefono)) e.contactoTelefono = "Introduce un teléfono de contacto válido.";
+    const digitosTelefono = limpio.contactoTelefono.replace(/\D/g,"");
+    const numeroLocal = digitosTelefono.length === 11 && digitosTelefono.startsWith("503") ? digitosTelefono.slice(3) : digitosTelefono;
+    if (!/^\+?[\d\s()\-]{7,30}$/.test(limpio.contactoTelefono) || (limpio.contactoTelefono.startsWith("+") && !(digitosTelefono.length === 11 && digitosTelefono.startsWith("503"))) || !/^\d{8}$/.test(numeroLocal)) e.contactoTelefono="Introduce 8 dígitos, con prefijo +503 opcional.";
+    else limpio.contactoTelefono="+503 "+numeroLocal.slice(0,4)+" "+numeroLocal.slice(4);
     limpio.sitioWeb = typeof d.sitioWeb === "string" ? d.sitioWeb.trim() : "";
     if (limpio.sitioWeb) { try { const url = new URL(limpio.sitioWeb); if (!["https:","http:"].includes(url.protocol) || url.username || url.password || limpio.sitioWeb.length > 300) throw Error(); } catch { e.sitioWeb = "Usa una dirección http o https válida, sin credenciales."; } }
     if (d.declaracion !== true) e.declaracion = "Confirma que representas a la organización y que los datos son correctos.";
@@ -57,7 +63,16 @@ function crearServicioFlujos({ leer, guardar, actor, nuevoId, ahora, empresasBas
     if (s.solicitudes.some(x => x.id !== ignorarId && x.estado !== "rechazado" && x.datos.pais === datos.pais && x.datos.identificacionFiscal === datos.identificacionFiscal)) error("EMPRESA_DUPLICADA", "Ya existe una solicitud o empresa con esa identificación fiscal y país.");
   }
   return {
-    categorias, sectores,
+    categorias: [...categorias], sectores: [...sectores],
+    vistaRevision(tipo) {
+      admin(); if (!["tema","empresa"].includes(tipo)) error("VALIDACION","Tipo de revisión inválido.");
+      const s = estado();
+      return {items:tipo === "tema" ? s.temas : s.solicitudes, historial:s.auditoria.filter(a=>a.tipo === tipo)};
+    },
+    vistaForo() {
+      const s = estado(), u = actor();
+      return {publicos:s.temas.filter(t=>t.estado === "aprobado"),propios:u && cuentaActiva(u.usuario) ? s.temas.filter(t=>t.usuario === u.usuario) : []};
+    },
     temasPublicos: () => estado().temas.filter(t => t.estado === "aprobado"),
     misTemas: () => { const u = actor(); return u ? estado().temas.filter(t => t.usuario === u.usuario) : []; },
     misSolicitudes: () => { const u = actor(); return u ? estado().solicitudes.filter(t => t.usuario === u.usuario) : []; },
@@ -84,7 +99,7 @@ function crearServicioFlujos({ leer, guardar, actor, nuevoId, ahora, empresasBas
       if (item.version !== version || item.estado !== "rechazado") error("CONFLICTO", "Solo puedes reenviar una solicitud rechazada sin cambios posteriores.");
       if (tipo === "tema") Object.assign(item,validarTema(datos));
       else { const d = validarSolicitud(datos); solicitudDisponible(s,u,d,id); item.datos = d; }
-      Object.assign(item,{estado:"pendiente",version:item.version+1,actualizada:ahora(),motivo:""});
+      Object.assign(item,{estado:"pendiente",version:item.version+1,actualizada:ahora(),motivo:"",revisada:null,revisadaPor:null});
       registrar(s,tipo,item,"reenviado",u); persistir(s); return item;
     },
     decidir(tipo, id, version, decision, motivo = "") {
@@ -94,12 +109,13 @@ function crearServicioFlujos({ leer, guardar, actor, nuevoId, ahora, empresasBas
       if (decision === "aprobar" && item.usuario === u.usuario) error("REVISION_PROPIA", "Otra persona administradora debe aprobar tu solicitud.");
       motivo = String(motivo).trim();
       if ((decision === "rechazar" && motivo.length < 10) || motivo.length > 1000) error("VALIDACION", "Para rechazar, explica el motivo con entre 10 y 1000 caracteres.",{motivo:"Escribe un motivo claro de al menos 10 caracteres."});
+      if (decision === "aprobar" && !cuentaActiva(item.usuario)) error("CUENTA_INACTIVA", "El autor tiene una cuenta suspendida o eliminada. No se puede aprobar su solicitud.");
       if (tipo === "tema" && decision === "aprobar") validarTema(item);
       if (tipo === "empresa" && decision === "aprobar") {
         if (s.miembros.some(m => m.usuario === item.usuario)) error("EMPRESA_EXISTENTE", "La cuenta solicitante ya tiene una empresa asignada.");
         if (s.solicitudes.some(x => x.id !== item.id && x.estado === "aprobado" && x.datos.pais === item.datos.pais && x.datos.identificacionFiscal === item.datos.identificacionFiscal)) error("EMPRESA_DUPLICADA", "La identificación fiscal ya está registrada.");
         const idEmpresa = Math.max(0,...empresasBase.map(e=>e.id),...s.empresas.map(e=>e.id))+1;
-        const d = item.datos;
+        const d = validarSolicitud(item.datos);
         s.empresas.push({id:idEmpresa,solicitudId:item.id,nombre:d.nombreComercial,iniciales:d.nombreComercial.slice(0,2).toUpperCase(),rubro:d.sector,tamano:d.tamano+" empleados",pais:d.pais,ciudad:d.ciudad,descripcion:d.descripcion,sitioWeb:d.sitioWeb,valoracion:0,resenas:0,estadoRegistro:"aprobado"});
         s.miembros.push({usuario:item.usuario,empresaId:idEmpresa,permiso:"propietario",creada:ahora()}); item.empresaId = idEmpresa;
       }

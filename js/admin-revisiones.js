@@ -4,16 +4,21 @@ function pintarColaRevision(tipo) {
   const empresa = tipo === "empresa", sufijo = empresa ? "Empresas" : "Foros";
   const lista = document.getElementById(empresa ? "listaSolicitudesEmpresa" : "listaModeracion");
   if (!lista) return;
-  const resultado = ejecutarFlujo(()=>empresa ? flujos.colaEmpresas() : flujos.colaTemas());
+  const resultado = ejecutarFlujo(()=>flujos.vistaRevision(tipo));
   if (!resultado.ok) { lista.textContent = resultado.mensaje; return; }
-  const todos = resultado.dato, filtro = document.getElementById("estadoRevision"+sufijo)?.value || "pendiente";
+  const todos = resultado.dato.items, filtro = document.getElementById("estadoRevision"+sufijo)?.value || "pendiente";
   const busqueda = (document.getElementById("buscarRevision"+sufijo)?.value || "").trim().toLowerCase();
   const filtrados = todos.filter(x=>(filtro === "todos" || x.estado === filtro) && (!busqueda || (empresa ? `${x.datos.nombreComercial} ${x.datos.razonSocial} ${x.datos.identificacionFiscal} ${x.usuario}` : `${x.titulo} ${x.autor} ${x.categoria}`).toLowerCase().includes(busqueda)));
   const cola = estadoColas[tipo], paginas = Math.max(1,Math.ceil(filtrados.length/10)); cola.pagina = Math.min(cola.pagina,paginas);
+  const historialPorEntidad = new Map();
+  resultado.dato.historial.forEach(evento=>{
+    if (!historialPorEntidad.has(evento.entidadId)) historialPorEntidad.set(evento.entidadId,[]);
+    historialPorEntidad.get(evento.entidadId).push(evento);
+  });
   const campo = (nombre,valor) => `<div><dt>${nombre}</dt><dd class="revision-texto">${escaparHTML(valor || "No indicado")}</dd></div>`;
   lista.innerHTML = filtrados.slice((cola.pagina-1)*10,cola.pagina*10).map(item=>{
     const titulo = empresa ? item.datos.nombreComercial : item.titulo;
-    const historial = ejecutarFlujo(()=>flujos.auditoria(tipo,item.id));
+    const historial = {ok:true,dato:historialPorEntidad.get(item.id) || []};
     return `<article class="panel mb-3" data-revision-id="${escaparHTML(item.id)}">
       <div class="panel-cabecera"><h3>${escaparHTML(titulo)}</h3><span class="etiqueta-chip ${item.estado === "aprobado" ? "verde" : "ambar"}">${etiquetaRevision(item.estado,empresa)}</span></div>
       <div class="panel-cuerpo"><p class="datos">Cuenta: ${escaparHTML(item.usuario)} · ${fechaRevision(item.creada)} · Versión ${item.version}</p>
@@ -41,7 +46,12 @@ document.addEventListener("DOMContentLoaded",()=>{
     const boton = evento.target.closest("[data-decidir]"); if (!boton) return;
     const tarjeta = boton.closest("[data-revision-id]"), motivo = tarjeta.querySelector("[data-motivo]").value;
     const resultado = ejecutarFlujo(()=>flujos.decidir(boton.dataset.tipo,boton.dataset.id,Number(boton.dataset.version),boton.dataset.decidir,motivo));
-    if (!resultado.ok) { tarjeta.querySelector("[data-error-revision]").textContent=resultado.mensaje; if(resultado.campos.motivo) tarjeta.querySelector("[data-motivo]").focus(); return; }
+    if (!resultado.ok) { tarjeta.querySelector("[data-error-revision]").textContent=resultado.mensaje; if(resultado.campos.motivo) tarjeta.querySelector("[data-motivo]").focus();
+      if (resultado.codigo === "CONFLICTO") {
+        const actualizar = document.createElement("button"); actualizar.type="button"; actualizar.className="btn btn-linea"; actualizar.textContent="Actualizar revisión";
+        actualizar.addEventListener("click",()=>pintarColaRevision(boton.dataset.tipo)); tarjeta.querySelector("[data-error-revision]").append(actualizar);
+      }
+      return; }
     pintarColaRevision(boton.dataset.tipo);
     pintarActividad();
     if (boton.dataset.tipo === "empresa" && boton.dataset.decidir === "aprobar") {

@@ -4,9 +4,9 @@ const {crearServicioFlujos} = require('../js/dominio-flujos.js');
 const fs = require('node:fs'), vm = require('node:vm');
 const solicitud = {razonSocial:'Servicios de Integración SA',nombreComercial:'Empresa QA',identificacionFiscal:'0614-123456-001-0',pais:'SV',ciudad:'San Salvador',direccion:'Avenida de pruebas número 123',sector:'Tecnología',tamano:'11–50',descripcion:'Empresa de desarrollo de software enfocada en servicios empresariales y pruebas de integración.',contactoNombre:'Responsable QA',contactoCargo:'Gerente',contactoCorreo:'qa@example.test',contactoTelefono:'+503 2222 0000',sitioWeb:'https://example.test',declaracion:true};
 const tema = {titulo:'Consulta sobre entrevistas técnicas',categoria:'Tecnología',mensaje:'¿Cómo preparan las entrevistas técnicas para un puesto de desarrollo?'};
-function entorno() {
+function entorno(cuentaActiva = () => true) {
  let s={schemaVersion:1,temas:[],solicitudes:[],empresas:[],miembros:[],auditoria:[]},u={usuario:'candidato',nombre:'Candidato Demo',rol:'candidato'},contador=0,bloqueado=false;
- const f=crearServicioFlujos({leer:()=>structuredClone(s),guardar:n=>{if(bloqueado)return false;s=structuredClone(n);return true;},actor:()=>u,nuevoId:()=>`id-${++contador}`,ahora:()=> '2026-10-27T05:00:00Z',empresasBase:[{id:6}]});
+ const f=crearServicioFlujos({cuentaActiva,leer:()=>structuredClone(s),guardar:n=>{if(bloqueado)return false;s=structuredClone(n);return true;},actor:()=>u,nuevoId:()=>`id-${++contador}`,ahora:()=> '2026-10-27T05:00:00Z',empresasBase:[{id:6}]});
  return {f,usuario:n=>u=n,admin:()=>u={usuario:'admin',nombre:'Admin',rol:'administrador'},snapshot:()=>structuredClone(s),bloquear:()=>bloqueado=true};
 }
 function codigo(fn,c) { assert.throws(fn,e=>e.codigo===c); }
@@ -53,3 +53,16 @@ test('aprobación empresarial hidrata sesión, directorio y publicación tras re
  e.admin();e.f.decidir('empresa',s.id,1,'aprobar');run=cargar();assert.equal(run('sesionDatos().rol'),'empresa');assert.equal(run('sesionDatos().empresaId'),7);assert.equal(run('EMPRESAS.length'),7);assert.equal(run('guardarPublicacionExtra({id:111,empresaId:7,titulo:"QA"},{})'),true);
 });
 test('límites del foro y categorías inválidas se validan en dominio',()=>{const e=entorno();for(const d of [{...tema,categoria:'Otra'},{...tema,mensaje:'Corto'},{...tema,titulo:'x'.repeat(161)}])codigo(()=>e.f.enviarTema(d),'VALIDACION');});
+
+test('no se aprueba una solicitud cuyo autor fue suspendido',()=>{
+ let activa=true;const e=entorno(u=>u==='admin'||activa),s=e.f.enviarSolicitud(solicitud);activa=false;e.admin();const antes=e.snapshot();codigo(()=>e.f.decidir('empresa',s.id,1,'aprobar'),'CUENTA_INACTIVA');assert.deepEqual(e.snapshot(),antes);
+});
+test('datos estructuralmente dañados generan error de dominio sin sobrescribirlos',()=>{
+ for(const s of [null,{}, {schemaVersion:1,temas:[null],solicitudes:[],empresas:[],miembros:[],auditoria:[]}]){
+  let escritos=0;const f=crearServicioFlujos({leer:()=>s,guardar:()=>{escritos++;return true;},actor:()=>null});codigo(()=>f.temasPublicos(),'ALMACEN_INVALIDO');assert.equal(escritos,0);
+ }
+});
+test('vista de revisión reúne solicitudes e historial con una sola lectura',()=>{
+ let lecturas=0;const s={schemaVersion:1,temas:[],solicitudes:[],empresas:[],miembros:[],auditoria:[]};const f=crearServicioFlujos({leer:()=>{lecturas++;return s;},guardar:()=>true,actor:()=>({usuario:'admin',nombre:'Admin',rol:'administrador'})});
+ assert.deepEqual(f.vistaRevision('tema'),{items:[],historial:[]});assert.equal(lecturas,1);
+});

@@ -132,8 +132,8 @@ document.addEventListener("DOMContentLoaded", () => {
       "Condiciones contractuales según lo establecido en la oferta.",
     ],
     contacto: {
-      correo: "talento@empresa.ec",
-      telefono: "+593 2 000 0000",
+      correo: "talento@empresa.example",
+      telefono: "",
       direccion: "Dirección de la empresa",
       responsable: "Equipo de Talento Humano",
     },
