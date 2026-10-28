@@ -23,11 +23,9 @@ const sesionEmpresa = sesionDatos();
 let misOfertas = VACANTES.filter(v => sesionEmpresa?.rol === "administrador" || v.empresaId === sesionEmpresa?.empresaId)
   .map(v => ({ ...v, estado: estadoVacante(v) === "Publicada" ? "Abierta" : estadoVacante(v) }));
 function empresaDemoParaPublicacion() {
-  return EMPRESAS.find(e => e.id === sesionEmpresa?.empresaId) || (sesionEmpresa?.rol === "administrador" ? EMPRESAS[0] : {id:null,ciudad:""});
+  const id=sesionDatos()?.rol === "administrador" ? Number(document.getElementById("fEmpresaPublicacion")?.value) : sesionDatos()?.empresaId;
+  return EMPRESAS.find(e => e.id === id) || {id:null,ciudad:""};
 }
-
-/* Empresas dadas de baja en el directorio (solo en memoria) */
-const empresasSuspendidas = new Set(EMPRESAS.filter(e => e.suspendida).map(e => e.id));
 
 /* Habilidades seleccionadas para la oferta en edición */
 let habilidadesOferta = [];
@@ -47,8 +45,8 @@ function contarPostulantes(idOferta) {
 
 /* Chip de estado del candidato con su color correspondiente */
 function chipEstado(estado) {
-  const tonos = { "Nueva": "ambar", "En revisión": "cielo", "Preseleccionada": "verde" };
-  return `<span class="etiqueta-chip ${tonos[estado] || ""}">${estado}</span>`;
+  const tonos = { "Nueva": "ambar", "En revisión": "cielo", "Preseleccionada": "verde", "En entrevista": "cielo", "Seleccionada": "verde", "Contratada": "verde", "Rechazada": "acento" };
+  return `<span class="etiqueta-chip ${tonos[estado] || ""}">${escaparHTML(estado)}</span>`;
 }
 
 /* Cinco puntos de valoración: los llenos representan la nota */
@@ -112,6 +110,9 @@ function publicarOferta(evento) {
   evento.preventDefault();
 
   const formulario = evento.currentTarget;
+  if(sesionDatos()?.rol === "administrador" && !document.getElementById("fEmpresaPublicacion").value) {
+    avisar("Selecciona la empresa responsable de la publicación.");document.getElementById("fEmpresaPublicacion").focus();return;
+  }
   if (!["empresa", "administrador"].includes(sesionDatos()?.rol) || !empresaHabilitada(empresaDemoParaPublicacion().id)) {
     avisar("Tu cuenta no puede publicar vacantes."); return;
   }
@@ -265,7 +266,7 @@ function pintarOfertas() {
         </td>
         <td class="datos">${fechaCercana(oferta.publicada)}</td>
         <td>
-          <span class="datos ${postulantes ? "fuerte" : "texto-tenue"}">${postulantes}</span>
+          <button class="btn btn-linea btn-sm" type="button" data-ver-postulantes="${oferta.id}" aria-label="Ver ${postulantes} postulaciones de ${escaparHTML(oferta.titulo)}">${postulantes} · Ver postulantes</button>
         </td>
         <td>
           ${cerrada
@@ -286,6 +287,7 @@ function pintarOfertas() {
 
   /* Resumen de la cabecera: total y ofertas aún abiertas */
   const resumen = document.getElementById("resumenOfertas");
+  if(sesionDatos()?.rol === "administrador") document.querySelector('[data-panel="ofertas"] h2').textContent="Ofertas del portal";
   if (resumen) {
     const abiertas = misOfertas.filter((o) => o.estado === "Abierta").length;
     resumen.textContent = `${misOfertas.length} ofertas · ${abiertas} abiertas · ${misOfertas.length - abiertas} cerradas`;
@@ -312,8 +314,7 @@ function cambiarEstadoOferta(idOferta, estado) {
 /* ---------------------------------------------------------------
    Postulaciones recibidas
    El selector elige la oferta; debajo se pintan las fichas de las
-   personas postuladas con su estado, la descarga del currículum y
-   el botón de preselección.
+   personas postuladas con su estado y una ficha de revisión del proceso de selección.
    --------------------------------------------------------------- */
 
 /* Rellena el selector con las ofertas propias */
@@ -323,7 +324,7 @@ function pintarSelectorOfertas() {
 
   const anterior = selector.value;
   selector.innerHTML = misOfertas
-    .map((oferta) => `<option value="${oferta.id}">${escaparHTML(oferta.titulo)}</option>`)
+    .map((oferta) => `<option value="${oferta.id}">${escaparHTML(oferta.titulo)} (${contarPostulantes(oferta.id)})</option>`)
     .join("");
 
   /* Conserva la selección anterior si esa oferta sigue existiendo */
@@ -334,66 +335,50 @@ function pintarSelectorOfertas() {
 
 /* Pinta las fichas de candidatos de la oferta elegida */
 function pintarCandidatos() {
-  const contenedor = document.getElementById("listaCandidatos");
-  const selector = document.getElementById("selectOferta");
+  const contenedor = document.getElementById("listaCandidatos"), selector = document.getElementById("selectOferta");
   if (!contenedor || !selector) return;
-
-  /* Solo la vacante 101 tiene postulantes de prueba en datos.js */
-  const candidatos = candidatosDeVacante(Number(selector.value));
-
-  /* Aviso de vacío cuando la oferta todavía no tiene postulantes */
-  if (!candidatos.length) {
-    contenedor.innerHTML = `
-      <div class="vacio">
-        <span class="disco" aria-hidden="true">0</span>
-        <h3>Aún no hay postulantes</h3>
-        <p class="texto-suave mb-0">
-          Cuando alguien postule a esta oferta aparecerá aquí con su currículum.
-        </p>
-      </div>`;
-    return;
-  }
-
-  contenedor.innerHTML = candidatos
-    .map(
-      (candidato, indice) => `
-      <article class="candidato">
-        <span class="avatar" aria-hidden="true">${candidato.iniciales}</span>
-        <div>
-          <h4>${escaparHTML(candidato.nombre)}</h4>
-          <p class="texto-suave mb-0">${escaparHTML(candidato.titulo)} · ${escaparHTML(candidato.experiencia)}</p>
-          <div class="habilidades">
-            ${candidato.habilidades
-              .map((habilidad) => `<span class="etiqueta-chip">${escaparHTML(habilidad)}</span>`)
-              .join("")}
-          </div>
-        </div>
-        <div class="emp-candidato-acciones">
-          ${chipEstado(candidato.estado)}
-          <div class="d-flex gap-2">
-            <button class="btn btn-linea btn-sm" type="button" data-cv="${indice}">
-              Descargar CV
-            </button>
-            ${candidato.estado === "Preseleccionada"
-              ? ""
-              : `<button class="btn btn-bermellon btn-sm" type="button" data-preseleccionar="${indice}">
-                   Preseleccionar
-                 </button>`}
-          </div>
-        </div>
-      </article>`
-    )
-    .join("");
+  const id = Number(selector.value), todos = puedeGestionarCandidatos(id) ? candidatosDeVacante(id) : [];
+  const texto = (document.getElementById("buscarCandidato")?.value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const filtro = document.getElementById("estadoCandidato")?.value || "";
+  const candidatos = todos.filter(c => (!filtro || c.estado === filtro) && [c.nombre,c.titulo,...c.habilidades].join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(texto));
+  const seleccionadas=todos.filter(c=>c.estado === "Seleccionada").length, contratadas=todos.filter(c=>c.estado === "Contratada").length;
+  document.getElementById("resumenCandidatos").textContent = `${candidatos.length} de ${todos.length} candidaturas · ${seleccionadas} ${seleccionadas===1 ? "seleccionada" : "seleccionadas"} · ${contratadas} ${contratadas===1 ? "contratada" : "contratadas"}`;
+  contenedor.innerHTML = candidatos.length ? candidatos.map(c => `
+    <article class="candidato">
+      <span class="avatar" aria-hidden="true">${escaparHTML(c.iniciales)}</span>
+      <div><h3 class="fs-5">${escaparHTML(c.nombre)}</h3><p class="texto-suave">${escaparHTML(c.titulo)} · ${escaparHTML(c.experiencia)}</p>
+      <div class="habilidades">${c.habilidades.map(h=>`<span class="etiqueta-chip">${escaparHTML(h)}</span>`).join("")}</div></div>
+      <div class="emp-candidato-acciones">${chipEstado(c.estado)}
+        <button class="btn btn-bermellon btn-sm" type="button" data-candidatura="${escaparHTML(c.clave)}">Revisar candidatura</button>
+      </div>
+    </article>`).join("") : `<div class="vacio"><h3>${todos.length ? "Sin coincidencias" : "Aún no hay postulantes"}</h3><p>${todos.length ? "Cambia el estado o la búsqueda para consultar otras candidaturas." : "Selecciona otra oferta o comparte el enlace del puesto para recibir postulaciones."}</p></div>`;
 }
 
-/* Mueve al candidato a la lista de preseleccionados */
-function preseleccionarCandidato(idOferta, indice) {
-  const candidato = candidatosDeVacante(idOferta)[indice];
-  if (!candidato || !actualizarEstadoCandidato(idOferta, candidato.clave, "Preseleccionada")) {
-    avisar("No se pudo guardar la preselección."); return;
-  }
-  pintarCandidatos();
-  avisar(`${escaparHTML(candidato.nombre)} pasa a la lista de preseleccionados.`, "exito");
+function abrirCandidatura(id, clave) {
+  if (!puedeGestionarCandidatos(id)) { avisar("No tienes acceso a esta candidatura."); return; }
+  const c = candidatosDeVacante(id).find(c=>c.clave === clave);
+  if (!c) { avisar("Esta candidatura ya no está disponible."); return; }
+  const vacante = VACANTES.find(v=>v.id === id), opciones = TRANSICIONES_CANDIDATURA[c.estado] || [];
+  const modal = document.createElement("div"); modal.className="modal"; modal.tabIndex=-1; modal.setAttribute("aria-labelledby","tituloCandidatura");
+  modal.innerHTML = `<div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h2 class="modal-title fs-4" id="tituloCandidatura">${escaparHTML(c.nombre)}</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <div class="modal-body"><p class="datos">${escaparHTML(vacante.titulo)}</p>${chipEstado(c.estado)}
+      <h3 class="fs-5 mt-4">Perfil enviado</h3><p>${escaparHTML(c.titulo)}</p><p>${escaparHTML(c.presentacion || c.experiencia || "Sin presentación adicional.")}</p>
+      <p>${c.ciudad ? "Ciudad: "+escaparHTML(c.ciudad) : "Ciudad no indicada"}</p>
+      <div class="habilidades">${c.habilidades.map(h=>`<span class="etiqueta-chip">${escaparHTML(h)}</span>`).join("")}</div>
+      <p class="mt-3">${c.correo ? "Correo de contacto: "+escaparHTML(c.correo) : "Este perfil de ejemplo no incluye correo de contacto."}</p>
+      <p class="texto-suave">No hay un archivo de CV disponible para esta candidatura. Puedes revisar aquí los datos enviados; la carga y descarga de documentos requiere almacenamiento de archivos.</p>
+      <h3 class="fs-5 mt-4">Historial del proceso</h3><ol>${c.historial.map(e=>`<li><strong>${escaparHTML(e.estado)}</strong> · ${escaparHTML(new Date(e.fecha).toLocaleString(CONFIG_PORTAL.locale,{timeZone:CONFIG_PORTAL.zonaHoraria}))}${e.observacion ? `<p style="white-space:pre-wrap">${escaparHTML(e.observacion)}</p>` : ""}</li>`).join("") || "<li>Sin cambios registrados. Estado inicial: "+escaparHTML(c.estado)+".</li>"}</ol>
+      ${opciones.length ? `<form id="formDecisionCandidato"><h3 class="fs-5 mt-4">Actualizar candidatura</h3><label class="form-label" for="nuevoEstadoCandidato">Siguiente etapa</label><select id="nuevoEstadoCandidato" class="form-select" required><option value="">Selecciona una etapa</option>${opciones.map(e=>`<option>${escaparHTML(e)}</option>`).join("")}</select><label class="form-label mt-3" for="observacionCandidato">Mensaje para el candidato</label><textarea id="observacionCandidato" class="form-control" maxlength="1000" rows="3" aria-describedby="ayudaDecision"></textarea><p id="ayudaDecision" class="texto-suave mt-2">El mensaje y el nuevo estado serán visibles en su perfil. Para rechazar o reconsiderar escribe un motivo de al menos 10 caracteres. Seleccionar no cierra la oferta ni rechaza otras candidaturas.</p><p id="errorDecision" class="text-danger" role="alert"></p><button class="btn btn-bermellon" type="submit">Guardar etapa</button></form>` : '<p class="mt-4">Proceso finalizado: contratación registrada.</p>'}
+    </div><div class="modal-footer"><button type="button" class="btn btn-linea" data-bs-dismiss="modal">Cerrar</button></div></div></div>`;
+  document.body.append(modal); const instancia = new bootstrap.Modal(modal);
+  modal.addEventListener("hidden.bs.modal",()=>{instancia.dispose();modal.remove();});
+  modal.querySelector("form")?.addEventListener("submit",e=>{
+    e.preventDefault(); const estado=modal.querySelector("select").value, mensaje=modal.querySelector("textarea").value.trim();
+    if ((estado === "Rechazada" || c.estado === "Rechazada") && mensaje.length<10) {modal.querySelector("#errorDecision").textContent="Escribe un motivo de al menos 10 caracteres.";return;}
+    if (!actualizarEstadoCandidato(id,clave,estado,mensaje,c.version)) {modal.querySelector("#errorDecision").textContent="No se pudo guardar. La candidatura o tus permisos cambiaron; cierra y vuelve a abrir la ficha.";return;}
+    instancia.hide();pintarCandidatos();avisar("Etapa actualizada. El candidato puede consultarla en su perfil.","exito");
+  }); instancia.show();
 }
 
 /* ---------------------------------------------------------------
@@ -449,80 +434,16 @@ function agregarHabilidad() {
   campo.focus();
 }
 
-/* ---------------------------------------------------------------
-   Directorio de empresas
-   Pinta una tarjeta por empresa del portal. La búsqueda filtra en
-   vivo por nombre, rubro o ciudad; las empresas dadas de baja
-   quedan atenuadas con el chip "Suspendida".
-   --------------------------------------------------------------- */
+/* Ficha propia; el directorio público vive en directorio.html. */
 function pintarDirectorio() {
-  const rejilla = document.getElementById("rejillaEmpresas");
-  if (!rejilla) return;
-
-  /* Texto del filtro en vivo */
-  const campo = document.getElementById("buscarEmpresa");
-  const texto = (campo ? campo.value : "").trim().toLowerCase();
-
-  const encontradas = EMPRESAS.filter((empresa) => {
-    if (!texto) return true;
-    return [empresa.nombre, empresa.rubro, empresa.ciudad].some((dato) =>
-      dato.toLowerCase().includes(texto)
-    );
-  });
-
-  /* Cuenta de resultados junto al buscador */
-  const cuenta = document.getElementById("cuentaEmpresas");
-  if (cuenta) {
-    cuenta.textContent = `${encontradas.length} de ${EMPRESAS.length} empresas en el directorio`;
-  }
-
-  /* Mensaje de vacío cuando el filtro no encuentra nada */
-  if (!encontradas.length) {
-    rejilla.innerHTML = `
-      <div class="col-12">
-        <div class="vacio">
-          <span class="disco" aria-hidden="true">0</span>
-          <h3>Sin coincidencias</h3>
-          <p class="texto-suave mb-0">Prueba con otro nombre, rubro o ciudad.</p>
-        </div>
-      </div>`;
-    return;
-  }
-
-  rejilla.innerHTML = encontradas
-    .map((empresa) => {
-      const suspendida = empresasSuspendidas.has(empresa.id);
-      const esAdmin = sesionDatos()?.rol === "administrador";
-
-      return `
-      <div class="col-md-6 col-lg-4">
-        <div class="tarjeta tarjeta-estatica emp-empresa h-100 ${suspendida ? "emp-suspendida" : ""}">
-          <div class="emp-empresa-cab">
-            <span class="marca-empresa" aria-hidden="true">${escaparHTML(empresa.iniciales)}</span>
-            <div>
-              <h3>${escaparHTML(empresa.nombre)}</h3>
-              <p class="datos texto-tenue mb-0">${escaparHTML(empresa.rubro)}</p>
-            </div>
-            ${suspendida ? '<span class="etiqueta-chip acento">Suspendida</span>' : ""}
-          </div>
-          <div class="emp-datos">
-            <span>${escaparHTML(empresa.tamano)}</span>
-            <span>${escaparHTML(empresa.ciudad)}</span>
-          </div>
-          <div class="valoracion" title="Valoración media de la empresa">
-            ${puntosValoracion(empresa.valoracion)}
-            <span class="valoracion-nota">${empresa.valoracion.toFixed(1)}</span>
-          </div>
-          <div class="emp-empresa-pie">
-${esAdmin || sesionDatos()?.empresaId === empresa.id ? `<button class="btn btn-linea btn-sm" type="button" data-editar="${empresa.id}">Editar ficha</button>` : ""}
-            ${!esAdmin ? "" : suspendida
-              ? `<button class="btn btn-fantasma btn-sm" type="button" data-reactivar="${empresa.id}">Reactivar</button>`
-              : `<button class="btn btn-fantasma btn-sm" type="button" data-baja="${empresa.id}">Dar de baja</button>`}
-          </div>
-        </div>
-      </div>`;
-    })
-    .join("");
+  const rejilla = document.getElementById("rejillaEmpresas"); if (!rejilla) return;
+  const sesion=sesionDatos(), propia=EMPRESAS.find(e=>e.id === sesion?.empresaId);
+  rejilla.innerHTML = propia ? `<div class="col-12"><article class="panel"><div class="panel-cuerpo">
+    <h3>${escaparHTML(propia.nombre)}</h3><p>${escaparHTML(propia.rubro)} · ${escaparHTML(propia.ciudad)} · ${escaparHTML(propia.tamano)}</p>
+    <p>${escaparHTML(propia.descripcion || "Completa la descripción de tu organización.")}</p>
+    <p>Estado: <strong>${empresaHabilitada(propia.id) ? "Aprobada y activa" : "Suspendida"}</strong> · ${ofertasPublicasDeEmpresa(propia.id).length} ofertas abiertas</p>
+    <div class="d-flex gap-2 flex-wrap"><button class="btn btn-bermellon" type="button" data-editar="${propia.id}">Editar mi ficha</button><a class="btn btn-linea" href="./directorio.html?empresa=${propia.id}">Ver ficha pública</a><a class="btn btn-linea" href="./registro-empresa.html">Ver registro empresarial</a></div>
+  </div></article></div>` : '<div class="col-12"><p>Estás en una cuenta administrativa. La edición y suspensión de empresas se realiza desde <a href="./admin.html#empresas">Gestión de empresas</a>.</p></div>';
 }
 
 /* ---------------------------------------------------------------
@@ -531,36 +452,26 @@ ${esAdmin || sesionDatos()?.empresaId === empresa.id ? `<button class="btn btn-l
    puntos de valoración y enlace a las ofertas de su sector.
    --------------------------------------------------------------- */
 function pintarValoraciones() {
-  const rejilla = document.getElementById("rejillaValoraciones");
-  if (!rejilla) return;
-
-  rejilla.innerHTML = EMPRESAS.filter((empresa) => empresa.valoracion > 0)
-    .map(
-      (empresa) => `
-      <div class="col-md-6 col-lg-4">
-        <div class="tarjeta tarjeta-estatica emp-valoracion h-100">
-          <div class="nota-grande">
-            <strong>${empresa.valoracion.toFixed(1)}</strong>
-            <span>sobre 5</span>
-          </div>
-          <div class="emp-valoracion-cuerpo">
-            <h3>${escaparHTML(empresa.nombre)}</h3>
-            <p class="datos texto-tenue mb-2">${escaparHTML(empresa.rubro)}</p>
-            <div class="valoracion">
-              ${puntosValoracion(empresa.valoracion)}
-              <span class="valoracion-nota">${empresa.resenas} reseñas</span>
-            </div>
-            <a
-              class="btn btn-linea btn-sm mt-3"
-              href="./busqueda.html?empresa=${empresa.id}"
-            >
-              Ver ofertas
-            </a>
-          </div>
-        </div>
-      </div>`
-    )
-    .join("");
+  const contenedor = document.getElementById("rejillaValoraciones");
+  if (!contenedor) return;
+  const sesion=sesionDatos(), selector=document.getElementById("empresaValoraciones");
+  const empresa=EMPRESAS.find(e=>e.id === (sesion?.rol === "administrador" ? Number(selector?.value) : sesion?.empresaId));
+  if (!empresa) {contenedor.innerHTML='<div class="vacio"><h3>Selecciona una empresa</h3><p>Consulta su puntuación y las experiencias recibidas.</p></div>';return;}
+  const resenas=resenasDeEmpresa(empresa.id), total=resenas.length;
+  const nota=total ? (resenas.reduce((n,r)=>n+r.nota,0)/total).toFixed(1) : null;
+  const conteo=Array.from({length:5},(_,i)=>resenas.filter(r=>r.nota===5-i).length);
+  contenedor.innerHTML=`<section class="emp-reputacion" aria-label="Resumen de valoraciones de ${escaparHTML(empresa.nombre)}">
+    <div class="emp-reputacion-nota"><p class="datos mb-2">${escaparHTML(empresa.nombre)}</p>
+      <p class="emp-reputacion-promedio">${nota || '—'}<span>${total ? 'de 5' : 'Sin puntuación'}</span></p>
+      <p class="mb-0">${total ? `${total} ${total===1?'reseña recibida':'reseñas recibidas'}` : 'Aún no hay reseñas'}</p>
+    </div>
+    <div class="emp-reputacion-distribucion"><h3>Distribución de puntuaciones</h3>
+      ${conteo.map((n,i)=>`<div class="emp-distribucion-fila"><span>${5-i} <span aria-hidden="true">★</span><span class="visually-hidden"> estrellas</span></span><div class="emp-distribucion-pista" aria-hidden="true"><span style="width:${total ? n/total*100 : 0}%"></span></div><span class="datos">${n}<span class="visually-hidden"> reseñas</span></span></div>`).join("")}
+      <p class="texto-suave small mb-0 mt-3">Cada reseña tiene el mismo peso en el promedio.</p>
+    </div>
+  </section>
+  <div class="emp-resenas-cabecera"><h3>Experiencias recibidas</h3>${empresaHabilitada(empresa.id) ? `<a class="btn btn-linea btn-sm" href="./directorio.html?empresa=${empresa.id}">Ver ficha pública</a>` : '<span class="etiqueta-chip">Empresa suspendida</span>'}</div>
+  <div class="emp-resenas-lista">${resenas.map(r=>`<article class="emp-resena"><div class="emp-resena-cabecera"><div class="d-flex gap-3 align-items-center"><span class="avatar avatar-sm" aria-hidden="true">${escaparHTML(r.iniciales || r.autor?.slice(0,2) || "US")}</span><div><h4>${escaparHTML(r.autor)}</h4><p class="datos texto-tenue mb-0">${escaparHTML(fechaCercana(r.fecha))}</p></div></div><span class="emp-resena-nota" aria-label="${r.nota} de 5 estrellas"><span aria-hidden="true">${"★".repeat(r.nota)}<span class="texto-tenue">${"☆".repeat(5-r.nota)}</span></span><span>${r.nota}/5</span></span></div><p class="emp-resena-texto">${escaparHTML(r.texto)}</p></article>`).join("") || '<div class="vacio emp-resenas-vacio"><h4>Tu empresa aún no tiene valoraciones</h4><p>Las experiencias publicadas por candidatos aparecerán aquí. No se muestra una nota de cero cuando todavía no hay reseñas.</p></div>'}</div>`;
 }
 
 /* ---------------------------------------------------------------
@@ -568,6 +479,12 @@ function pintarValoraciones() {
    --------------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   // Incluir la ciudad de la empresa aprobada en el formulario de publicación.
+  if (sesionDatos()?.rol === "administrador") {
+    const grupo=document.getElementById("grupoEmpresaPublicacion"), select=document.getElementById("fEmpresaPublicacion");
+    grupo.hidden=false;select.required=true;
+    empresasPublicas().forEach(e=>select.add(new Option(e.nombre,e.id)));
+    select.addEventListener("change",()=>{const ciudad=empresaDemoParaPublicacion().ciudad;if(ciudad)document.getElementById("fUbicacion").value=ciudad;});
+  }
   const ciudadEmpresa = empresaDemoParaPublicacion().ciudad;
   const ubicacion = document.getElementById("fUbicacion");
   if (ubicacion && ciudadEmpresa && ![...ubicacion.options].some(o=>o.value === ciudadEmpresa)) ubicacion.add(new Option(ciudadEmpresa,ciudadEmpresa));
@@ -577,8 +494,18 @@ document.addEventListener("DOMContentLoaded", () => {
   pintarHabilidades();
   pintarOfertas();
   pintarSelectorOfertas();
+  const ofertaURL=new URLSearchParams(location.search).get("oferta");
+  if (misOfertas.some(o=>String(o.id)===ofertaURL)) document.getElementById("selectOferta").value=ofertaURL;
   pintarCandidatos();
   pintarDirectorio();
+  const selectorValoraciones=document.getElementById("empresaValoraciones");
+  if(sesionDatos()?.rol === "administrador") {
+    document.getElementById("selectorEmpresaValoraciones").hidden=false;
+    document.getElementById("tituloValoraciones").textContent="Valoraciones por empresa";
+    document.getElementById("descripcionValoraciones").textContent="Selecciona una organización para consultar su reputación y las reseñas recibidas.";
+    EMPRESAS.forEach(e=>selectorValoraciones.add(new Option(e.nombre,e.id)));
+    selectorValoraciones.addEventListener("change",pintarValoraciones);
+  }
   pintarValoraciones();
 
   /* Índice lateral: cada botón muestra su panel */
@@ -593,6 +520,11 @@ document.addEventListener("DOMContentLoaded", () => {
      (por ejemplo, al pulsar un enlace del pie estando en esta misma
      pantalla) */
   window.addEventListener("hashchange", () => cambiarSeccion(seccionInicial()));
+  window.addEventListener("popstate",()=>{
+    cambiarSeccion(seccionInicial());const id=new URLSearchParams(location.search).get("oferta");
+    if(misOfertas.some(o=>String(o.id)===id)) document.getElementById("selectOferta").value=id;
+    pintarCandidatos();
+  });
 
   /* Formulario de publicación: envío, limpieza y borrado de marcas */
   const formulario = document.getElementById("formPublicar");
@@ -642,6 +574,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const cuerpoOfertas = document.getElementById("cuerpoOfertas");
   if (cuerpoOfertas) {
     cuerpoOfertas.addEventListener("click", (evento) => {
+      const ver = evento.target.closest("[data-ver-postulantes]");
+      if (ver) {
+        document.getElementById("selectOferta").value=ver.dataset.verPostulantes;
+        document.getElementById("buscarCandidato").value="";document.getElementById("estadoCandidato").value="";
+        history.pushState(null,"",`?oferta=${ver.dataset.verPostulantes}#postulaciones`);cambiarSeccion("postulaciones");pintarCandidatos();return;
+      }
       const cerrar = evento.target.closest("[data-cerrar]");
       const reabrir = evento.target.closest("[data-reabrir]");
       if (cerrar) cambiarEstadoOferta(Number(cerrar.dataset.cerrar), "Cerrada");
@@ -651,60 +589,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* Cambio de oferta en el selector de postulaciones */
   const selectorOferta = document.getElementById("selectOferta");
-  if (selectorOferta) selectorOferta.addEventListener("change", pintarCandidatos);
+  if (selectorOferta) selectorOferta.addEventListener("change", () => {
+    history.replaceState(null,"",`?oferta=${selectorOferta.value}#postulaciones`);pintarCandidatos();
+  });
 
-  /* Acciones sobre los candidatos (descargar CV y preseleccionar) */
-  const listaCandidatos = document.getElementById("listaCandidatos");
-  if (listaCandidatos) {
-    listaCandidatos.addEventListener("click", (evento) => {
-      const selector = document.getElementById("selectOferta");
-      const idOferta = Number(selector.value);
-
-      const cv = evento.target.closest("[data-cv]");
-      if (cv) {
-        avisar("Descargando currículum (demostración)...");
-        return;
-      }
-
-      const preseleccionar = evento.target.closest("[data-preseleccionar]");
-      if (preseleccionar) {
-        preseleccionarCandidato(idOferta, Number(preseleccionar.dataset.preseleccionar));
-      }
-    });
-  }
-
-  /* Búsqueda en vivo del directorio */
-  const buscarEmpresa = document.getElementById("buscarEmpresa");
-  if (buscarEmpresa) buscarEmpresa.addEventListener("input", pintarDirectorio);
-
-  /* Acciones del directorio (editar, dar de baja y reactivar) */
-  const rejillaEmpresas = document.getElementById("rejillaEmpresas");
-  if (rejillaEmpresas) {
-    rejillaEmpresas.addEventListener("click", (evento) => {
-      const editar = evento.target.closest("[data-editar]");
-      const baja = evento.target.closest("[data-baja]");
-      const reactivar = evento.target.closest("[data-reactivar]");
-
-      if (editar) {
-        const empresa = empresaPorId(Number(editar.dataset.editar));
-        abrirEdicionEmpresa(empresa.id, () => { pintarDirectorio(); pintarValoraciones(); });
-      }
-
-      if (baja) {
-        const empresa = empresaPorId(Number(baja.dataset.baja));
-        if (!suspenderEmpresa(empresa.id, true)) { avisar("Solo administración puede suspender empresas."); return; }
-        empresasSuspendidas.add(empresa.id);
-        pintarDirectorio();
-        avisar(`«${escaparHTML(empresa.nombre)}» queda suspendida del directorio.`);
-      }
-
-      if (reactivar) {
-        const empresa = empresaPorId(Number(reactivar.dataset.reactivar));
-        if (!suspenderEmpresa(empresa.id, false)) { avisar("Solo administración puede reactivar empresas."); return; }
-        empresasSuspendidas.delete(empresa.id);
-        pintarDirectorio();
-        avisar(`«${escaparHTML(empresa.nombre)}» vuelve al directorio.`, "exito");
-      }
-    });
-  }
+  document.getElementById("listaCandidatos")?.addEventListener("click", evento => {
+    const boton=evento.target.closest("[data-candidatura]");
+    if (boton) abrirCandidatura(Number(document.getElementById("selectOferta").value),boton.dataset.candidatura);
+  });
+  document.getElementById("buscarCandidato")?.addEventListener("input",pintarCandidatos);
+  document.getElementById("estadoCandidato")?.addEventListener("change",pintarCandidatos);
+  // Solo la ficha propia se edita aquí; las bajas se gestionan en administración.
+  document.getElementById("rejillaEmpresas")?.addEventListener("click", evento => {
+    const editar=evento.target.closest("[data-editar]");
+    if(editar) abrirEdicionEmpresa(Number(editar.dataset.editar),()=>{pintarDirectorio();pintarValoraciones();});
+  });
 });

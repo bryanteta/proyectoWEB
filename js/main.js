@@ -141,6 +141,8 @@ function pintarAnillos() {
    --------------------------------------------------------------- */
 const SECCION_POR_PAGINA = {
   "vacante.html": "busqueda.html",
+  "empresas.html": "directorio.html",
+  "registro-empresa.html": "directorio.html",
 };
 
 function marcarSeccionActiva() {
@@ -255,12 +257,12 @@ function abrirEdicionEmpresa(id, alGuardar) {
     avisar("Solo puedes editar la ficha de tu empresa."); return;
   }
   const modal = document.createElement("div");
-  modal.className = "modal fade"; modal.tabIndex = -1;
+  modal.className = "modal"; modal.tabIndex = -1;
   modal.setAttribute("aria-labelledby", "tituloEditarEmpresa");
   const campos = [["nombre", "Nombre"], ["rubro", "Rubro"], ["ciudad", "Ciudad"], ["tamano", "Tamaño"], ["descripcion", "Descripción"]];
   modal.innerHTML = `<div class="modal-dialog"><form class="modal-content">
     <div class="modal-header"><h2 class="modal-title fs-5" id="tituloEditarEmpresa">Editar empresa</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
-    <div class="modal-body">${campos.map(([clave, titulo]) => `<label class="form-label" for="empresa-${clave}">${titulo}</label><input id="empresa-${clave}" class="form-control mb-3" name="${clave}" value="${escaparHTML(empresa[clave])}" required maxlength="500">`).join("")}</div>
+    <div class="modal-body">${campos.map(([clave, titulo]) => `<label class="form-label" for="empresa-${clave}">${titulo}</label>${clave === "descripcion" ? `<textarea id="empresa-${clave}" class="form-control mb-3" name="${clave}" required minlength="50" maxlength="3000" rows="5">${escaparHTML(empresa[clave])}</textarea>` : `<input id="empresa-${clave}" class="form-control mb-3" name="${clave}" value="${escaparHTML(empresa[clave])}" required maxlength="500">`}`).join("")}</div>
     <div class="modal-footer"><button type="submit" class="btn btn-bermellon">Guardar ficha</button></div></form></div>`;
   document.body.append(modal);
   const instancia = new bootstrap.Modal(modal);

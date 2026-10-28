@@ -481,7 +481,7 @@ function inicializarPostulaciones() {
   if (!contenedor) return;
 
   const lista = leerPostulaciones().filter(p => VACANTES.some(v => v.id === p.vacanteId)).map(p => ({ ...p,
-    estado: estadoPostulacion(p), tono: estadoPostulacion(p) === "Preseleccionada" ? "verde" : "ambar" }));
+    estado: estadoPostulacion(p), tono: ["Preseleccionada","Seleccionada","Contratada"].includes(estadoPostulacion(p)) ? "verde" : estadoPostulacion(p) === "Rechazada" ? "acento" : "ambar" }));
   contenedor.innerHTML = lista
     .map((item) => {
       const vacante = VACANTES.find((v) => v.id === item.vacanteId);
@@ -494,7 +494,7 @@ function inicializarPostulaciones() {
         <span class="marca-empresa" aria-hidden="true">${empresa.iniciales}</span>
         <div class="resultado-cuerpo">
           <h3><a href="./vacante.html?id=${vacante.id}">${escaparHTML(vacante.titulo)}</a></h3>
-          <p class="resultado-empresa">${empresa.nombre} · ${empresa.rubro}</p>
+          <p class="resultado-empresa"><a href="./directorio.html?empresa=${empresa.id}">${escaparHTML(empresa.nombre)}</a> · ${escaparHTML(empresa.rubro)}</p>
           <div class="resultado-meta">
             <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.ciudad)}</span>
             <span><span class="punto" aria-hidden="true"></span>${escaparHTML(vacante.modalidad)}</span>
@@ -503,10 +503,11 @@ function inicializarPostulaciones() {
           </div>
         </div>
         <div class="resultado-lado">
-          <span class="etiqueta-chip ${item.tono}">${item.estado}</span>
+          <span class="etiqueta-chip ${item.tono}">${escaparHTML(item.estado)}</span>
           <span class="resultado-salario">${salarioFormateado(vacante.salario)}</span>
           <span class="resultado-fecha">${fecha}</span>
         </div>
+        <details class="seguimiento-postulacion"><summary>Ver seguimiento del proceso</summary><ol class="mt-2">${seguimientoCandidatura(item.vacanteId,item.usuario,item.estado).historial.map(e=>`<li><strong>${escaparHTML(e.estado)}</strong> · ${escaparHTML(new Date(e.fecha).toLocaleString(CONFIG_PORTAL.locale,{timeZone:CONFIG_PORTAL.zonaHoraria}))}${e.observacion ? `<p>${escaparHTML(e.observacion)}</p>` : ""}</li>`).join("") || "<li>Postulación recibida. La empresa todavía no ha registrado una nueva etapa.</li>"}</ol></details>
       </article>`;
     })
     .join("");

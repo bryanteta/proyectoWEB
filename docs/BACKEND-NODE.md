@@ -144,3 +144,15 @@ La importación de `localStorage`, si se ofrece, debe validarse: contiene datos 
 ## Actualización: aprobaciones y registro
 
 La moderación previa de temas y las solicitudes empresariales ya tienen un flujo funcional local. Ver [REVISION-Y-REGISTRO.md](REVISION-Y-REGISTRO.md) para estados, datos solicitados, reglas, transacciones, índices y endpoints. Este documento más reciente sustituye el comportamiento de publicación directa del foro descrito en versiones anteriores.
+
+## Selección de candidatos y directorio público
+
+El directorio público (`directorio.html`) consulta exclusivamente empresas aprobadas y activas. No devuelve datos fiscales ni contactos de revisión. La ficha pública relaciona empresa, ofertas disponibles y reseñas. `empresas.html#directorio` conserva su URL por compatibilidad, pero representa **Mi empresa**, con edición de la ficha propia. Administración mantiene las bajas y aprobaciones.
+
+Las candidaturas tienen etapas explícitas: Nueva → En revisión → Preseleccionada → En entrevista → Seleccionada → Contratada. Se permite preseleccionar desde Nueva y seleccionar desde Preseleccionada. Rechazar exige motivo; reconsiderar un rechazo vuelve a En revisión, también con motivo. Contratada es terminal. Seleccionar no cierra vacantes ni descarta automáticamente otros candidatos: una vacante puede tener varias plazas.
+
+El prototipo conserva estado, versión e historial en una misma entrada de `pt_candidatos_estado`, compatible con los strings heredados. La UI usa la clave estable de la candidatura, no el índice visual. El perfil del candidato consulta el mismo seguimiento y los mensajes enviados por la empresa. La postulación conserva una instantánea del perfil enviado, sin copiar cambios futuros de la cuenta.
+
+Para Node: `GET /api/empresas`, `GET /api/empresas/:id`, `GET /api/empresas/:id/vacantes`, `GET /api/mi/empresa`, `PATCH /api/mi/empresa`, `GET /api/mi/empresa/vacantes/:id/candidaturas` y `POST /api/candidaturas/:id/transiciones`. El último endpoint debe validar pertenencia, etapa y versión, y guardar estado + evento de historial en una transacción. El mensaje se comunica al candidato; las notas internas futuras necesitan un campo y permisos distintos. Usar UUID para candidaturas y eventos; índice por vacante/estado y paginación. La versión evita revisiones obsoletas en la demo, pero no garantiza concurrencia multiusuario de localStorage.
+
+No se ofrece una descarga ficticia de CV: la candidatura informa que no hay archivo disponible hasta integrar almacenamiento privado. No se envían correos al cambiar etapas.

@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="./estilos/componentes.css" />
     <link rel="stylesheet" href="./estilos/pantallas.css" />
     <!-- Estilos exclusivos de esta pantalla (prefijo .emp-) -->
-    <link rel="stylesheet" href="./estilos/empresas.css" />
+    <link rel="stylesheet" href="./estilos/empresas.css?v=20261027-valoraciones-1" />
   </head>
 
   <body class="d-flex flex-column min-vh-100">
@@ -46,7 +46,7 @@
           <!-- Navegación principal: se marca sola según el archivo abierto -->
           <nav class="nav-principal d-none d-lg-flex" aria-label="Secciones del portal">
             <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
-            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./directorio.html">Empresas</a>
             <a class="nav-link" href="./recursos.html">Recursos</a>
             <a class="nav-link" href="./foros.html">Foros</a>
             <a class="nav-link" href="./perfil.html">Mi perfil</a>
@@ -78,7 +78,7 @@
         <div class="contenedor py-3">
           <nav class="nav flex-column" aria-label="Secciones del portal (móvil)">
             <a class="nav-link" href="./busqueda.html">Buscar empleos</a>
-            <a class="nav-link" href="./empresas.html">Empresas</a>
+            <a class="nav-link" href="./directorio.html">Empresas</a>
             <a class="nav-link" href="./recursos.html">Recursos</a>
             <a class="nav-link" href="./foros.html">Foros</a>
             <a class="nav-link" href="./perfil.html">Mi perfil</a>
@@ -144,7 +144,7 @@
               </button>
               <button type="button" data-seccion="directorio">
                 <span class="disco" aria-hidden="true">D</span>
-                Directorio de empresas
+                Mi empresa
               </button>
               <button type="button" data-seccion="valoraciones">
                 <span class="disco" aria-hidden="true">E</span>
@@ -164,7 +164,7 @@
                   <span class="datos texto-tenue">Los campos con * son obligatorios</span>
                 </div>
                 <div class="panel-cuerpo">
-                  <form id="formPublicar" novalidate>
+                  <form id="formPublicar" novalidate><div id="grupoEmpresaPublicacion" class="mb-3" hidden><label class="form-label" for="fEmpresaPublicacion">Empresa para la publicación *</label><select id="fEmpresaPublicacion" class="form-select"><option value="">Selecciona una empresa aprobada</option></select><p class="texto-suave mt-2">Como administrador, indica qué empresa será responsable de esta oferta.</p></div>
                     <div class="row g-3">
                       <!-- Identificación del puesto -->
                       <div class="col-md-8">
@@ -359,13 +359,13 @@
             <div id="postulaciones" class="panel-gestion" data-panel="postulaciones" hidden>
               <h2>Postulaciones recibidas</h2>
               <p class="texto-suave">
-                Elige una de tus ofertas para ver quién ha postulado. Desde aquí puedes
-                descargar el currículum o mover a la persona a la lista de preseleccionados.
+                Elige una oferta, revisa el perfil enviado y registra cada etapa del proceso. El candidato podrá consultar el estado y tus mensajes en su perfil.
               </p>
               <div class="emp-selector">
                 <label class="form-label" for="selectOferta">Oferta</label>
                 <select class="form-select" id="selectOferta"></select>
               </div>
+              <div class="row g-3 mb-3"><div class="col-md-7"><label class="form-label" for="buscarCandidato">Buscar candidato o habilidad</label><input type="search" id="buscarCandidato" class="form-control"></div><div class="col-md-5"><label class="form-label" for="estadoCandidato">Estado del proceso</label><select id="estadoCandidato" class="form-select"><option value="">Todos los estados</option><option>Nueva</option><option>En revisión</option><option>Preseleccionada</option><option>En entrevista</option><option>Seleccionada</option><option>Contratada</option><option>Rechazada</option></select></div></div><p id="resumenCandidatos" class="datos" aria-live="polite"></p>
               <div id="listaCandidatos"></div>
             </div>
 
@@ -375,21 +375,8 @@
                  simulada y baja o reactivación de empresas.
                  ============================================================ -->
             <div id="directorio" class="panel-gestion" data-panel="directorio" hidden>
-              <h2>Mantenimiento de empresas</h2>
-              <p class="texto-suave">
-                Consulta las fichas de las empresas registradas, edita sus datos o da de
-                baja una organización que ya no opera en el portal.
-              </p>
-              <div class="emp-buscador">
-                <label class="form-label" for="buscarEmpresa">Buscar empresa</label>
-                <input
-                  class="form-control"
-                  id="buscarEmpresa"
-                  type="search"
-                  placeholder="Nombre, rubro o ciudad"
-                />
-                <p class="datos texto-tenue mt-2 mb-0" id="cuentaEmpresas"></p>
-              </div>
+              <h2>Mi empresa</h2>
+              <p class="texto-suave">Mantén actualizada la ficha pública de tu organización. La aprobación y suspensión corresponden a administración.</p><p><a href="./directorio.html">Explorar el directorio público de empresas</a></p>
               <div class="row g-3" id="rejillaEmpresas"></div>
             </div>
 
@@ -399,12 +386,10 @@
                  a las ofertas del sector correspondiente.
                  ============================================================ -->
             <div id="valoraciones" class="panel-gestion" data-panel="valoraciones" hidden>
-              <h2>Valoraciones de empresas</h2>
-              <p class="texto-suave">
-                Promedio de las reseñas que las personas usuarias han dejado sobre cada
-                empresa. Una buena valoración mejora la respuesta a tus ofertas.
-              </p>
-              <div class="row g-3" id="rejillaValoraciones"></div>
+              <h2 id="tituloValoraciones">Valoraciones de mi empresa</h2>
+              <p class="texto-suave" id="descripcionValoraciones">Consulta cómo valoran los candidatos a tu organización y lee sus experiencias.</p>
+              <div id="selectorEmpresaValoraciones" class="mb-4" hidden><label class="form-label" for="empresaValoraciones">Empresa</label><select id="empresaValoraciones" class="form-select"></select></div>
+              <div id="rejillaValoraciones" aria-live="polite"></div>
             </div>
 
           </div>
@@ -443,7 +428,7 @@
             <h5>Empresas</h5>
             <a href="./empresas.html">Publicar oferta</a><br />
             <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
-            <a href="./empresas.html#directorio">Directorio</a><br />
+            <a href="./directorio.html">Directorio</a><br />
             <a href="./admin.html">Administración</a>
           </div>
           <div class="col-lg-4">
@@ -466,11 +451,11 @@
     </footer>
 
     <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
-    <script src="./js/datos.js?v=20261027-el-salvador-1"></script>
-    <script src="./js/dominio-flujos.js?v=20261027-el-salvador-1"></script>
-    <script src="./js/flujos.js?v=20261027-el-salvador-1"></script>
-    <script src="./js/auth.js?v=20261027-el-salvador-1"></script>
-    <script src="./js/main.js?v=20261027-el-salvador-1"></script>
-    <script src="./js/empresas.js?v=20261027-el-salvador-1"></script>
+    <script src="./js/datos.js?v=20261027-valoraciones-1"></script>
+    <script src="./js/dominio-flujos.js?v=20261027-valoraciones-1"></script>
+    <script src="./js/flujos.js?v=20261027-valoraciones-1"></script>
+    <script src="./js/auth.js?v=20261027-valoraciones-1"></script>
+    <script src="./js/main.js?v=20261027-valoraciones-1"></script>
+    <script src="./js/empresas.js?v=20261027-valoraciones-1"></script>
   </body>
 </html>

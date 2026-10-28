@@ -93,3 +93,10 @@
 .perfil-rejilla > * { min-width: 0; }
 .perfil-rejilla .pestanas { list-style: none; padding-left: 0; max-width: 100%; }
 #listaGuardados, #listaMisPostulaciones { overflow-wrap: anywhere; }
+
+.seguimiento-postulacion { grid-column: 1 / -1; width: 100%; border-top: var(--filete); padding-top: .8rem; }
+.seguimiento-postulacion p { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+#listaMisPostulaciones .resultado { grid-template-columns: auto minmax(0, 1fr) auto; }
+#listaMisPostulaciones .resultado-cuerpo { min-width: 0; }
+@media (max-width: 575.98px) { #listaMisPostulaciones .resultado { grid-template-columns: auto minmax(0, 1fr); } }

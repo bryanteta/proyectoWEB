@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const salarioLateral = document.getElementById("salarioLateral");
   if (salarioLateral) salarioLateral.textContent = salarioFormateado(vacante.salario);
   const empresaNombre = document.getElementById("empresaNombre");
-  if (empresaNombre) empresaNombre.textContent = empresa.nombre;
+  if (empresaNombre) { const enlace=document.createElement("a");enlace.href=`./directorio.html?empresa=${empresa.id}`;enlace.textContent=empresa.nombre;empresaNombre.replaceChildren(enlace); }
   const empresaRubro = document.getElementById("empresaRubro");
   if (empresaRubro) empresaRubro.textContent = empresa.rubro;
   const empresaTamano = document.getElementById("empresaTamano");

@@ -266,13 +266,7 @@ function actualizarEnlacesPorRol(sesion) {
       enlace.hidden = true;
     });
 
-    /* En el pie, la columna "Empresas" quedaría con enlaces ocultos y
-       espacios vacíos: se oculta la columna completa. */
-    document.querySelectorAll(".pie h5").forEach((titulo) => {
-      if (titulo.textContent.trim().toLowerCase() !== "empresas") return;
-      const columna = titulo.closest("[class*='col-']");
-      if (columna) columna.hidden = true;
-    });
+
   }
 }
 

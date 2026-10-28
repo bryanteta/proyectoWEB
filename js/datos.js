@@ -658,7 +658,7 @@ function leerTodasPostulaciones() {
     const usuario = typeof registro.usuario === "string" && registro.usuario ? registro.usuario : "candidato";
     const clave = `${usuario}:${registro.vacanteId}`;
     if (unicas.has(clave)) continue;
-    unicas.set(clave,{...registro,usuario,
+    unicas.set(clave,{...registro,usuario,correo:correoDemoLocal(registro.correo),ciudad:ciudadDelPortal(registro.ciudad),
       nombre:typeof registro.nombre === "string" ? registro.nombre : perfiles[usuario]?.fNombres || usuario,
       titulo:typeof registro.titulo === "string" ? registro.titulo : "Candidato",
       habilidades:Array.isArray(registro.habilidades) ? registro.habilidades.filter(h=>typeof h === "string") : [],
@@ -681,6 +681,7 @@ function guardarPostulacion(registro) {
   const nueva = { vacanteId: vacante.id, usuario: sesion.usuario, empresaId: vacante.empresaId,
     nombre: perfil.fNombres || sesion.nombre, correo: perfil.fCorreo || sesion.correo,
     titulo: perfil.fPerfil || "Candidato", habilidades: perfil.habilidades || [],
+    presentacion: typeof perfil.fAcerca === "string" ? perfil.fAcerca : "", ciudad: perfil.fCiudad || "",
     fecha: fechaHoy(), estado: "Nueva" };
   return escribirAlmacen(CLAVES_ALMACEN.postulaciones, [nueva, ...leerTodasPostulaciones()]);
 }
@@ -751,25 +752,51 @@ function suspenderEmpresa(id, suspendida) {
   return true;
 }
 EMPRESAS.forEach(e => { e.suspendida = leerObjeto("pt_empresas_estado")[e.id] === true; });
+const TRANSICIONES_CANDIDATURA = Object.freeze({
+  Nueva: ["En revisión", "Preseleccionada", "Rechazada"],
+  Enviada: ["En revisión", "Preseleccionada", "Rechazada"],
+  Recibida: ["En revisión", "Preseleccionada", "Rechazada"],
+  "En revisión": ["Preseleccionada", "Rechazada"],
+  Preseleccionada: ["En entrevista", "Seleccionada", "Rechazada"],
+  "En entrevista": ["Seleccionada", "Rechazada"],
+  Seleccionada: ["Contratada", "Rechazada"],
+  Contratada: [], Rechazada: ["En revisión"]
+});
+function seguimientoCandidatura(id, clave, estadoInicial = "Nueva") {
+  const registro = leerObjeto("pt_candidatos_estado")[`${id}:${clave}`];
+  const estado = typeof registro === "string" ? registro : registro?.estado;
+  return {
+    estado: Object.hasOwn(TRANSICIONES_CANDIDATURA, estado) ? estado : estadoInicial,
+    version: Number.isSafeInteger(registro?.version) ? registro.version : 0,
+    historial: Array.isArray(registro?.historial) ? registro.historial.filter(e => e && typeof e.estado === "string" && typeof e.fecha === "string") : []
+  };
+}
 function candidatosDeVacante(id) {
-  const estados = leerObjeto("pt_candidatos_estado");
   const base = (POSTULACIONES.find(p => p.vacanteId === id)?.candidatos || []).map((c, i) => ({ ...c, clave: `demo-${i}` }));
   const nuevas = leerTodasPostulaciones().filter(p => p.vacanteId === id).map(p => ({ ...p,
     clave: p.usuario, iniciales: p.nombre?.slice(0, 2).toUpperCase() || "CA", experiencia: "Postulación desde el portal" }));
-  return [...nuevas, ...base].map(c => ({ ...c, estado: estados[`${id}:${c.clave}`] || c.estado }));
+  return [...nuevas, ...base].map(c => ({ ...c, ...seguimientoCandidatura(id, c.clave, c.estado) }));
 }
-function actualizarEstadoCandidato(id, clave, estado) {
+function puedeGestionarCandidatos(id) {
   const sesion = sesionDatos(), vacante = VACANTES.find(v => v.id === id);
-  if (!vacante || !(sesion?.rol === "administrador" || (sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId && empresaHabilitada(vacante.empresaId)))) return false;
-  const candidato = candidatosDeVacante(id).find(c=>c.clave === clave);
-  const transiciones = { Nueva:["En revisión","Preseleccionada","Rechazada"], Enviada:["En revisión","Preseleccionada","Rechazada"], Recibida:["En revisión","Preseleccionada","Rechazada"], "En revisión":["Preseleccionada","Rechazada"], Preseleccionada:["Rechazada"], Rechazada:[] };
-  if (!candidato || !Object.hasOwn(transiciones, estado)) return false;
+  return !!vacante && (sesion?.rol === "administrador" || (sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId && empresaHabilitada(vacante.empresaId)));
+}
+function actualizarEstadoCandidato(id, clave, estado, observacion = "", versionEsperada = null) {
+  if (!puedeGestionarCandidatos(id)) return false;
+  const candidato = candidatosDeVacante(id).find(c => c.clave === clave);
+  if (!candidato || !Object.hasOwn(TRANSICIONES_CANDIDATURA, estado) || typeof observacion !== "string" || observacion.trim().length > 1000) return false;
+  if (versionEsperada !== null && versionEsperada !== candidato.version) return false;
   if (candidato.estado === estado) return true;
-  if (!transiciones[candidato.estado]?.includes(estado)) return false;
-  const estados = leerObjeto("pt_candidatos_estado"); estados[`${id}:${clave}`] = estado;
+  if (!TRANSICIONES_CANDIDATURA[candidato.estado]?.includes(estado)) return false;
+  if ((estado === "Rechazada" || candidato.estado === "Rechazada") && observacion.trim().length < 10) return false;
+  const evento = { estado, anterior: candidato.estado, observacion: observacion.trim(), actor: sesionDatos().usuario, fecha: new Date().toISOString() };
+  const estados = leerObjeto("pt_candidatos_estado");
+  estados[`${id}:${clave}`] = {estado, version:candidato.version + 1, historial:[...candidato.historial, evento]};
   return escribirAlmacen("pt_candidatos_estado", estados);
 }
-function estadoPostulacion(p) { return leerObjeto("pt_candidatos_estado")[`${p.vacanteId}:${p.usuario}`] || p.estado; }
+function estadoPostulacion(p) { return seguimientoCandidatura(p.vacanteId, p.usuario, p.estado).estado; }
+function empresasPublicas() { return EMPRESAS.filter(e => empresaHabilitada(e.id)); }
+function ofertasPublicasDeEmpresa(id) { return VACANTES.filter(v => v.empresaId === id && vacanteDisponible(v)); }
 function leerPerfil() {
   const perfil = leerObjeto("pt_perfiles")[sesionDatos()?.usuario];
   return perfil && typeof perfil === "object" && !Array.isArray(perfil) ? {...perfil,fCiudad:ciudadDelPortal(perfil.fCiudad),fCorreo:correoDemoLocal(perfil.fCorreo),

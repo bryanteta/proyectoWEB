@@ -143,3 +143,28 @@
   .emp-valoracion .valoracion { justify-content: center; }
   .emp-chip-entrada { max-width: none; }
 }
+
+/* Reputación: resumen y reseñas a todo el ancho del panel. */
+.emp-reputacion { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.6fr); border:var(--filete); background:var(--papel-hueso); margin-top:1.5rem; }
+.emp-reputacion-nota { padding:1.7rem; border-right:var(--filete); background:var(--papel); }
+.emp-reputacion-promedio { display:flex; align-items:baseline; flex-wrap:wrap; gap:.7rem; font-family:var(--fuente-titulo); font-size:4rem; line-height:1.1; margin:1rem 0; }
+.emp-reputacion-promedio > span { font-family:var(--fuente-mono); font-size:.8rem; color:var(--tinta-suave); }
+.emp-reputacion-distribucion { padding:1.7rem; }
+.emp-reputacion-distribucion h3 { font-size:1.1rem; margin-bottom:1.2rem; }
+.emp-distribucion-fila { display:grid; grid-template-columns:2.8rem minmax(0,1fr) 1.5rem; gap:.8rem; align-items:center; margin-bottom:.65rem; font-size:.8rem; }
+.emp-distribucion-pista { background:var(--papel); height:.5rem; }
+.emp-distribucion-pista > span { display:block; height:100%; background:var(--bermellon); }
+.emp-resenas-cabecera { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin:2rem 0 1rem; }
+.emp-resenas-cabecera h3 { font-size:1.3rem; margin:0; }
+.emp-resena { background:var(--papel-hueso); border:var(--filete); padding:1.5rem; margin-bottom:1rem; }
+.emp-resena-cabecera { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+.emp-resena-cabecera h4 { font-size:1rem; margin:0 0 .25rem; }
+.emp-resena-nota { display:flex; align-items:center; gap:.7rem; color:var(--bermellon); white-space:nowrap; }
+.emp-resena-nota > span:last-child { font-family:var(--fuente-mono); font-size:.8rem; color:var(--tinta); }
+.emp-resena-texto { margin:1.2rem 0 0; line-height:1.75; white-space:pre-wrap; overflow-wrap:anywhere; }
+.emp-resenas-vacio { border:var(--filete); }
+@media (max-width:767.98px) {
+ .emp-reputacion { grid-template-columns:minmax(0,1fr); }
+ .emp-reputacion-nota { border-right:0; border-bottom:var(--filete); }
+ .emp-reputacion-nota,.emp-reputacion-distribucion,.emp-resena { padding:1.2rem; }
+}
