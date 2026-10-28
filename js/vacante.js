@@ -216,6 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const contadorPostulacionesEl = document.getElementById("contadorPostulaciones");
 
   function actualizarBotonesPostulacion() {
+    if(sesionDatos() && sesionDatos().rol!=="candidato") {[btnPostularme,btnPostularmeLateral].forEach(b=>{if(b)b.hidden=true;});return;}
     const textoPostulada = "Postulación enviada ✓";
     if (postulada) {
       // Estado: Postulada (deshabilitado, clase btn-tinta)
@@ -301,6 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btnGuardar.classList.add("btn-linea");
     }
   }
+  if(btnGuardar && sesionDatos() && sesionDatos().rol!=="candidato") btnGuardar.hidden=true;
   if (btnGuardar) {
     btnGuardar.addEventListener("click", () => {
       if (!sesionDatos()) { window.location.href = `./login.html?destino=${encodeURIComponent("vacante.html?id=" + vacante.id)}`; return; }
@@ -415,6 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const resenaTexto = document.getElementById("resenaTexto");
   const btnPublicarResena = document.getElementById("btnPublicarResena");
 
+  if(sesionDatos() && sesionDatos().rol!=="candidato") {const panel=document.getElementById("formularioResenaPanel");if(panel)panel.hidden=true;}
   if (valoracionFormulario) {
     valoracionFormulario.querySelectorAll(".punto-valoracion").forEach((btn) => {
       btn.addEventListener("click", () => {

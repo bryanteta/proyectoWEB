@@ -21,7 +21,7 @@
    ============================================================= */
 
 const USUARIOS_PRUEBA = [
-  { usuario:"solicitante", contrasena:"solicitante123", rol:"candidato", nombre:"Solicitante Empresa", correo:"registro@example.test", empresaId:null },
+  { usuario:"solicitante", contrasena:"solicitante123", rol:"solicitante", nombre:"Solicitante Empresa", correo:"registro@example.test", empresaId:null },
   {
     usuario: "admin",
     contrasena: "admin123",
@@ -53,8 +53,10 @@ const ROTULO_ROL = {
   administrador: "Admin",
   empresa: "Empresa",
   candidato: "Candidato",
+  solicitante: "Registro empresarial",
 };
 
+function nombreDeSesion(sesion) { return sesion?.rol === "candidato" ? leerPerfil().fNombres || sesion.nombre : sesion?.nombre || ""; }
 function etiquetaRol(rol) {
   return ROTULO_ROL[rol] || rol;
 }
@@ -64,13 +66,15 @@ const PANEL_POR_ROL = {
   administrador: "./admin.html",
   empresa: "./empresas.html",
   candidato: "./perfil.html",
+  solicitante: "./registro-empresa.html",
 };
 
 /* Páginas que exigen un rol concreto. La clave es el archivo. */
 const ACCESO_POR_PAGINA = {
   "admin.html": ["administrador"],
-  "empresas.html": ["empresa", "administrador"],
-  "perfil.html": ["candidato", "empresa", "administrador"],
+  "empresas.html": ["empresa"],
+  "perfil.html": ["candidato"],
+  "registro-empresa.html": ["solicitante", "empresa"],
 };
 
 /* ---------------------------------------------------------------
@@ -87,14 +91,38 @@ function guardarSesion(sesion) {
   }
 }
 
-function iniciarSesion(usuario, contrasena) {
-  const encontrado = USUARIOS_PRUEBA.find(
-    (cuenta) =>
-      cuenta.usuario === String(usuario || "").trim() &&
-      cuenta.contrasena === String(contrasena || "")
+function cuentasDelPortal() {
+  return [...USUARIOS_PRUEBA,...leerLista("pt_cuentas_locales").filter(u=>u && (["candidato","solicitante"].includes(u.rol) || (u.rol==="administrador" && typeof u.creadaPorAdmin==="string")) && !USUARIOS_PRUEBA.some(d=>d.usuario===u.usuario))];
+}
+async function derivarClave(clave,sal) {
+  const material=await crypto.subtle.importKey("raw",new TextEncoder().encode(clave),"PBKDF2",false,["deriveBits"]);
+  const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt:Uint8Array.from(sal.match(/.{2}/g),v=>parseInt(v,16)),iterations:100000,hash:"SHA-256"},material,256);
+  return [...new Uint8Array(bits)].map(v=>v.toString(16).padStart(2,"0")).join("");
+}
+async function registrarCuenta(datos, personal = false) {
+  const adminCreador=personal && sesionDatos()?.rol==="administrador" ? sesionDatos().usuario : null;
+  if(!datos || !(personal ? adminCreador && datos.rol==="administrador" : ["candidato","solicitante"].includes(datos.rol))) return {ok:false,error:"Elige Candidato o Empresa."};
+  const nombre=String(datos.nombre||"").trim(),usuario=String(datos.usuario||"").trim().toLowerCase(),correo=String(datos.correo||"").trim().toLowerCase();
+  if(nombre.length<3 || nombre.length>120 || !/^[a-z0-9_-]{3,40}$/.test(usuario) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo) || correo.length>160) return {ok:false,error:"Revisa nombre, correo y usuario (3 a 40 letras, números, guion o guion bajo)."};
+  if(typeof datos.contrasena!=="string" || datos.contrasena.length<8 || datos.contrasena.length>128) return {ok:false,error:"Usa una contraseña de 8 a 128 caracteres."};
+  if(cuentasDelPortal().some(u=>u.usuario===usuario || u.correo.toLowerCase()===correo)) return {ok:false,error:"El usuario o correo ya está registrado en este navegador."};
+  try {
+    const sal=[...crypto.getRandomValues(new Uint8Array(16))].map(v=>v.toString(16).padStart(2,"0")).join("");
+    const cuenta={usuario,nombre,correo,rol:datos.rol,empresaId:null,sal,claveHash:await derivarClave(datos.contrasena,sal),creada:new Date().toISOString(),...(personal?{creadaPorAdmin:adminCreador}:{})};
+    // Releer después de derivar evita descartar otra cuenta registrada durante la espera.
+    if(cuentasDelPortal().some(u=>u.usuario===usuario || u.correo.toLowerCase()===correo)) return {ok:false,error:"El usuario o correo acaba de registrarse. Prueba otro."};
+    if(personal && (sesionDatos()?.usuario!==adminCreador || sesionDatos()?.rol!=="administrador")) return {ok:false,error:"La sesión administrativa cambió. Vuelve a abrir el formulario."};
+    if(!escribirAlmacen("pt_cuentas_locales",[...leerLista("pt_cuentas_locales"),cuenta])) return {ok:false,error:"No se pudo guardar la cuenta."};
+    return personal ? {ok:true} : iniciarSesion(usuario,datos.contrasena);
+  } catch { return {ok:false,error:"No se pudo crear la cuenta. Abre el portal desde el servidor local."}; }
+}
+async function iniciarSesion(usuario, contrasena) {
+  const encontrado = cuentasDelPortal().find(
+    (cuenta) => cuenta.usuario === String(usuario || "").trim().toLowerCase()
   );
 
-  if (!encontrado) {
+  const valida = encontrado && (encontrado.claveHash ? await derivarClave(String(contrasena),encontrado.sal).then(h=>h===encontrado.claveHash).catch(()=>false) : encontrado.contrasena === String(contrasena || ""));
+  if (!valida) {
     return { ok: false, error: "Usuario o contraseña incorrectos." };
   }
 
@@ -124,7 +152,7 @@ function cerrarSesion() {
 
 function panelDeSesion(sesion) {
   if (!sesion) return "./login.html";
-  if (sesion.usuario === "solicitante" && !sesion.empresaId) return "./registro-empresa.html";
+  if (sesion.rol === "solicitante") return "./registro-empresa.html";
   return PANEL_POR_ROL[sesion.rol] || "./index.html";
 }
 
@@ -165,7 +193,7 @@ function aplicarControlAcceso() {
 function pintarZonaUsuario(sesion) {
   const panel = panelDeSesion(sesion);
   const textoPanel =
-    sesion.usuario === "solicitante" && !sesion.empresaId ? "Registro empresarial" : sesion.rol === "administrador"
+    sesion.rol === "solicitante" ? "Registro empresarial" : sesion.rol === "administrador"
       ? "Administración"
       : sesion.rol === "empresa"
         ? "Módulo empresarial"
@@ -175,7 +203,7 @@ function pintarZonaUsuario(sesion) {
   contenedor.className = "zona-usuario d-none d-lg-flex align-items-center gap-2";
   contenedor.innerHTML = `
     <a class="zona-usuario-datos" href="${panel}" title="Ir a ${textoPanel}">
-      <span class="zona-usuario-nombre">${escaparHTML(leerPerfil().fNombres || sesion.nombre)}</span>
+      <span class="zona-usuario-nombre">${escaparHTML(nombreDeSesion(sesion))}</span>
       <span class="etiqueta-chip">${etiquetaRol(sesion.rol)}</span>
     </a>
     <button class="btn btn-linea btn-sm" type="button" data-cerrar-sesion>
@@ -213,11 +241,11 @@ function pintarFormularioLogin(formulario, movil) {
     `;
   }
 
-  formulario.addEventListener("submit", (evento) => {
+  formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     const usuario = formulario.querySelector('[name="usuario"]').value;
     const contrasena = formulario.querySelector('[name="contrasena"]').value;
-    const resultado = iniciarSesion(usuario, contrasena);
+    const resultado = await iniciarSesion(usuario, contrasena);
 
     if (!resultado.ok) {
       if (typeof avisar === "function") avisar(resultado.error);
@@ -248,26 +276,25 @@ function rellenarPerfilConSesion(sesion) {
 }
 
 function actualizarEnlacesPorRol(sesion) {
-  /* Los enlaces a vistas que el rol no puede abrir se ocultan.
-     Un visitante sí los ve: al pulsarlos se le pedirá iniciar sesión
-     y el login explicará qué cuenta necesita. */
-  if (!sesion) return;
-
-  if (sesion.rol !== "administrador") {
-    document.querySelectorAll('a[href*="admin.html"]').forEach((enlace) => {
-      enlace.hidden = true;
-    });
-  }
-
-  /* El módulo empresarial es para empresas y administración: un
-     candidato no debe encontrar un enlace que lo lleve a un bloqueo. */
-  if (sesion.rol === "candidato") {
-    document.querySelectorAll('a[href*="empresas.html"]').forEach((enlace) => {
-      enlace.hidden = true;
-    });
-
-
-  }
+  document.querySelectorAll('a[href]').forEach(enlace=>{
+    const ruta=(enlace.getAttribute("href")||"").split("?")[0].split("#")[0];
+    if(ruta.endsWith("registro-empresa.html") && (!sesion || sesion.rol==="candidato")) {
+      enlace.href="./login.html?modo=registro&tipo=empresa";
+      if(sesion?.rol==="candidato") enlace.textContent="Crear cuenta de empresa";
+    }
+    if(sesion?.rol==="administrador" && ruta.endsWith("empresas.html")) enlace.hidden=true;
+    if(sesion?.rol==="administrador" && ruta.endsWith("registro-empresa.html")) {enlace.href="./admin.html#empresas";enlace.textContent="Gestionar empresas";}
+    if(ruta.endsWith("admin.html") && sesion?.rol!=="administrador") enlace.hidden=true;
+    if(ruta.endsWith("perfil.html") && sesion && sesion.rol!=="candidato") {
+      if(enlace.closest("header,footer")) {enlace.href=panelDeSesion(sesion);enlace.textContent=sesion.rol==="administrador" ? "Mi panel" : "Mi empresa";}
+      else enlace.hidden=true;
+    }
+    if(ruta.endsWith("empresas.html") && sesion?.rol==="candidato") enlace.hidden=true;
+    if(ruta.endsWith("empresas.html") && sesion?.rol==="solicitante") {
+      if(enlace.getAttribute("href").includes("#postulaciones")) enlace.hidden=true;
+      else {enlace.href="./registro-empresa.html";enlace.textContent="Registro de mi empresa";}
+    }
+  });
 }
 
 function inicializarCabecera() {
@@ -287,7 +314,7 @@ function inicializarCabecera() {
       bloque.className = "d-flex flex-column gap-2";
       bloque.innerHTML = `
         <a class="zona-usuario-datos" href="${panelDeSesion(sesion)}">
-          <span class="zona-usuario-nombre">${escaparHTML(leerPerfil().fNombres || sesion.nombre)}</span>
+          <span class="zona-usuario-nombre">${escaparHTML(nombreDeSesion(sesion))}</span>
           <span class="etiqueta-chip">${etiquetaRol(sesion.rol)}</span>
         </a>
         <button class="btn btn-linea" type="button" data-cerrar-sesion-movil>
@@ -314,6 +341,27 @@ function inicializarPaginaLogin() {
   const formulario = document.getElementById("formLogin");
   if (!formulario) return;
 
+  const alta=document.getElementById("formCrearCuenta");
+  document.querySelectorAll("[data-modo-acceso]").forEach(b=>b.addEventListener("click",()=>{
+    const crear=b.dataset.modoAcceso==="registro";document.getElementById("panelCrearCuenta").hidden=!crear;document.getElementById("panelEntrar").hidden=crear;
+    document.querySelectorAll("[data-modo-acceso]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  }));
+  function rotuloAlta() {const empresa=alta?.querySelector('[name="rol"]:checked')?.value==="solicitante";const label=document.querySelector('label[for="altaNombre"]');if(label)label.textContent=empresa?"Nombre del responsable":"Nombre completo";}
+  alta?.querySelectorAll('[name="rol"]').forEach(c=>c.addEventListener("change",rotuloAlta));
+  const parametros=new URLSearchParams(location.search);
+  if(parametros.get("modo")==="registro") {
+    document.getElementById("panelCrearCuenta").hidden=false;document.getElementById("panelEntrar").hidden=true;
+    document.querySelectorAll("[data-modo-acceso]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.modoAcceso==="registro")));
+    if(parametros.get("tipo")==="empresa" && alta) alta.querySelector('[name="rol"][value="solicitante"]').checked=true;
+  }
+  rotuloAlta();
+  alta?.addEventListener("submit",async e=>{
+    e.preventDefault();const datos=Object.fromEntries(new FormData(alta)),error=document.getElementById("errorCrearCuenta"),boton=alta.querySelector('button[type="submit"]');
+    error.textContent="";
+    if(datos.contrasena!==datos.confirmar) {error.textContent="Las contraseñas no coinciden.";return;}
+    boton.disabled=true;
+    try {const r=await registrarCuenta(datos);if(!r.ok)error.textContent=r.error;else location.href=panelDeSesion(r.sesion);} finally {boton.disabled=false;}
+  });
   const campoUsuario = document.getElementById("loginUsuario");
   const campoContrasena = document.getElementById("loginPass");
   const zonaError = document.getElementById("loginError");
@@ -337,11 +385,11 @@ function inicializarPaginaLogin() {
     zonaSesion.hidden = false;
     zonaSesion.innerHTML = `
       <p class="mb-2">
-        Sesión activa: <strong>${escaparHTML(leerPerfil().fNombres || sesion.nombre)}</strong>
+        Sesión activa: <strong>${escaparHTML(nombreDeSesion(sesion))}</strong>
         <span class="etiqueta-chip">${etiquetaRol(sesion.rol)}</span>
       </p>
       <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-tinta btn-sm" href="${panelDeSesion(sesion)}">Continuar como ${escaparHTML(leerPerfil().fNombres || sesion.nombre)}</a>
+        <a class="btn btn-tinta btn-sm" href="${panelDeSesion(sesion)}">Continuar como ${escaparHTML(nombreDeSesion(sesion))}</a>
         <button class="btn btn-linea btn-sm" type="button" data-cambiar-cuenta>
           Cambiar de cuenta
         </button>
@@ -371,9 +419,9 @@ function inicializarPaginaLogin() {
     });
   });
 
-  formulario.addEventListener("submit", (evento) => {
+  formulario.addEventListener("submit", async (evento) => {
     evento.preventDefault();
-    const resultado = iniciarSesion(campoUsuario.value, campoContrasena.value);
+    const resultado = await iniciarSesion(campoUsuario.value, campoContrasena.value);
 
     if (!resultado.ok) {
       if (zonaError) {
@@ -387,7 +435,7 @@ function inicializarPaginaLogin() {
     /* Se respeta el destino solo si el rol puede verlo */
     const paginaDestino = destino ? destino.split("?")[0].split("#")[0] : "";
     const destinoPermitido =
-      /^(index|busqueda|vacante|recursos|foros|perfil|empresas|admin|registro-empresa)\.html$/.test(paginaDestino) && puedeVer(resultado.sesion.rol, paginaDestino);
+      /^(index|busqueda|vacante|recursos|foros|perfil|empresas|admin|directorio|registro-empresa)\.html$/.test(paginaDestino) && puedeVer(resultado.sesion.rol, paginaDestino);
 
     window.location.href = destinoPermitido
       ? `./${destino}`

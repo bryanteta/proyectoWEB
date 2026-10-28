@@ -1,3 +1,5 @@
+> Modelo actualizado: consulta [ROLES-Y-COMUNIDAD.md](./ROLES-Y-COMUNIDAD.md). La publicación de temas es exclusiva y directa de Administración; los comentarios se filtran automáticamente y las vacantes de empresas aprobadas no pasan por una cola administrativa.
+
 # Moderación previa y registro empresarial
 
 ## Comportamiento implementado

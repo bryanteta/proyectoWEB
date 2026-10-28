@@ -26,7 +26,8 @@ test('cerrar, retirar y suspender afecta disponibilidad entre páginas', () => {
   assert.equal(p.run('cambiarEstadoVacante(101,"Cerrada")'), true);
   assert.equal(portal(p.storage).run('vacanteDisponible(VACANTES[0])'), false);
   p.login('candidato'); assert.equal(p.run('guardarPostulacion({vacanteId:101})'), false);
-  p.login('administrador'); assert.equal(p.run('cambiarEstadoVacante(101,"Retirada")'), true);
+  p.login('administrador'); assert.equal(p.run('cambiarEstadoVacante(101,"Retirada")'), false);
+  p.storage.set("pt_estados_vacantes", JSON.stringify({101:"Retirada"}));
   p.login('empresa'); assert.equal(p.run('cambiarEstadoVacante(101,"Publicada")'), false);
   p.login('administrador'); p.run('cambiarEstadoVacante(101,"Publicada"); suspenderEmpresa(1,true)');
   assert.equal(portal(p.storage).run('vacanteDisponible(VACANTES[0])'), false);
@@ -95,17 +96,18 @@ test('formulario empresarial publica descripción larga, habilidades y contactos
   assert.equal(vm.runInContext('misOfertas.every(v=>v.empresaId===1)',context),true);
 });
 
-test('administración suspende y reactiva las mismas cuentas del login', () => {
+test('administración no gestiona candidatos y el login respeta cuentas inactivas', async () => {
   const p = portal();
   p.run(fs.readFileSync('js/auth.js','utf8'));
-  assert.equal(p.run('iniciarSesion("candidato","candidato123").ok'),true);
+  assert.equal((await p.run('iniciarSesion("candidato","candidato123")')).ok,true);
   p.login('administrador','admin');
   assert.equal(p.run('cambiarEstadoCuenta("admin","Suspendido")'),false);
-  assert.equal(p.run('cambiarEstadoCuenta("candidato","Suspendido")'),true);
-  assert.equal(p.run('iniciarSesion("candidato","candidato123").ok'),false);
+  assert.equal(p.run('cambiarEstadoCuenta("candidato","Suspendido")'),false);
+  p.storage.set("pt_cuentas_estado",JSON.stringify({candidato:"Suspendido"}));
+  assert.equal((await p.run('iniciarSesion("candidato","candidato123")')).ok,false);
   p.login('candidato','candidato'); assert.equal(p.run('sesionDatos()'),null);
-  p.login('administrador','admin'); p.run('cambiarEstadoCuenta("candidato","Activo")');
-  assert.equal(p.run('iniciarSesion("candidato","candidato123").ok'),true);
+  p.storage.set("pt_cuentas_estado",JSON.stringify({candidato:"Activo"}));
+  assert.equal((await p.run('iniciarSesion("candidato","candidato123")')).ok,true);
 });
 
 test('dos pestañas no sobrescriben vacantes con el mismo ID',()=>{

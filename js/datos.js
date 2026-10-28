@@ -638,7 +638,7 @@ if (Array.isArray(PUBLICACIONES_EXTRA)) {
 /* Guarda una vacante publicada y su ficha. La usa js/empresas.js. */
 function guardarPublicacionExtra(vacante, detalle) {
   const sesion = sesionDatos();
-  if (!vacante || !empresaHabilitada(vacante.empresaId) || !(sesion?.rol === "administrador" || (sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId))) return false;
+  if (!vacante || !empresaHabilitada(vacante.empresaId) || !(sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId)) return false;
   if (!Number.isSafeInteger(vacante.id) || vacante.id < 1 || VACANTES.some(v=>v.id === vacante.id) || leerLista(CLAVES_ALMACEN.vacantes).some(r=>r?.vacante?.id === vacante.id)) return false;
   const registros = leerAlmacen(CLAVES_ALMACEN.vacantes, []);
   const lista = Array.isArray(registros)
@@ -713,16 +713,20 @@ function sesionDatos() {
   const sesion = leerAlmacen("pt_sesion", null);
   const estado = leerObjeto("pt_cuentas_estado")[sesion?.usuario];
   if (estado === "Suspendido" || estado === "Eliminado" || !sesion || typeof sesion !== "object" || Array.isArray(sesion)) return null;
-  if (typeof sesion.usuario !== "string" || !sesion.usuario.trim() || typeof sesion.nombre !== "string" || !sesion.nombre.trim() || !["candidato","empresa","administrador"].includes(sesion.rol)) return null;
+  if (typeof sesion.usuario !== "string" || !sesion.usuario.trim() || typeof sesion.nombre !== "string" || !sesion.nombre.trim() || !["candidato","solicitante","empresa","administrador"].includes(sesion.rol)) return null;
   if (sesion.rol === "empresa" && !Number.isSafeInteger(sesion.empresaId)) return null;
   const miembros = leerObjeto("pt_flujos_v1").miembros;
   sesion.correo = correoDemoLocal(sesion.correo);
+  // Compatibilidad con la cuenta empresarial que antes se guardaba como candidato.
+  if(sesion.usuario === "solicitante" && sesion.rol === "candidato") sesion.rol="solicitante";
   const miembro = Array.isArray(miembros) ? miembros.find(m => m.usuario === sesion.usuario) : null;
   return miembro && sesion.rol !== "administrador" ? {...sesion,rol:"empresa",empresaId:miembro.empresaId} : sesion;
 }
 function cambiarEstadoCuenta(usuario, estado) {
   const sesion = sesionDatos();
   if (sesion?.rol !== "administrador" || usuario === sesion.usuario || !["Activo", "Suspendido", "Eliminado"].includes(estado)) return false;
+  const personal=usuario === "admin" || leerLista("pt_cuentas_locales").some(u=>u.usuario===usuario && u.rol==="administrador" && u.creadaPorAdmin);
+  if(!personal) return false;
   const estados = leerObjeto("pt_cuentas_estado"); estados[usuario] = estado;
   return escribirAlmacen("pt_cuentas_estado", estados);
 }
@@ -739,7 +743,7 @@ function cambiarEstadoVacante(id, estado) {
   const vacante = VACANTES.find(v => v.id === id), sesion = sesionDatos();
   if (!vacante || !["Publicada", "Cerrada", "Retirada", "Pendiente"].includes(estado)) return false;
   if (sesion?.rol === "empresa" && !empresaHabilitada(vacante.empresaId)) return false;
-  if (sesion?.rol !== "administrador" && !(sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId && ["Cerrada", "Publicada"].includes(estado) && estadoVacante(vacante) !== "Retirada")) return false;
+  if (!(sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId && ["Cerrada", "Publicada"].includes(estado) && estadoVacante(vacante) !== "Retirada")) return false;
   const estados = leerObjeto("pt_estados_vacantes"); estados[id] = estado;
   return escribirAlmacen("pt_estados_vacantes", estados);
 }
@@ -779,7 +783,7 @@ function candidatosDeVacante(id) {
 }
 function puedeGestionarCandidatos(id) {
   const sesion = sesionDatos(), vacante = VACANTES.find(v => v.id === id);
-  return !!vacante && (sesion?.rol === "administrador" || (sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId && empresaHabilitada(vacante.empresaId)));
+  return !!vacante && sesion?.rol === "empresa" && sesion.empresaId === vacante.empresaId && empresaHabilitada(vacante.empresaId);
 }
 function actualizarEstadoCandidato(id, clave, estado, observacion = "", versionEsperada = null) {
   if (!puedeGestionarCandidatos(id)) return false;
@@ -808,22 +812,52 @@ function guardarPerfil(perfil) {
   const perfiles = leerObjeto("pt_perfiles"); perfiles[usuario] = perfil;
   return escribirAlmacen("pt_perfiles", perfiles);
 }
-function leerGuardados(tipo) { const ids = leerObjeto("pt_guardados")[sesionDatos()?.usuario]?.[tipo]; return Array.isArray(ids) ? ids : []; }
+function leerGuardados(tipo) { if(sesionDatos()?.rol!=="candidato")return []; const ids = leerObjeto("pt_guardados")[sesionDatos()?.usuario]?.[tipo]; return Array.isArray(ids) ? ids : []; }
 function alternarGuardado(tipo, id) {
-  const usuario = sesionDatos()?.usuario; if (!usuario) return false;
+  const usuario = sesionDatos()?.usuario; if (!usuario || sesionDatos()?.rol!=="candidato") return false;
   const todos = leerObjeto("pt_guardados"), datos = todos[usuario] || {};
   const ids = Array.isArray(datos[tipo]) ? datos[tipo] : [];
   datos[tipo] = ids.includes(id) ? ids.filter(x => x !== id) : [...ids, id];
   todos[usuario] = datos; return escribirAlmacen("pt_guardados", todos);
 }
+/* Filtro automático de comentarios. Se conserva texto censurado, no el original. */
+const PALABRAS_FILTRO_BASE = ["mierda","puta","puto","putas","putos","pendejo","pendeja","pendejos","pendejas","idiota","idiotas","imbecil","imbeciles","cabron","cabrona","cerote","cerotes"];
+function palabrasFiltro() {
+  const extra=leerObjeto("pt_filtro_comentarios").palabras;
+  return [...new Set([...PALABRAS_FILTRO_BASE,...(Array.isArray(extra)?extra:[])].filter(p=>typeof p==="string" && /^[a-záéíóúüñ]{2,40}$/i.test(p)).map(p=>p.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()))];
+}
+function censurarComentario(texto) {
+  let resultado=String(texto || "");
+  const letras={a:"[aáàäâ4@]",e:"[eéèëê3]",i:"[iíìïî1!]",o:"[oóòöô0]",u:"[uúùüû]",s:"[s5$]",t:"[t7]",n:"[nñ]"};
+  for(const palabra of palabrasFiltro()) {
+    const patron=[...palabra].map(c=>letras[c]||c).join("[\\s._*\\-]{0,3}");
+    resultado=resultado.replace(new RegExp("(^|[^\\p{L}\\p{N}])("+patron+")(?=$|[^\\p{L}\\p{N}])","giu"),(_,prefijo)=>prefijo+"***");
+  }
+  return resultado;
+}
+function guardarFiltroComentarios(texto) {
+  if(sesionDatos()?.rol!=="administrador" || typeof texto!=="string" || texto.length>4000) return false;
+  const palabras=texto.split(/[\n,]+/).map(p=>p.trim().toLowerCase()).filter(Boolean);
+  if(palabras.length>100 || palabras.some(p=>! /^[a-záéíóúüñ]{2,40}$/i.test(p))) return false;
+  return escribirAlmacen("pt_filtro_comentarios",{palabras:[...new Set(palabras)]});
+}
+
+function autorPuedeValorar(usuario) {
+  if(!usuario)return true; // Reseñas semilla sin cuenta vinculada.
+  if(["admin","empresa","solicitante"].includes(usuario))return false;
+  const cuenta=leerLista("pt_cuentas_locales").find(u=>u&&u.usuario===usuario);
+  if(cuenta && cuenta.rol!=="candidato")return false;
+  const miembros=leerObjeto("pt_flujos_v1").miembros;
+  return !Array.isArray(miembros) || !miembros.some(m=>m?.usuario===usuario);
+}
 function resenasDeEmpresa(id) {
-  return [...leerLista("pt_resenas").filter(r => r && r.empresaId === id && Number.isInteger(r.nota) && r.nota >= 1 && r.nota <= 5 && typeof r.texto === "string"), ...(id === 1 ? RESENAS_EMPRESA : [])];
+  return [...leerLista("pt_resenas").filter(r => r && r.empresaId === id && autorPuedeValorar(r.usuario) && Number.isInteger(r.nota) && r.nota >= 1 && r.nota <= 5 && typeof r.texto === "string"), ...(id === 1 ? RESENAS_EMPRESA : [])].map(r=>({...r,texto:censurarComentario(r.texto)}));
 }
 function guardarResena(empresaId, nota, texto) {
   const sesion = sesionDatos();
-  if (!sesion || !EMPRESAS.some(e => e.id === empresaId) || !Number.isInteger(nota) || nota < 1 || nota > 5 || typeof texto !== "string" || !texto.trim() || texto.trim().length > 3000) return false;
+  if (sesion?.rol!=="candidato" || !EMPRESAS.some(e => e.id === empresaId) || !Number.isInteger(nota) || nota < 1 || nota > 5 || typeof texto !== "string" || !texto.trim() || texto.trim().length > 3000) return false;
   const resena = { id: Date.now(), empresaId, usuario: sesion.usuario, autor: leerPerfil().fNombres || sesion.nombre,
-    iniciales: sesion.nombre.slice(0, 2), fecha: fechaHoy(), nota, texto: texto.trim() };
+    iniciales: sesion.nombre.slice(0, 2), fecha: fechaHoy(), nota, texto: censurarComentario(texto.trim()) };
   const ok = escribirAlmacen("pt_resenas", [resena, ...leerLista("pt_resenas")]);
   if (ok) actualizarResumenResenas();
   return ok;

@@ -20,10 +20,10 @@
    hayan publicado desde el formulario y quedaron guardadas en el
    navegador (así siguen visibles al recargar la página). */
 const sesionEmpresa = sesionDatos();
-let misOfertas = VACANTES.filter(v => sesionEmpresa?.rol === "administrador" || v.empresaId === sesionEmpresa?.empresaId)
+let misOfertas = VACANTES.filter(v => v.empresaId === sesionEmpresa?.empresaId)
   .map(v => ({ ...v, estado: estadoVacante(v) === "Publicada" ? "Abierta" : estadoVacante(v) }));
 function empresaDemoParaPublicacion() {
-  const id=sesionDatos()?.rol === "administrador" ? Number(document.getElementById("fEmpresaPublicacion")?.value) : sesionDatos()?.empresaId;
+  const id=sesionDatos()?.rol === "empresa" ? sesionDatos().empresaId : null;
   return EMPRESAS.find(e => e.id === id) || {id:null,ciudad:""};
 }
 
@@ -110,12 +110,7 @@ function publicarOferta(evento) {
   evento.preventDefault();
 
   const formulario = evento.currentTarget;
-  if(sesionDatos()?.rol === "administrador" && !document.getElementById("fEmpresaPublicacion").value) {
-    avisar("Selecciona la empresa responsable de la publicación.");document.getElementById("fEmpresaPublicacion").focus();return;
-  }
-  if (!["empresa", "administrador"].includes(sesionDatos()?.rol) || !empresaHabilitada(empresaDemoParaPublicacion().id)) {
-    avisar("Tu cuenta no puede publicar vacantes."); return;
-  }
+  if (sesionDatos()?.rol!=="empresa" || !empresaHabilitada(empresaDemoParaPublicacion().id)) {avisar("Solo una empresa aprobada puede publicar vacantes.");return;}
   const campos = {
     titulo: document.getElementById("fTitulo"),
     correo: document.getElementById("fCorreo"),
@@ -287,7 +282,6 @@ function pintarOfertas() {
 
   /* Resumen de la cabecera: total y ofertas aún abiertas */
   const resumen = document.getElementById("resumenOfertas");
-  if(sesionDatos()?.rol === "administrador") document.querySelector('[data-panel="ofertas"] h2').textContent="Ofertas del portal";
   if (resumen) {
     const abiertas = misOfertas.filter((o) => o.estado === "Abierta").length;
     resumen.textContent = `${misOfertas.length} ofertas · ${abiertas} abiertas · ${misOfertas.length - abiertas} cerradas`;
@@ -455,7 +449,7 @@ function pintarValoraciones() {
   const contenedor = document.getElementById("rejillaValoraciones");
   if (!contenedor) return;
   const sesion=sesionDatos(), selector=document.getElementById("empresaValoraciones");
-  const empresa=EMPRESAS.find(e=>e.id === (sesion?.rol === "administrador" ? Number(selector?.value) : sesion?.empresaId));
+  const empresa=EMPRESAS.find(e=>sesion?.rol === "empresa" && e.id === sesion.empresaId);
   if (!empresa) {contenedor.innerHTML='<div class="vacio"><h3>Selecciona una empresa</h3><p>Consulta su puntuación y las experiencias recibidas.</p></div>';return;}
   const resenas=resenasDeEmpresa(empresa.id), total=resenas.length;
   const nota=total ? (resenas.reduce((n,r)=>n+r.nota,0)/total).toFixed(1) : null;
@@ -479,12 +473,6 @@ function pintarValoraciones() {
    --------------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   // Incluir la ciudad de la empresa aprobada en el formulario de publicación.
-  if (sesionDatos()?.rol === "administrador") {
-    const grupo=document.getElementById("grupoEmpresaPublicacion"), select=document.getElementById("fEmpresaPublicacion");
-    grupo.hidden=false;select.required=true;
-    empresasPublicas().forEach(e=>select.add(new Option(e.nombre,e.id)));
-    select.addEventListener("change",()=>{const ciudad=empresaDemoParaPublicacion().ciudad;if(ciudad)document.getElementById("fUbicacion").value=ciudad;});
-  }
   const ciudadEmpresa = empresaDemoParaPublicacion().ciudad;
   const ubicacion = document.getElementById("fUbicacion");
   if (ubicacion && ciudadEmpresa && ![...ubicacion.options].some(o=>o.value === ciudadEmpresa)) ubicacion.add(new Option(ciudadEmpresa,ciudadEmpresa));
@@ -499,13 +487,6 @@ document.addEventListener("DOMContentLoaded", () => {
   pintarCandidatos();
   pintarDirectorio();
   const selectorValoraciones=document.getElementById("empresaValoraciones");
-  if(sesionDatos()?.rol === "administrador") {
-    document.getElementById("selectorEmpresaValoraciones").hidden=false;
-    document.getElementById("tituloValoraciones").textContent="Valoraciones por empresa";
-    document.getElementById("descripcionValoraciones").textContent="Selecciona una organización para consultar su reputación y las reseñas recibidas.";
-    EMPRESAS.forEach(e=>selectorValoraciones.add(new Option(e.nombre,e.id)));
-    selectorValoraciones.addEventListener("change",pintarValoraciones);
-  }
   pintarValoraciones();
 
   /* Índice lateral: cada botón muestra su panel */

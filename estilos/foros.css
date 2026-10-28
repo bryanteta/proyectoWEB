@@ -55,3 +55,15 @@
   /* En móvil el buscador ocupa todo el ancho disponible */
   #buscarTema { max-width: none !important; width: 100%; }
 }
+
+.foro-media:empty { display:none; }
+.foro-media { margin:1.25rem 0; }
+.foro-imagen { display:block; width:100%; max-height:440px; object-fit:contain; border:var(--filete); background:var(--papel); }
+.foro-media figcaption { margin-top:.5rem; font-size:.85rem; color:var(--tinta-suave); overflow-wrap:anywhere; }
+.foro-video { margin:1rem 0; }
+.foro-video iframe { display:block; width:100%; aspect-ratio:16 / 9; border:0; }
+.foro-comentario .panel-cuerpo { padding:1rem; }
+.foro-comentario .revision-texto { white-space:pre-wrap; overflow-wrap:anywhere; }
+#mediaHilo,#comentariosHilo { min-width:0; }
+#formComentario { border:var(--filete); padding:1rem; margin-bottom:1rem; }
+#paginasComentarios { border-bottom:var(--filete); padding-bottom:.8rem; }

@@ -50,7 +50,7 @@ test('directorio excluye suspendidas y ofertas cerradas; búsqueda ignora acento
  const p=portal();assert.equal(p.run("filtrarEmpresasPublicas({texto:'cafe'}).length"),1);
  p.login('administrador');assert.equal(p.run('suspenderEmpresa(2,true)'),true);
  assert.equal(p.run("filtrarEmpresasPublicas({texto:'cafe'}).length"),0);
- p.run('cambiarEstadoVacante(103,"Cerrada");cambiarEstadoVacante(110,"Retirada")');
+ p.login('empresa','estudio',3);p.run('cambiarEstadoVacante(103,"Cerrada");cambiarEstadoVacante(110,"Cerrada")');
  assert.equal(p.run("filtrarEmpresasPublicas({ciudad:'Santa Tecla',abiertas:true}).length"),0);
  assert.equal(p.run("filtrarEmpresasPublicas({ciudad:'Santa Tecla',abiertas:false}).length"),1);
 });

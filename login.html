@@ -54,7 +54,7 @@
               <p class="etiqueta" data-num="01">Acceso</p>
               <h1>Inicia sesión</h1>
               <p class="texto-suave">
-                Entra con una cuenta de demostración para ver el portal según tu rol:
+                Inicia sesión con tu cuenta o crea una según cómo usarás el portal:
                 candidato, empresa o administración.
               </p>
 
@@ -64,7 +64,7 @@
               <!-- Si ya hay una sesión abierta se ofrece continuar -->
               <div id="loginSesionActiva" class="login-sesion" hidden></div>
 
-              <form id="formLogin" novalidate>
+<div class="d-flex gap-2 mb-4" role="group" aria-label="Acceso o registro"><button class="btn btn-linea" type="button" data-modo-acceso="entrar" aria-pressed="true">Iniciar sesión</button><button class="btn btn-linea" type="button" data-modo-acceso="registro" aria-pressed="false">Crear cuenta</button></div><div id="panelEntrar">              <form id="formLogin" novalidate>
                 <div class="login-campo">
                   <label for="loginUsuario">Usuario</label>
                   <input
@@ -96,10 +96,18 @@
                 <button class="btn btn-bermellon w-100" type="submit">Entrar</button>
               </form>
 
+</div><section id="panelCrearCuenta" hidden><h2 class="fs-4">¿Cómo usarás el portal?</h2><form id="formCrearCuenta">
+<fieldset class="mb-3"><legend class="form-label">Tipo de cuenta</legend><label class="d-block mb-2"><input type="radio" name="rol" value="candidato" required checked> Candidato: buscar empleo y enviar mi currículum</label><label class="d-block"><input type="radio" name="rol" value="solicitante" required> Empresa: registrar mi organización y contratar</label></fieldset>
+<label class="form-label" for="altaNombre">Nombre del responsable</label><input id="altaNombre" class="form-control mb-3" name="nombre" required minlength="3" maxlength="120" autocomplete="name">
+<label class="form-label" for="altaCorreo">Correo</label><input id="altaCorreo" class="form-control mb-3" type="email" name="correo" required maxlength="160" autocomplete="email">
+<label class="form-label" for="altaUsuario">Usuario</label><input id="altaUsuario" class="form-control mb-3" name="usuario" required pattern="[a-z0-9_-]{3,40}" autocomplete="username">
+<label class="form-label" for="altaClave">Contraseña</label><input id="altaClave" class="form-control mb-3" name="contrasena" type="password" required minlength="8" maxlength="128" autocomplete="new-password">
+<label class="form-label" for="altaConfirmar">Repite la contraseña</label><input id="altaConfirmar" class="form-control mb-3" name="confirmar" type="password" required minlength="8" maxlength="128" autocomplete="new-password">
+<p class="texto-suave">Las empresas completan después su registro y esperan la aprobación. No necesitan un perfil de candidato ni currículum.</p><p class="texto-suave small">Cuenta de prototipo, guardada solo en este navegador. No uses tu contraseña habitual.</p><p id="errorCrearCuenta" class="login-error" role="alert"></p><button class="btn btn-bermellon" type="submit">Crear mi cuenta</button></form></section>
               <hr class="filete my-4" />
 
               <p class="datos texto-tenue mb-0">
-                ¿Aún no tienes cuenta? En este prototipo se entra con una de las
+                Puedes crear una cuenta como candidato o empresa. También puedes usar las
                 <a href="#cuentas">cuentas de prueba</a>. Para solicitar acceso empresarial,
                 <a href="./registro-empresa.html">registra tu empresa</a> con tu cuenta.
               </p>
@@ -159,7 +167,7 @@
                 <span class="marca-empresa oscura" aria-hidden="true">AD</span>
                 <span class="login-cuenta-texto">
                   <strong>Administración</strong>
-                  <span>Usuarios, empresas, vacantes, moderación y estadísticas.</span>
+                  <span>Personal administrativo, empresas, foros y estadísticas.</span>
                   <code>admin / admin123</code>
                 </span>
               </button>
@@ -186,10 +194,10 @@
     </footer>
 
     <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
-    <script src="./js/datos.js?v=20261027-seleccion-3"></script>
-    <script src="./js/dominio-flujos.js?v=20261027-seleccion-3"></script>
-    <script src="./js/flujos.js?v=20261027-seleccion-3"></script>
-    <script src="./js/auth.js?v=20261027-seleccion-3"></script>
-    <script src="./js/main.js?v=20261027-seleccion-3"></script>
+    <script src="./js/datos.js?v=20261027-editorial-permisos-2"></script>
+    <script src="./js/dominio-flujos.js?v=20261027-editorial-permisos-2"></script>
+    <script src="./js/flujos.js?v=20261027-editorial-permisos-2"></script>
+    <script src="./js/auth.js?v=20261027-editorial-permisos-2"></script>
+    <script src="./js/main.js?v=20261027-editorial-permisos-2"></script>
   </body>
 </html>

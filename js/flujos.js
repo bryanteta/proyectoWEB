@@ -12,8 +12,9 @@ function leerEstadoFlujos() {
   }));
   return {schemaVersion:1,temas,solicitudes:[],empresas:[],miembros:[],auditoria:[]};
 }
+const TEMAS_EDITORIALES_BASE = TEMAS_FORO.map(t=>({...t,id:"base-"+t.id,usuario:"admin",autor:"Equipo del portal",iniciales:"PT",estado:"aprobado",editorial:true,version:1,creada:"2026-10-20T12:00:00Z",actualizada:"2026-10-20T12:00:00Z",comentariosAbiertos:true,fijado:false,mensaje:t.mensaje || `Espacio de orientación sobre ${t.categoria.toLowerCase()}. Comparte experiencias y consejos relacionados con «${t.titulo}». Evita publicar datos privados de personas o empresas. Los comentarios se publican con un filtro automático de palabras.`}));
 const flujos = crearServicioFlujos({
-  paisObjetivo:CONFIG_PORTAL.pais,
+  paisObjetivo:CONFIG_PORTAL.pais, temasBase:TEMAS_EDITORIALES_BASE,
   leer:leerEstadoFlujos, guardar:s=>escribirAlmacen(CLAVE_FLUJOS,s),
   cuentaActiva:usuario=>!["Suspendido","Eliminado"].includes(leerObjeto("pt_cuentas_estado")[usuario]),
   actor:()=>sesionDatos(), nuevoId:()=>crypto.randomUUID(), ahora:()=>new Date().toISOString(), empresasBase:EMPRESAS

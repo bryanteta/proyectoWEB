@@ -1,3 +1,5 @@
+> Modelo actualizado: consulta [ROLES-Y-COMUNIDAD.md](./ROLES-Y-COMUNIDAD.md). La publicación de temas es exclusiva y directa de Administración; los comentarios se filtran automáticamente y las vacantes de empresas aprobadas no pasan por una cola administrativa.
+
 # Preparación del backend Node.js
 
 Estado: propuesta de arquitectura; el portal sigue ejecutándose como sitio estático con almacenamiento local. No se ha instalado ni desplegado un servidor ni conectado una base de datos.

@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   form.append(ciudades); document.getElementById("ciudad").setAttribute("list",ciudades.id);
   document.getElementById("sector").innerHTML = '<option value="">Seleccionar sector</option>' + flujos.sectores.map(s=>`<option>${escaparHTML(s)}</option>`).join("");
   document.getElementById("registroAcceso").hidden = !!sesion;
-  form.hidden = !sesion || !!sesion.empresaId || sesion.rol === "administrador";
+  form.hidden = sesion?.rol !== "solicitante";
   if (sesion) { document.getElementById("contactoNombre").value = sesion.nombre; document.getElementById("contactoCorreo").value = sesion.correo; }
   function pintar() {
     if (!sesion) { document.getElementById("estadoRegistro").hidden = true; return; }
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!resultado.ok) { lista.textContent = resultado.mensaje; form.hidden = true; return; }
     const items = resultado.dato;
     const hayPendiente = items.some(s=>s.estado === "pendiente");
-    const puedeSolicitar = !sesion.empresaId && sesion.rol !== "administrador" && !hayPendiente && !items.some(s=>s.estado === "aprobado");
+    const puedeSolicitar = sesion.rol === "solicitante" && !sesion.empresaId && !hayPendiente && !items.some(s=>s.estado === "aprobado");
     lista.innerHTML = items.map(s=>`<article class="mb-4"><h3>${escaparHTML(s.datos.nombreComercial)}</h3><p><span class="etiqueta-chip ${s.estado === "aprobado" ? "verde" : "ambar"}">${etiquetaRevision(s.estado,true)}</span> · ${fechaRevision(s.actualizada)}</p><p class="datos">Solicitud ${escaparHTML(s.id)}</p>${s.motivo ? `<p class="revision-texto">Motivo: ${escaparHTML(s.motivo)}</p>` : ""}${s.estado === "rechazado" && puedeSolicitar ? `<button class="btn btn-linea" type="button" data-corregir="${escaparHTML(s.id)}">Corregir y reenviar</button>` : s.estado === "aprobado" ? '<a class="btn btn-bermellon" href="./empresas.html">Ir al módulo empresarial</a>' : '<p>La empresa todavía no está habilitada para publicar vacantes.</p>'}</article>`).join("") || (sesion.empresaId ? '<p>Tu empresa ya está habilitada. <a href="./empresas.html">Abrir módulo empresarial</a></p>' : sesion.rol === "administrador" ? '<a href="./admin.html#empresas">Revisar solicitudes en administración</a>' : '<p>Aún no has enviado una solicitud.</p>');
     form.hidden = !puedeSolicitar;
   }

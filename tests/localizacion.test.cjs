@@ -5,7 +5,7 @@ function portal(storage=new Map()) {
  vm.runInContext(fs.readFileSync('js/datos.js','utf8'),c);return {storage,run:code=>vm.runInContext(code,c)};
 }
 const datos={razonSocial:'Empresa de pruebas SA',nombreComercial:'Empresa QA',identificacionFiscal:'QASV20261027',pais:'SV',ciudad:'San Salvador',direccion:'Dirección comercial de demostración',sector:'Tecnología',tamano:'11–50',descripcion:'Organización ficticia de desarrollo de software y servicios empresariales en El Salvador.',contactoNombre:'Persona de pruebas',contactoCargo:'Gerente',contactoCorreo:'qa@example.test',contactoTelefono:'+503 0000 0000',sitioWeb:'',declaracion:true};
-function servicio(){let s={schemaVersion:1,temas:[],solicitudes:[],empresas:[],miembros:[],auditoria:[]},i=0;return crearServicioFlujos({leer:()=>s,guardar:n=>{s=n;return true;},actor:()=>({usuario:'qa',rol:'candidato',nombre:'QA'}),nuevoId:()=>String(++i),ahora:()=>new Date().toISOString()});}
+function servicio(){let s={schemaVersion:1,temas:[],solicitudes:[],empresas:[],miembros:[],auditoria:[]},i=0;return crearServicioFlujos({leer:()=>s,guardar:n=>{s=n;return true;},actor:()=>({usuario:'qa',rol:'solicitante',nombre:'QA'}),nuevoId:()=>String(++i),ahora:()=>new Date().toISOString()});}
 test('empresas y vacantes de ejemplo pertenecen a El Salvador',()=>{
  const p=portal();assert.equal(p.run('CONFIG_PORTAL.pais'),'SV');assert.equal(p.run('EMPRESAS.every(e=>e.pais==="SV" && CONFIG_PORTAL.ciudades.includes(e.ciudad))'),true);assert.equal(p.run('VACANTES.every(v=>v.pais==="SV" && CONFIG_PORTAL.ciudades.includes(v.ciudad))'),true);assert.equal(p.run('empresaPorId(1).nombre'),'Cuscatlán Software');assert.ok(p.run('DETALLE_VACANTE.contacto.telefono').startsWith('+503'));
 });

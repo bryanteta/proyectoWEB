@@ -68,6 +68,7 @@ function inicializarFormularioPerfil() {
   if (!formulario) return;
 
   const guardado = leerPerfil();
+  if(leerLista("pt_cuentas_locales").some(u=>u.usuario===sesionDatos()?.usuario)) {document.getElementById("fPerfil").value="";document.getElementById("fAcerca").value="";}
   formulario.querySelectorAll("input[id], select[id], textarea[id]").forEach(c => { if (guardado[c.id] !== undefined) c.value = guardado[c.id]; });
   actualizarResumenPerfil();
   /* Expresión sencilla para verificar el correo */
@@ -144,7 +145,7 @@ function inicializarHabilidades() {
     return chip;
   }
 
-  const guardadas = leerPerfil().habilidades;
+  const guardadas = leerPerfil().habilidades || (leerLista("pt_cuentas_locales").some(u=>u.usuario===sesionDatos()?.usuario) ? [] : undefined);
   if (Array.isArray(guardadas)) {
     lista.querySelectorAll(".etiqueta-chip").forEach(c => c.remove());
     guardadas.forEach(h => lista.insertBefore(crearChip(h), entrada));
@@ -199,6 +200,7 @@ function inicializarCurriculum() {
   const input = document.getElementById("inputArchivo");
   const lista = document.getElementById("listaArchivos");
   if (!input || !lista) return;
+  if(leerLista("pt_cuentas_locales").some(u=>u.usuario===sesionDatos()?.usuario)) lista.innerHTML='<p class="texto-suave" data-cv-vacio>Todavía no has seleccionado un currículum.</p>';
 
   /* Convierte los bytes en texto legible (KB o MB) */
   function pesoLegible(bytes) {
@@ -208,6 +210,7 @@ function inicializarCurriculum() {
 
   /* Construye una fila .archivo-fila y la añade a la lista */
   function agregarFila(nombre, peso) {
+    lista.querySelector("[data-cv-vacio]")?.remove();
     const fila = document.createElement("div");
     fila.className = "archivo-fila";
 
@@ -463,7 +466,7 @@ function inicializarValoraciones() {
     const empresa = EMPRESAS.find((e) => e.id === Number(select.value)) || EMPRESAS[0];
 
     if (!guardarResena(empresa.id, nota, texto)) { avisar("No se pudo guardar la valoración."); return; }
-    lista.prepend(crearResena(empresa.nombre, nota, texto));
+    lista.prepend(crearResena(empresa.nombre, nota, censurarComentario(texto)));
     formulario.reset();
     pintarNota(0);
     avisar("Valoración publicada correctamente.", "exito");

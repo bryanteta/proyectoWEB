@@ -120,26 +120,22 @@
         </button>
         <button type="button" data-seccion="usuarios">
           <span class="disco" aria-hidden="true">B</span>
-          Gestión de usuarios
+          Personal administrativo
         </button>
         <button type="button" data-seccion="empresas">
           <span class="disco" aria-hidden="true">C</span>
           Gestión de empresas
         </button>
-        <button type="button" data-seccion="vacantes">
-          <span class="disco" aria-hidden="true">D</span>
-          Gestión de vacantes
-        </button>
         <button type="button" data-seccion="moderacion">
-          <span class="disco" aria-hidden="true">E</span>
-          Moderación de contenido
+          <span class="disco" aria-hidden="true">D</span>
+          Foros y comentarios
         </button>
         <button type="button" data-seccion="estadisticas">
-          <span class="disco" aria-hidden="true">F</span>
+          <span class="disco" aria-hidden="true">E</span>
           Estadísticas del sistema
         </button>
         <button type="button" data-seccion="otros">
-          <span class="disco" aria-hidden="true">G</span>
+          <span class="disco" aria-hidden="true">F</span>
           Otros
         </button>
       </aside>
@@ -169,7 +165,7 @@
                 aria-label="Buscar en el panel"
                 style="max-width: 16rem"
               />
-              <a class="btn btn-bermellon" href="./empresas.html">Publicar oferta</a>
+              <a class="btn btn-bermellon" href="./admin.html#empresas">Revisar empresas</a>
             </div>
           </div>
 
@@ -178,7 +174,7 @@
             <div class="resumen-tarjeta">
               <div>
                 <strong>36,500</strong>
-                <span>Usuarios registrados</span>
+                <span>Personal administrativo</span>
               </div>
               <span class="disco" aria-hidden="true">U</span>
             </div>
@@ -255,26 +251,20 @@
         <div class="adm-panel" data-panel="usuarios" id="panelUsuarios" hidden>
           <div class="admin-cabecera">
             <div>
-              <h1>Gestión de usuarios</h1>
-              <p class="texto-suave mb-0">Cuentas registradas en el portal y su estado actual</p>
-            </div>
-            <div class="adm-controles">
-              <!-- Filtro de rol: repinta la tabla en cada cambio -->
-              <div class="adm-control">
-                <label class="form-label" for="filtroRol">Rol</label>
-                <select class="form-select" id="filtroRol">
-                  <option value="">Todos los roles</option>
-                  <option value="Candidato">Candidato</option>
-                  <option value="Empresa">Empresa</option>
-                  <option value="Administrador">Administrador</option>
-                </select>
-              </div>
+              <h1>Personal administrativo</h1>
+              <p class="texto-suave mb-0">Accesos internos del equipo. Las empresas se gestionan únicamente en Gestión de empresas.</p>
             </div>
           </div>
-
+          <details class="panel mb-4"><summary class="p-3">Añadir personal administrativo</summary><div class="panel-cuerpo"><form id="formPersonalAdmin" class="row g-3">
+          <div class="col-md-6"><label class="form-label" for="personalNombre">Nombre</label><input id="personalNombre" name="nombre" class="form-control" required minlength="3" maxlength="120"></div>
+          <div class="col-md-6"><label class="form-label" for="personalCorreo">Correo</label><input id="personalCorreo" name="correo" type="email" class="form-control" required maxlength="160"></div>
+          <div class="col-md-6"><label class="form-label" for="personalUsuario">Usuario</label><input id="personalUsuario" name="usuario" class="form-control" required pattern="[a-z0-9_-]{3,40}" autocomplete="off"></div>
+          <div class="col-md-6"><label class="form-label" for="personalClave">Contraseña de prueba</label><input id="personalClave" name="contrasena" type="password" class="form-control" required minlength="8" maxlength="128" autocomplete="new-password"></div>
+          <div class="col-12"><p class="texto-suave">Solo administración puede crear estos accesos. En esta demo se guardan en el navegador.</p><p id="resultadoPersonalAdmin" role="status"></p><button class="btn btn-bermellon" type="submit">Crear acceso administrativo</button></div>
+          </form></div></details>
           <div class="tabla-envoltura">
             <table class="tabla">
-              <caption class="visually-hidden">Usuarios registrados en el portal</caption>
+              <caption class="visually-hidden">Personal administrativo en el portal</caption>
               <thead>
                 <tr>
                   <th scope="col">Usuario</th>
@@ -344,73 +334,11 @@
              el recuento de postulantes y las acciones de aprobación,
              retirada y consulta del detalle.
              ============================================================ -->
-        <div class="adm-panel" data-panel="vacantes" id="panelVacantes" hidden>
-          <div class="admin-cabecera">
-            <div>
-              <h1>Gestión de vacantes</h1>
-              <p class="texto-suave mb-0">Ofertas publicadas, su estado y sus postulantes</p>
-            </div>
-            <div class="adm-controles">
-              <!-- Filtro de estado en vivo -->
-              <div class="adm-control">
-                <label class="form-label" for="filtroEstadoVacante">Estado</label>
-                <select class="form-select" id="filtroEstadoVacante">
-                  <option value="">Todas</option>
-                  <option value="Publicada">Publicadas</option>
-                  <option value="Retirada">Retiradas</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="tabla-envoltura">
-            <table class="tabla">
-              <caption class="visually-hidden">Ofertas de empleo publicadas en el portal</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Oferta</th>
-                  <th scope="col">Empresa</th>
-                  <th scope="col">Publicada</th>
-                  <th scope="col">Estado</th>
-                  <th scope="col">Postulantes</th>
-                  <th scope="col">Acciones</th>
-                </tr>
-              </thead>
-              <!-- Filas generadas por js/admin.js -->
-              <tbody id="cuerpoVacantes"></tbody>
-            </table>
-          </div>
-          <p class="datos texto-tenue mt-2 mb-0" id="cuentaVacantes"></p>
-        </div>
-
-        <!-- ============================================================
-             SECCIÓN E — MODERACIÓN DE CONTENIDO
-             Denuncias recibidas sobre reseñas, temas de foro y
-             comentarios. Cada tarjeta se retira del listado al
-             aprobar u ocultar el contenido (js/admin.js).
-             ============================================================ -->
         <div class="adm-panel" data-panel="moderacion" id="panelModeracion" hidden>
-          <div class="admin-cabecera">
-            <div>
-              <h1>Moderación de contenido</h1>
-              <p class="texto-suave mb-0">
-                Revisa los temas enviados antes de su publicación. Solo los temas aprobados aparecen en el foro público. Un rechazo requiere explicar el motivo para que el autor pueda corregirlo.
-              </p>
-            </div>
-            <!-- Contador de denuncias pendientes (lo actualiza el script) -->
-            <span class="etiqueta-chip ambar" id="contadorModeracion">0 pendientes</span>
-          </div>
-
-          <!-- Tarjetas de denuncia generadas por js/admin.js -->
-<div class="d-flex gap-3 flex-wrap mb-3"><div><label class="form-label" for="estadoRevisionForos">Estado de revisión</label><select class="form-select" id="estadoRevisionForos"><option value="pendiente">Pendientes</option><option value="aprobado">Aprobados</option><option value="rechazado">Rechazados</option><option value="todos">Todos</option></select></div><div><label class="form-label" for="buscarRevisionForos">Buscar solicitudes</label><input class="form-control" type="search" id="buscarRevisionForos"></div></div>          <div id="listaModeracion" class="d-grid gap-3"></div>
-          <nav id="paginacionRevisionForos" aria-label="Páginas de revisión de temas"></nav>
+          <div class="admin-cabecera"><div><h1>Foros y filtro de comentarios</h1><p>Administración publica los temas. Los usuarios comentan con censura automática, sin una cola de aprobación.</p></div></div>
+          <p><a class="btn btn-bermellon" href="./foros.html">Crear y gestionar temas del foro</a></p>
+          <section class="panel"><div class="panel-cabecera"><h2>Filtro automático de palabras</h2></div><div class="panel-cuerpo"><p>El filtro base está siempre activo en comentarios del foro y reseñas. Puedes añadir palabras, una por línea o separadas por comas. Se ocultan como *** y no necesitan revisión individual.</p><form id="formFiltroComentarios"><label class="form-label" for="palabrasComentarios">Palabras adicionales</label><textarea id="palabrasComentarios" class="form-control" rows="6" maxlength="4000"></textarea><p class="texto-suave mt-2">Usa palabras de 2 a 40 letras, sin expresiones regulares. Máximo 100 palabras adicionales. El filtro reconoce mayúsculas, acentos y algunas sustituciones comunes; no entiende todo el contexto.</p><p id="resultadoFiltro" role="status"></p><button class="btn btn-linea" type="submit">Guardar filtro</button></form></div></section>
         </div>
-
-        <!-- ============================================================
-             SECCIÓN F — ESTADÍSTICAS DEL SISTEMA
-             Indicadores del mes, gráfico de barras de postulaciones y
-             ranking de empresas según el número de ofertas publicadas.
-             ============================================================ -->
         <div class="adm-panel" data-panel="estadisticas" id="panelEstadisticas" hidden>
           <div class="admin-cabecera">
             <div>
@@ -529,16 +457,7 @@
                 <span class="datos texto-tenue">Preferencias locales; requieren servicios del backend</span>
               </div>
               <div class="panel-cuerpo">
-                <div class="alerta-fila">
-                  <div>
-                    <strong>Moderación previa de reseñas</strong>
-                    <small>Preferencia para una futura cola de reseñas; aún no se aplica</small>
-                  </div>
-                  <label class="interruptor ms-auto">
-                    <input type="checkbox" data-config="moderacion-resenas" checked aria-label="Moderación previa de reseñas" />
-                    <span class="pista-i" aria-hidden="true"></span>
-                  </label>
-                </div>
+
 
                 <div class="alerta-fila">
                   <div>
@@ -551,16 +470,7 @@
                   </label>
                 </div>
 
-                <div class="alerta-fila">
-                  <div>
-                    <strong>Publicación automática de ofertas verificadas</strong>
-                    <small>Las empresas verificadas publican sin pasar por revisión</small>
-                  </div>
-                  <label class="interruptor ms-auto">
-                    <input type="checkbox" data-config="auto-publicacion" checked aria-label="Publicación automática de ofertas verificadas" />
-                    <span class="pista-i" aria-hidden="true"></span>
-                  </label>
-                </div>
+
 
                 <div class="alerta-fila">
                   <div>
@@ -583,7 +493,7 @@
               </div>
               <div class="panel-cuerpo">
                 <p class="texto-suave">
-                  Recarga los datos guardados y limpia los filtros de este panel. La tabla de usuarios corresponde a las cuentas de demostración del login.
+                  Recarga los datos guardados y limpia los filtros de este panel. El personal administrativo se gestiona por separado de las empresas.
                 </p>
                 <button class="btn btn-bermellon" type="button" id="btnRestablecer">
                   Actualizar panel
@@ -625,8 +535,6 @@
           </div>
           <div class="col-6 col-lg-2">
             <h5>Empresas</h5>
-            <a href="./empresas.html">Publicar oferta</a><br />
-            <a href="./empresas.html#postulaciones">Ver postulaciones</a><br />
             <a href="./directorio.html">Directorio</a><br />
             <a href="./admin.html">Administración</a>
           </div>
@@ -650,12 +558,12 @@
     </footer>
 
     <script src="./estilos/vendor/bootstrap.bundle.min.js"></script>
-    <script src="./js/datos.js?v=20261027-seleccion-3"></script>
-    <script src="./js/dominio-flujos.js?v=20261027-seleccion-3"></script>
-    <script src="./js/flujos.js?v=20261027-seleccion-3"></script>
-    <script src="./js/auth.js?v=20261027-seleccion-3"></script>
-    <script src="./js/main.js?v=20261027-seleccion-3"></script>
-    <script src="./js/admin.js?v=20261027-seleccion-3"></script>
-    <script src="./js/admin-revisiones.js?v=20261027-seleccion-3"></script>
+    <script src="./js/datos.js?v=20261027-editorial-permisos-2"></script>
+    <script src="./js/dominio-flujos.js?v=20261027-editorial-permisos-2"></script>
+    <script src="./js/flujos.js?v=20261027-editorial-permisos-2"></script>
+    <script src="./js/auth.js?v=20261027-editorial-permisos-2"></script>
+    <script src="./js/main.js?v=20261027-editorial-permisos-2"></script>
+    <script src="./js/admin.js?v=20261027-editorial-permisos-2"></script>
+    <script src="./js/admin-revisiones.js?v=20261027-editorial-permisos-2"></script>
   </body>
 </html>

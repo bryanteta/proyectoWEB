@@ -68,7 +68,7 @@ function pintarActividad() {
   const resultado = ejecutarFlujo(()=>flujos.actividad());
   if (!resultado.ok) { lista.textContent=resultado.mensaje; return; }
   lista.innerHTML = resultado.dato.map(e=>`<li><span class="punto" aria-hidden="true"></span><p>${escaparHTML(e.actor)} · ${e.tipo === "empresa" ? "Registro empresarial" : "Tema del foro"} · ${escaparHTML(e.accion)} · v${e.version}</p><time>${fechaRevision(e.fecha)}</time></li>`).join("") || '<li>Todavía no hay actividad de revisión.</li>';
-  const cifras = [cargarUsuariosAdmin().length,EMPRESAS.filter(e=>empresaHabilitada(e.id)).length,VACANTES.filter(vacanteDisponible).length,POSTULACIONES.reduce((n,p)=>n+p.candidatos.length,0)+leerTodasPostulaciones().length];
+  const cifras = [cargarUsuariosAdmin().filter(u=>u.estado==="Activo").length,EMPRESAS.filter(e=>empresaHabilitada(e.id)).length,VACANTES.filter(vacanteDisponible).length,POSTULACIONES.reduce((n,p)=>n+p.candidatos.length,0)+leerTodasPostulaciones().length];
   document.querySelectorAll("#panelPrincipal .resumen-tarjeta strong").forEach((el,i)=>el.textContent=cifras[i]);
 }
 
@@ -188,13 +188,8 @@ function fechaTexto(iso) {
 /* Cuentas de ejemplo: no vienen en datos.js porque son propias
    de esta pantalla (prototipo de administración) */
 function cargarUsuariosAdmin() {
-  const roles = { candidato: "Candidato", empresa: "Empresa", administrador: "Administrador" };
-  const estados = leerObjeto("pt_cuentas_estado");
-  const perfiles = leerObjeto("pt_perfiles");
-  return USUARIOS_PRUEBA.map((u, i) => ({ id: i + 1, usuario: u.usuario,
-    nombre: perfiles[u.usuario]?.fNombres || u.nombre, correo: perfiles[u.usuario]?.fCorreo || u.correo,
-    iniciales: u.nombre.slice(0, 2).toUpperCase(), rol: roles[(leerObjeto("pt_flujos_v1").miembros || []).some(m=>m.usuario === u.usuario) && u.rol !== "administrador" ? "empresa" : u.rol],
-    estado: estados[u.usuario] || "Activo", registro: "2026-10-26" })).filter(u => u.estado !== "Eliminado");
+  const estados=leerObjeto("pt_cuentas_estado");
+  return cuentasDelPortal().filter(u=>u.rol==="administrador").map((u,i)=>({id:i+1,usuario:u.usuario,nombre:u.nombre,correo:u.correo,iniciales:u.nombre.slice(0,2).toUpperCase(),rol:"Administrador",estado:estados[u.usuario]||"Activo",registro:u.creada?.slice(0,10)||"2026-10-26"})).filter(u=>u.estado!=="Eliminado");
 }
 
 let usuariosAdmin = [];
@@ -217,7 +212,7 @@ function pintarUsuarios() {
   /* Cuenta de resultados bajo la tabla */
   const cuenta = document.getElementById("cuentaUsuarios");
   if (cuenta) {
-    cuenta.textContent = `${lista.length} de ${usuariosAdmin.length} cuentas mostradas`;
+    cuenta.textContent = `${lista.length} ${lista.length===1 ? "persona del equipo administrativo" : "personas del equipo administrativo"}`;
   }
 
   /* Mensaje de vacío cuando el filtro no encuentra nada */
@@ -247,12 +242,7 @@ function pintarUsuarios() {
         <td class="tabla-datos">${fechaTexto(usuario.registro)}</td>
         <td>
           <span class="adm-acciones">
-            <button class="btn btn-linea btn-sm" type="button" data-usuario-estado="${usuario.id}">
-              ${usuario.estado === "Activo" ? "Suspender" : "Reactivar"}
-            </button>
-            <button class="btn btn-fantasma btn-sm" type="button" data-usuario-eliminar="${usuario.id}">
-              Eliminar
-            </button>
+            ${usuario.usuario===sesionDatos()?.usuario ? '<span class="etiqueta-chip">Tu cuenta</span>' : `<button class="btn btn-linea btn-sm" type="button" data-usuario-estado="${usuario.id}">${usuario.estado === "Activo" ? "Suspender acceso" : "Reactivar acceso"}</button>`}
           </span>
         </td>
       </tr>`
@@ -363,72 +353,6 @@ function pintarEmpresas() {
    publicada, así se cubre tanto el estado Pendiente como el
    estado Retirada.
    --------------------------------------------------------------- */
-let vacantesAdmin = [];
-
-/* Chip de estado de la oferta */
-function chipEstadoVacante(estado) {
-  const tonos = { Publicada: "verde", Retirada: "ambar", Pendiente: "ambar", Cerrada: "ambar" };
-  return `<span class="etiqueta-chip ${tonos[estado] || ""}">${estado}</span>`;
-}
-
-/* Postulantes de una oferta: usa los datos reales del prototipo
-   cuando existen y, si no, una cifra simulada y estable derivada
-   del identificador (evita números aleatorios que cambien al
-   repintar la tabla) */
-function postulantesDe(vacante) {
-  return candidatosDeVacante(vacante.id).length;
-}
-
-function pintarVacantes() {
-  const cuerpo = document.getElementById("cuerpoVacantes");
-  if (!cuerpo) return;
-
-  /* Filtro de estado en vivo */
-  const campo = document.getElementById("filtroEstadoVacante");
-  const filtro = campo ? campo.value : "";
-  const lista = vacantesAdmin.filter((vacante) => !filtro || vacante.estado === filtro);
-
-  const cuenta = document.getElementById("cuentaVacantes");
-  if (cuenta) {
-    const publicadas = vacantesAdmin.filter((v) => v.estado === "Publicada").length;
-    cuenta.textContent = `${lista.length} ofertas en la tabla · ${publicadas} publicadas`;
-  }
-
-  if (!lista.length) {
-    cuerpo.innerHTML = `
-      <tr>
-        <td colspan="6" class="texto-tenue text-center">
-          No hay ofertas para este filtro.
-        </td>
-      </tr>`;
-    return;
-  }
-
-  cuerpo.innerHTML = lista
-    .map((vacante) => {
-      const empresa = empresaPorId(vacante.empresaId);
-      return `
-      <tr class="${vacante.estado === "Retirada" ? "adm-fila-inactiva" : ""}">
-        <td><a href="./vacante.html?id=${vacante.id}">${escaparHTML(vacante.titulo)}</a></td>
-        <td>${escaparHTML(empresa.nombre)}</td>
-        <td class="tabla-datos">${fechaTexto(vacante.publicada)}</td>
-        <td>${chipEstadoVacante(vacante.estado)}</td>
-        <td class="tabla-datos">${postulantesDe(vacante)}</td>
-        <td>
-          <span class="adm-acciones">
-            ${
-              vacante.estado === "Publicada"
-                ? `<button class="btn btn-linea btn-sm" type="button" data-vacante-retirar="${vacante.id}">Retirar</button>`
-                : `<button class="btn btn-bermellon btn-sm" type="button" data-vacante-aprobar="${vacante.id}">Aprobar</button>`
-            }
-            <a class="btn btn-fantasma btn-sm" href="./vacante.html?id=${vacante.id}">Ver</a>
-          </span>
-        </td>
-      </tr>`;
-    })
-    .join("");
-}
-
 /* ---------------------------------------------------------------
    7. Moderación de contenido
    Una tarjeta .panel por cada denuncia de MODERACION. Los botones
@@ -436,7 +360,7 @@ function pintarVacantes() {
    main.js prepare sus acciones genéricas, el aviso lo lanza aquí
    (evita dobles mensajes) y la tarjeta se retira del listado.
    --------------------------------------------------------------- */
-function pintarModeracion() { pintarColaTemas(); }
+function pintarModeracion() { const campo=document.getElementById("palabrasComentarios");if(campo)campo.value=(leerObjeto("pt_filtro_comentarios").palabras || []).join("\n"); }
 
 /* ---------------------------------------------------------------
    8. Estadísticas del sistema
@@ -619,7 +543,6 @@ function restablecerDatos() {
   /* Copias frescas de los datos de prueba */
   usuariosAdmin = cargarUsuariosAdmin();
   empresasAdmin = EMPRESAS.map((empresa) => ({ ...empresa }));
-  vacantesAdmin = VACANTES.map((vacante) => ({ ...vacante, estado: estadoVacante(vacante) }));
 
   /* Limpia los filtros y el buscador de la cabecera */
   const filtroRol = document.getElementById("filtroRol");
@@ -639,7 +562,6 @@ function restablecerDatos() {
   dibujarAnilloSectores();
   pintarUsuarios();
   pintarEmpresas();
-  pintarVacantes();
   pintarModeracion();
   pintarBarras();
   pintarTopEmpresas();
@@ -727,34 +649,6 @@ function prepararAccionesTablas() {
     });
   }
 
-  /* --- Vacantes: aprobar y retirar ofertas --- */
-  const cuerpoVacantes = document.getElementById("cuerpoVacantes");
-  if (cuerpoVacantes) {
-    cuerpoVacantes.addEventListener("click", (evento) => {
-      const aprobar = evento.target.closest("[data-vacante-aprobar]");
-      if (aprobar) {
-        const vacante = vacantesAdmin.find((v) => v.id === Number(aprobar.dataset.vacanteAprobar));
-        if (!vacante) return;
-        if (!cambiarEstadoVacante(vacante.id, "Publicada")) { avisar("No se pudo publicar la oferta."); return; }
-        vacante.estado = "Publicada";
-        pintarVacantes();
-        avisar(`Oferta «${vacante.titulo}» aprobada y publicada (demostración).`, "exito");
-        return;
-      }
-
-      const retirar = evento.target.closest("[data-vacante-retirar]");
-      if (retirar) {
-        const vacante = vacantesAdmin.find((v) => v.id === Number(retirar.dataset.vacanteRetirar));
-        if (!vacante) return;
-        if (!cambiarEstadoVacante(vacante.id, "Retirada")) { avisar("No se pudo retirar la oferta."); return; }
-        vacante.estado = "Retirada";
-        pintarVacantes();
-        avisar(`Oferta «${vacante.titulo}» retirada del portal (demostración).`);
-      }
-    });
-  }
-
-
 }
 
 /* ---------------------------------------------------------------
@@ -764,14 +658,12 @@ document.addEventListener("DOMContentLoaded", () => {
   /* Estado inicial: copias editables de los datos de prueba */
   usuariosAdmin = cargarUsuariosAdmin();
   empresasAdmin = EMPRESAS.map((empresa) => ({ ...empresa }));
-  vacantesAdmin = VACANTES.map((vacante) => ({ ...vacante, estado: estadoVacante(vacante) }));
 
   /* Pintado de los siete paneles */
   pintarActividad();
   dibujarAnilloSectores();
   pintarUsuarios();
   pintarEmpresas();
-  pintarVacantes();
   pintarModeracion();
   pintarBarras();
   pintarTopEmpresas();
@@ -789,8 +681,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const buscarEmpresa = document.getElementById("buscarEmpresaAdmin");
   if (buscarEmpresa) buscarEmpresa.addEventListener("input", pintarEmpresas);
 
-  const filtroEstado = document.getElementById("filtroEstadoVacante");
-  if (filtroEstado) filtroEstado.addEventListener("change", pintarVacantes);
 
   /* Acciones de las tablas y de la moderación */
   prepararAccionesTablas();
@@ -798,6 +688,17 @@ document.addEventListener("DOMContentLoaded", () => {
   /* Buscador de la cabecera, interruptores y restablecimiento */
   prepararBusquedaPanel();
   prepararConfiguracion();
+  document.getElementById("formPersonalAdmin")?.addEventListener("submit",async e=>{
+    e.preventDefault();const form=e.currentTarget,boton=form.querySelector('button[type="submit"]'),estado=document.getElementById("resultadoPersonalAdmin");
+    boton.disabled=true;estado.textContent="Creando acceso…";
+    try {const r=await registrarCuenta({...Object.fromEntries(new FormData(form)),rol:"administrador"},true);estado.textContent=r.ok?"Acceso administrativo creado en este navegador.":r.error;
+      if(r.ok){form.reset();usuariosAdmin=cargarUsuariosAdmin();pintarUsuarios();pintarActividad();}
+    } finally {boton.disabled=false;}
+  });
+  document.getElementById("formFiltroComentarios")?.addEventListener("submit",e=>{
+    e.preventDefault();const ok=guardarFiltroComentarios(document.getElementById("palabrasComentarios").value);
+    document.getElementById("resultadoFiltro").textContent=ok ? "Filtro guardado. Se aplica automáticamente al publicar y mostrar comentarios y reseñas." : "No se pudo guardar. Revisa los límites y utiliza solo palabras.";
+  });
 
   const btnRestablecer = document.getElementById("btnRestablecer");
   if (btnRestablecer) btnRestablecer.addEventListener("click", restablecerDatos);
